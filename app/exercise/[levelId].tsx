@@ -399,7 +399,7 @@ function ListenWriteView({
 export default function ExerciseScreen() {
   const insets = useSafeAreaInsets();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
-  const { game, completeLevel, loseHeart, spendGems } = useGame();
+  const { game, completeLevel, saveLevelErrors, loseHeart, spendGems } = useGame();
   const levelNum = parseInt(levelId || '1', 10);
 
   const level = useMemo(() => generateLevel(levelNum), [levelNum]);
@@ -410,6 +410,7 @@ export default function ExerciseScreen() {
   const [showResult, setShowResult] = useState(false);
   const [exerciseKey, setExerciseKey] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [errorWords, setErrorWords] = useState<string[]>([]);
 
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -421,9 +422,13 @@ export default function ExerciseScreen() {
     }).start();
   }, [progressAnim]);
 
-  const handleAnswer = useCallback(async (correct: boolean) => {
+  const handleAnswer = useCallback(async (correct: boolean, wordEn?: string) => {
     if (!correct) {
       setWrongCount(w => w + 1);
+      // Guardar la palabra fallida
+      if (wordEn) {
+        setErrorWords(prev => prev.includes(wordEn) ? prev : [...prev, wordEn]);
+      }
       const newHearts = hearts - 1;
       setHearts(newHearts);
       await loseHeart();
@@ -443,13 +448,21 @@ export default function ExerciseScreen() {
       const xpEarned = level?.xp || 10;
       const gemsEarned = wrongCount === 0 ? 5 : 2;
       await completeLevel(levelNum, xpEarned, gemsEarned);
+      // Guardar errores del nivel
+      const finalErrors = errorWords;
+      if (wordEn && !correct && !finalErrors.includes(wordEn)) {
+        finalErrors.push(wordEn);
+      }
+      if (finalErrors.length > 0) {
+        await saveLevelErrors(levelNum, finalErrors);
+      }
     } else {
       animateProgress(next / TOTAL_EXERCISES);
       setCurrentIdx(next);
       setHintUsed(false);
       setExerciseKey(k => k + 1);
     }
-  }, [currentIdx, hearts, wrongCount, level, levelNum, completeLevel, loseHeart, animateProgress]);
+  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, completeLevel, saveLevelErrors, loseHeart, animateProgress]);
 
   const handleHint = useCallback(async () => {
     if (hintUsed) return;
@@ -513,6 +526,14 @@ export default function ExerciseScreen() {
         <TouchableOpacity style={styles.continueBtn} onPress={() => router.back()}>
           <Text style={styles.continueBtnText}>Continuar →</Text>
         </TouchableOpacity>
+        {errorWords.length > 0 && (
+          <TouchableOpacity
+            style={[styles.continueBtn, { backgroundColor: '#FF9500', marginTop: 12 }]}
+            onPress={() => router.push({ pathname: '/review/[levelId]', params: { levelId: String(levelNum) } } as any)}
+          >
+            <Text style={styles.continueBtnText}>🔄 Repasar {errorWords.length} error{errorWords.length > 1 ? 'es' : ''}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }

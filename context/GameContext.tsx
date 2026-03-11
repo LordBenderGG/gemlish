@@ -21,6 +21,7 @@ interface GameContextValue {
   game: GameState;
   updateGame: (patch: Partial<GameState>) => Promise<void>;
   completeLevel: (levelId: number, xpEarned: number, gemsEarned: number) => Promise<void>;
+  saveLevelErrors: (levelId: number, errorWords: string[]) => Promise<void>;
   loseHeart: () => Promise<void>;
   spendGems: (amount: number) => Promise<boolean>;
 
@@ -54,6 +55,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [game, setGame] = useState<GameState>({
     xp: 0, gems: 0, streak: 0, hearts: 5,
     maxUnlockedLevel: 1, levelProgress: {}, lastHeartRefill: new Date().toISOString(),
+    levelErrors: {},
   });
   const [daily, setDaily] = useState<DailyState>({
     lastDailyDate: '', learnedWords: {}, dailyCompleted: false, totalDaysCompleted: 0,
@@ -170,6 +172,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return true;
   }, [username, game]);
 
+  const saveLevelErrors = useCallback(async (levelId: number, errorWords: string[]) => {
+    if (!username) return;
+    const next: GameState = {
+      ...game,
+      levelErrors: { ...game.levelErrors, [levelId]: errorWords },
+    };
+    setGame(next);
+    await saveGameState(username, next);
+  }, [username, game]);
+
   // ─── Tarea Diaria ────────────────────────────────────────────────────────
 
   const resetDailyIfNeeded = useCallback(async () => {
@@ -240,7 +252,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     <GameContext.Provider value={{
       username, isLoading,
       login, register, logout,
-      game, updateGame, completeLevel, loseHeart, spendGems,
+      game, updateGame, completeLevel, saveLevelErrors, loseHeart, spendGems,
       daily, markWordLearned, finishDaily, resetDailyIfNeeded,
       miniGame, addMiniGameTime, winMiniGame,
     }}>

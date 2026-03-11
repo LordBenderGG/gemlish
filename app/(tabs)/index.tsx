@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  StatusBar,
+  StatusBar, Animated,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,22 @@ const TOTAL_LEVELS = 500;
 function StatsHeader({ username, gems, xp, streak }: {
   username: string; gems: number; xp: number; streak: number;
 }) {
+  // Animación de pulso para la racha
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (streak > 0) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.25, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.0, duration: 600, useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [streak, pulseAnim]);
+
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -26,9 +42,12 @@ function StatsHeader({ username, gems, xp, streak }: {
           <Text style={styles.statEmoji}>💎</Text>
           <Text style={styles.statValue}>{gems}</Text>
         </View>
-        <View style={styles.statBadge}>
-          <Text style={styles.statEmoji}>🔥</Text>
-          <Text style={styles.statValue}>{streak}</Text>
+        <View style={[styles.statBadge, streak >= 3 && styles.statBadgeStreak]}>
+          <Animated.Text style={[styles.statEmoji, streak > 0 && { transform: [{ scale: pulseAnim }] }]}>
+            🔥
+          </Animated.Text>
+          <Text style={[styles.statValue, streak >= 3 && styles.statValueStreak]}>{streak}</Text>
+          {streak >= 7 && <Text style={styles.streakLabel}>días</Text>}
         </View>
       </View>
     </View>
@@ -228,4 +247,14 @@ const styles = StyleSheet.create({
   },
   playBtnText: { color: '#FFFFFF', fontSize: 12, marginLeft: 2 },
   lockedText: { fontSize: 18 },
+  statBadgeStreak: {
+    backgroundColor: '#FF6B0022',
+    borderWidth: 1,
+    borderColor: '#FF6B00',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  statValueStreak: { color: '#FF9500' },
+  streakLabel: { fontSize: 9, color: '#FF9500', fontWeight: '600', marginLeft: 2 },
 });

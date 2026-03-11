@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  StatusBar, Alert,
+  StatusBar, Alert, Switch, Modal, FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
+import { useNotifications } from '@/hooks/use-notifications';
 
 // ─── Definición de Logros ─────────────────────────────────────────────────────
 
@@ -27,7 +28,6 @@ interface UserStats {
 }
 
 const ACHIEVEMENTS: Achievement[] = [
-  // Niveles
   { id: 'first_level', emoji: '🎯', title: 'Primer Paso', description: 'Completa tu primer nivel', check: s => s.levelsCompleted >= 1, category: 'levels' },
   { id: 'levels_10', emoji: '🔟', title: 'Diez Niveles', description: 'Completa 10 niveles', check: s => s.levelsCompleted >= 10, category: 'levels' },
   { id: 'levels_25', emoji: '🌟', title: 'Cuarto de Siglo', description: 'Completa 25 niveles', check: s => s.levelsCompleted >= 25, category: 'levels' },
@@ -35,26 +35,21 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'levels_100', emoji: '💯', title: 'Centurión', description: 'Completa 100 niveles', check: s => s.levelsCompleted >= 100, category: 'levels' },
   { id: 'levels_250', emoji: '🥇', title: 'Experto', description: 'Completa 250 niveles', check: s => s.levelsCompleted >= 250, category: 'levels' },
   { id: 'levels_500', emoji: '👑', title: 'Maestro del Inglés', description: '¡Completa los 500 niveles!', check: s => s.levelsCompleted >= 500, category: 'levels' },
-  // Racha
   { id: 'streak_3', emoji: '🔥', title: 'En Racha', description: '3 días seguidos estudiando', check: s => s.streak >= 3, category: 'streak' },
   { id: 'streak_7', emoji: '🔥🔥', title: 'Semana Perfecta', description: '7 días de racha', check: s => s.streak >= 7, category: 'streak' },
   { id: 'streak_30', emoji: '🌙', title: 'Mes de Estudio', description: '30 días de racha', check: s => s.streak >= 30, category: 'streak' },
   { id: 'streak_100', emoji: '⚡', title: 'Imparable', description: '100 días de racha', check: s => s.streak >= 100, category: 'streak' },
-  // Palabras
   { id: 'words_10', emoji: '📖', title: 'Primeras Palabras', description: 'Aprende 10 palabras en tarea diaria', check: s => s.totalWordsLearned >= 10, category: 'words' },
   { id: 'words_50', emoji: '📚', title: 'Vocabulario Básico', description: 'Aprende 50 palabras', check: s => s.totalWordsLearned >= 50, category: 'words' },
   { id: 'words_100', emoji: '🧠', title: 'Mente Brillante', description: 'Aprende 100 palabras', check: s => s.totalWordsLearned >= 100, category: 'words' },
   { id: 'words_300', emoji: '📜', title: 'Políglota', description: 'Aprende 300 palabras', check: s => s.totalWordsLearned >= 300, category: 'words' },
-  // Gemas
   { id: 'gems_50', emoji: '💎', title: 'Coleccionista', description: 'Acumula 50 💎', check: s => s.gems >= 50, category: 'gems' },
   { id: 'gems_100', emoji: '💎💎', title: 'Tesoro', description: 'Acumula 100 💎', check: s => s.gems >= 100, category: 'gems' },
   { id: 'gems_500', emoji: '💰', title: 'Rico en Conocimiento', description: 'Acumula 500 💎', check: s => s.gems >= 500, category: 'gems' },
-  // XP
   { id: 'xp_100', emoji: '⭐', title: 'Primer XP', description: 'Gana 100 XP', check: s => s.xp >= 100, category: 'game' },
   { id: 'xp_500', emoji: '🌠', title: 'Estrella en Ascenso', description: 'Gana 500 XP', check: s => s.xp >= 500, category: 'game' },
   { id: 'xp_1000', emoji: '🚀', title: 'Despegue', description: 'Gana 1,000 XP', check: s => s.xp >= 1000, category: 'game' },
   { id: 'xp_5000', emoji: '🌌', title: 'Leyenda', description: 'Gana 5,000 XP', check: s => s.xp >= 5000, category: 'game' },
-  // Tarea Diaria
   { id: 'daily_1', emoji: '✅', title: 'Primer Día', description: 'Completa la tarea diaria 1 vez', check: s => s.totalDaysCompleted >= 1, category: 'words' },
   { id: 'daily_7', emoji: '🗓️', title: 'Semana Completa', description: 'Completa la tarea diaria 7 veces', check: s => s.totalDaysCompleted >= 7, category: 'words' },
   { id: 'daily_30', emoji: '📅', title: 'Mes de Palabras', description: 'Completa la tarea diaria 30 veces', check: s => s.totalDaysCompleted >= 30, category: 'words' },
@@ -77,6 +72,187 @@ function AchievementCard({ achievement, unlocked }: { achievement: Achievement; 
         </Text>
       </View>
       {unlocked && <Text style={styles.achieveCheck}>✅</Text>}
+    </View>
+  );
+}
+
+// ─── Selector de Hora ─────────────────────────────────────────────────────────
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = [0, 15, 30, 45];
+
+function TimePickerModal({
+  visible,
+  hour,
+  minute,
+  onConfirm,
+  onClose,
+}: {
+  visible: boolean;
+  hour: number;
+  minute: number;
+  onConfirm: (h: number, m: number) => void;
+  onClose: () => void;
+}) {
+  const [selHour, setSelHour] = useState(hour);
+  const [selMin, setSelMin] = useState(minute);
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalBox}>
+          <Text style={styles.modalTitle}>⏰ Hora del Recordatorio</Text>
+          <Text style={styles.modalSubtitle}>Recibirás una notificación diaria a esta hora</Text>
+
+          <View style={styles.pickerRow}>
+            {/* Horas */}
+            <View style={styles.pickerCol}>
+              <Text style={styles.pickerLabel}>Hora</Text>
+              <FlatList
+                data={HOURS}
+                keyExtractor={String}
+                style={styles.pickerList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[styles.pickerItem, selHour === item && styles.pickerItemSelected]}
+                    onPress={() => setSelHour(item)}
+                  >
+                    <Text style={[styles.pickerItemText, selHour === item && styles.pickerItemTextSelected]}>
+                      {String(item).padStart(2, '0')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+
+            <Text style={styles.pickerColon}>:</Text>
+
+            {/* Minutos */}
+            <View style={styles.pickerCol}>
+              <Text style={styles.pickerLabel}>Min</Text>
+              <FlatList
+                data={MINUTES}
+                keyExtractor={String}
+                style={styles.pickerList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[styles.pickerItem, selMin === item && styles.pickerItemSelected]}
+                    onPress={() => setSelMin(item)}
+                  >
+                    <Text style={[styles.pickerItemText, selMin === item && styles.pickerItemTextSelected]}>
+                      {String(item).padStart(2, '0')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+
+          {/* Preview */}
+          <View style={styles.timePreview}>
+            <Text style={styles.timePreviewText}>
+              {String(selHour).padStart(2, '0')}:{String(selMin).padStart(2, '0')} hrs
+            </Text>
+          </View>
+
+          <View style={styles.modalBtns}>
+            <TouchableOpacity style={styles.modalBtnCancel} onPress={onClose}>
+              <Text style={styles.modalBtnCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalBtnConfirm} onPress={() => onConfirm(selHour, selMin)}>
+              <Text style={styles.modalBtnConfirmText}>Guardar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ─── Sección de Notificaciones ────────────────────────────────────────────────
+
+function NotificationsSection() {
+  const { settings, loading, enableNotifications, disableNotifications, updateTime } = useNotifications();
+  const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const formatTime = (h: number, m: number) =>
+    `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} hrs`;
+
+  const handleToggle = useCallback(async (value: boolean) => {
+    if (saving) return;
+    setSaving(true);
+    if (value) {
+      const ok = await enableNotifications(settings.hour, settings.minute);
+      if (!ok) {
+        Alert.alert(
+          '🔔 Permisos necesarios',
+          'Para recibir recordatorios, activa las notificaciones en Configuración del sistema.',
+          [{ text: 'Entendido' }]
+        );
+      }
+    } else {
+      await disableNotifications();
+    }
+    setSaving(false);
+  }, [saving, settings, enableNotifications, disableNotifications]);
+
+  const handleTimeConfirm = useCallback(async (h: number, m: number) => {
+    setShowPicker(false);
+    setSaving(true);
+    await updateTime(h, m);
+    setSaving(false);
+  }, [updateTime]);
+
+  if (loading) return null;
+
+  return (
+    <View style={styles.notifSection}>
+      <Text style={styles.sectionTitle}>🔔 Recordatorio Diario</Text>
+      <View style={styles.notifCard}>
+        {/* Toggle principal */}
+        <View style={styles.notifRow}>
+          <View style={styles.notifRowLeft}>
+            <Text style={styles.notifRowTitle}>Activar recordatorio</Text>
+            <Text style={styles.notifRowSub}>
+              {settings.enabled
+                ? `Recibirás un aviso a las ${formatTime(settings.hour, settings.minute)}`
+                : 'Sin recordatorio configurado'}
+            </Text>
+          </View>
+          <Switch
+            value={settings.enabled}
+            onValueChange={handleToggle}
+            trackColor={{ false: '#2D3148', true: '#8E5AF540' }}
+            thumbColor={settings.enabled ? '#8E5AF5' : '#6B7280'}
+            disabled={saving}
+          />
+        </View>
+
+        {/* Selector de hora (solo visible si está activado) */}
+        {settings.enabled && (
+          <TouchableOpacity style={styles.timeRow} onPress={() => setShowPicker(true)}>
+            <View style={styles.timeRowLeft}>
+              <Text style={styles.timeRowEmoji}>⏰</Text>
+              <View>
+                <Text style={styles.timeRowTitle}>Hora del recordatorio</Text>
+                <Text style={styles.timeRowValue}>{formatTime(settings.hour, settings.minute)}</Text>
+              </View>
+            </View>
+            <Text style={styles.timeRowArrow}>›</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <TimePickerModal
+        visible={showPicker}
+        hour={settings.hour}
+        minute={settings.minute}
+        onConfirm={handleTimeConfirm}
+        onClose={() => setShowPicker(false)}
+      />
     </View>
   );
 }
@@ -152,7 +328,6 @@ export default function ProfileScreen() {
             <Text style={[styles.levelBadgeText, { color: levelTitle.color }]}>{levelTitle.title}</Text>
           </View>
 
-          {/* Barra de progreso del curso */}
           <View style={styles.courseProgress}>
             <View style={styles.courseProgressRow}>
               <Text style={styles.courseProgressLabel}>Progreso del Curso</Text>
@@ -184,6 +359,9 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Notificaciones */}
+        <NotificationsSection />
+
         {/* Logros */}
         <View style={styles.achieveHeader}>
           <Text style={styles.sectionTitle}>🏆 Logros</Text>
@@ -192,7 +370,6 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        {/* Barra de progreso de logros */}
         <View style={styles.achieveProgressBar}>
           <View style={[
             styles.achieveProgressFill,
@@ -200,7 +377,6 @@ export default function ProfileScreen() {
           ]} />
         </View>
 
-        {/* Lista de logros */}
         <View style={styles.achieveList}>
           {ACHIEVEMENTS.map(achievement => (
             <AchievementCard
@@ -265,6 +441,69 @@ const styles = StyleSheet.create({
   statEmoji: { fontSize: 24, marginBottom: 6 },
   statValue: { fontSize: 18, fontWeight: '800', marginBottom: 2 },
   statLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center' },
+  // Notificaciones
+  notifSection: { gap: 10 },
+  notifCard: {
+    backgroundColor: '#1A1D27', borderRadius: 16,
+    borderWidth: 1, borderColor: '#2D3148', overflow: 'hidden',
+  },
+  notifRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    padding: 16,
+  },
+  notifRowLeft: { flex: 1, marginRight: 12 },
+  notifRowTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginBottom: 3 },
+  notifRowSub: { fontSize: 12, color: '#9CA3AF' },
+  timeRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderTopWidth: 1, borderTopColor: '#2D3148',
+  },
+  timeRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  timeRowEmoji: { fontSize: 22 },
+  timeRowTitle: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginBottom: 2 },
+  timeRowValue: { fontSize: 18, fontWeight: '800', color: '#8E5AF5' },
+  timeRowArrow: { fontSize: 24, color: '#6B7280', fontWeight: '300' },
+  // Modal picker
+  modalOverlay: {
+    flex: 1, backgroundColor: '#00000088',
+    justifyContent: 'flex-end',
+  },
+  modalBox: {
+    backgroundColor: '#1A1D27', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 24, paddingBottom: 40,
+  },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', marginBottom: 4 },
+  modalSubtitle: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginBottom: 20 },
+  pickerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  pickerCol: { alignItems: 'center', width: 80 },
+  pickerLabel: { fontSize: 12, color: '#9CA3AF', fontWeight: '600', marginBottom: 8 },
+  pickerList: { height: 180, width: 80 },
+  pickerItem: {
+    height: 44, justifyContent: 'center', alignItems: 'center',
+    borderRadius: 10, marginVertical: 2,
+  },
+  pickerItemSelected: { backgroundColor: '#8E5AF520', borderWidth: 1.5, borderColor: '#8E5AF5' },
+  pickerItemText: { fontSize: 20, fontWeight: '600', color: '#6B7280' },
+  pickerItemTextSelected: { color: '#8E5AF5', fontWeight: '800' },
+  pickerColon: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 20 },
+  timePreview: {
+    alignItems: 'center', marginVertical: 16,
+    backgroundColor: '#0F1117', borderRadius: 14, paddingVertical: 12,
+  },
+  timePreviewText: { fontSize: 32, fontWeight: '800', color: '#8E5AF5', letterSpacing: 2 },
+  modalBtns: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  modalBtnCancel: {
+    flex: 1, paddingVertical: 14, borderRadius: 14,
+    backgroundColor: '#2D3148', alignItems: 'center',
+  },
+  modalBtnCancelText: { color: '#9CA3AF', fontWeight: '700', fontSize: 15 },
+  modalBtnConfirm: {
+    flex: 1, paddingVertical: 14, borderRadius: 14,
+    backgroundColor: '#8E5AF5', alignItems: 'center',
+  },
+  modalBtnConfirmText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
+  // Logros
   achieveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   achieveCount: { fontSize: 14, color: '#FFD700', fontWeight: '700' },
   achieveProgressBar: {

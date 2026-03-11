@@ -16,6 +16,8 @@ export interface GameState {
   maxUnlockedLevel: number;
   levelProgress: Record<number, { completed: boolean; score: number }>;
   lastHeartRefill: string;
+  // Palabras fallidas por nivel: levelId -> array de palabras en inglés
+  levelErrors: Record<number, string[]>;
 }
 
 export interface DailyState {
@@ -109,6 +111,7 @@ const DEFAULT_GAME_STATE: GameState = {
   maxUnlockedLevel: 1,
   levelProgress: {},
   lastHeartRefill: new Date().toISOString(),
+  levelErrors: {},
 };
 
 export async function getGameState(username: string): Promise<GameState> {

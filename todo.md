@@ -81,3 +81,9 @@
 - [x] Notificaciones diarias configurables con expo-notifications
 - [x] Pantalla de detalle de nivel con palabras aprendidas y repaso de pronunciación
 - [x] Expandir vocabulario a 50 lecciones (negocios, viajes, frases cotidianas, phrasal verbs, gramática, idioms)
+
+## v1.6 — Mejoras aprobadas
+- [x] Selector de hora de notificaciones en pantalla de Perfil
+- [x] Modo repaso de errores: guardar palabras fallidas al terminar nivel
+- [x] Pantalla de repaso de errores con tarjetas de palabras fallidas
+- [x] Racha con animación de fuego 🔥 pulsante en el header del mapa de niveles
