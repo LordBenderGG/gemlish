@@ -301,3 +301,10 @@
 - [x] Toggle de recordatorio diario en Configuración no funciona
 - [x] Filtros de categoría (pastillas sin texto) eliminados de la pantalla principal
 - [x] Botones de modo (Repaso Rápido / Solo Escucha / Solo Ordena) amontonados — rediseñar
+
+## v1.34 — Rediseño pantalla principal (segunda iteración)
+- [x] Header con saludo por hora del día, nombre grande y XP prominente
+- [x] Pills de gemas y racha con gradientes azul/rojo
+- [x] Tarjeta del Desafío del día con gradiente morado-violeta y layout vertical
+- [x] Modos de práctica con gradientes únicos (azul, verde, ámbar, rojo) e iconos 32px
+- [x] Tarjetas de nivel más grandes con sombras de color y botón play con glow

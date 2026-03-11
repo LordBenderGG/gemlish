@@ -145,38 +145,45 @@ function FireAnimation({ streak }: { streak: number }) {
 function StatsHeader({ username, gems, xp, streak }: {
   username: string; gems: number; xp: number; streak: number;
 }) {
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? '¡Buenos días' : hour < 18 ? '¡Buenas tardes' : '¡Buenas noches';
+
   return (
     <LinearGradient
-      colors={['#1A0A2E', '#0D0D1F', '#0A0A14']}
+      colors={['#13002B', '#1A0040', '#0D0020']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
       <View style={styles.header}>
+        {/* Izquierda: saludo + nombre */}
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>¡Hola, {username}! 👋</Text>
-          <View style={styles.progressRow}>
-            <Text style={styles.xpText}>⭐ {xp.toLocaleString()} XP</Text>
+          <Text style={styles.greetingTime}>{timeGreeting},</Text>
+          <Text style={styles.greetingName}>{username}! 👋</Text>
+          <View style={styles.xpRow}>
+            <Text style={styles.xpStar}>⭐</Text>
+            <Text style={styles.xpAmount}>{xp.toLocaleString()}</Text>
+            <Text style={styles.xpLabel}> XP</Text>
           </View>
         </View>
+        {/* Derecha: gemas y racha */}
         <View style={styles.headerRight}>
           <LinearGradient
-            colors={['#0891B2', '#22D3EE']}
+            colors={['#0369A1', '#38BDF8']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.statBadgeGradient}
+            style={styles.statPill}
           >
-            <Text style={styles.statEmoji}>💎</Text>
-            <Text style={styles.statValueWhite}>{gems}</Text>
+            <Text style={styles.statPillEmoji}>💎</Text>
+            <Text style={styles.statPillValue}>{gems}</Text>
           </LinearGradient>
           <LinearGradient
-            colors={streak >= 3 ? ['#DC2626', '#F97316'] : ['#2D1B4E', '#3D2B5E']}
+            colors={streak >= 3 ? ['#B91C1C', '#EF4444', '#F97316'] : ['#3B1F6E', '#5B2D9E']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.statBadgeGradient}
+            style={styles.statPill}
           >
             <FireAnimation streak={streak} />
-            <Text style={styles.statValueWhite}>{streak}</Text>
-            {streak >= 7 && <Text style={styles.streakLabel}>d</Text>}
+            <Text style={styles.statPillValue}>{streak}</Text>
           </LinearGradient>
         </View>
       </View>
@@ -559,8 +566,8 @@ export default function LevelsScreen() {
           >
             <LinearGradient
               colors={isCompleted
-                ? ['#064E3B', '#065F46', '#059669']
-                : ['#78350F', '#92400E', '#B45309']}
+                ? ['#064E3B', '#059669', '#10B981']
+                : ['#4C1D95', '#7C3AED', '#A855F7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.challengeGradient}
@@ -572,35 +579,35 @@ export default function LevelsScreen() {
                   pointerEvents="none"
                 />
               )}
-              <View style={styles.challengeLeft}>
-                <View style={styles.challengeIconBgNew}>
-                  <Text style={styles.challengeIcon}>
-                    {isCompleted ? '🏆' : '🎯'}
-                  </Text>
+              {/* Badge superior izquierdo */}
+              <View style={styles.challengeTopRow}>
+                <View style={styles.challengeDayBadge}>
+                  <Text style={styles.challengeDayText}>{isCompleted ? '✅ COMPLETADO' : '🔥 DESAFÍO DEL DÍA'}</Text>
+                </View>
+                {!isCompleted && (
+                  <View style={styles.challengeX2BadgeNew}>
+                    <Text style={styles.challengeX2TextNew}>×2 XP</Text>
+                  </View>
+                )}
+              </View>
+              {/* Cuerpo */}
+              <View style={styles.challengeBody}>
+                <View style={styles.challengeIconCircle}>
+                  <Text style={{ fontSize: 32 }}>{isCompleted ? '🏆' : '🎯'}</Text>
                 </View>
                 <View style={styles.challengeInfo}>
-                  <View style={styles.challengeTitleRow}>
-                    <Text style={styles.challengeLabelNew}>DESAFÍO DEL DÍA</Text>
-                    {!isCompleted && (
-                      <View style={styles.challengeX2BadgeNew}>
-                        <Text style={styles.challengeX2TextNew}>×2 XP</Text>
-                      </View>
-                    )}
-                  </View>
                   <Text style={styles.challengeLevelNameNew} numberOfLines={1}>
                     Nivel {dailyChallenge.levelId}: {challengeLevelData.name}
                   </Text>
                   {isCompleted ? (
-                    <Text style={styles.challengeCompletedTextNew}>✨ ¡Completado! +{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎</Text>
+                    <Text style={styles.challengeCompletedTextNew}>✨ +{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎 ganados</Text>
                   ) : (
                     <Text style={styles.challengeRewardTextNew}>+{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎 al completar</Text>
                   )}
-                  {countdownText ? (
-                    <Text style={styles.challengeCountdownNew}>⏱ {countdownText}</Text>
+                  {!isCompleted && countdownText ? (
+                    <Text style={styles.challengeCountdownNew}>⏱ Expira en {countdownText}</Text>
                   ) : null}
                 </View>
-              </View>
-              <View style={styles.challengeArrowContainer}>
                 <Text style={styles.challengeArrowNew}>{isCompleted ? '✓' : '›'}</Text>
               </View>
             </LinearGradient>
@@ -658,42 +665,29 @@ export default function LevelsScreen() {
       <View style={styles.practiceSection}>
         <Text style={styles.practiceSectionTitle}>Modos de práctica</Text>
         <View style={styles.practiceGrid}>
-          <TouchableOpacity
-            style={styles.practiceTile}
-            onPress={() => router.push('/practice/quick-review' as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.practiceTileEmoji}>⚡</Text>
-            <Text style={styles.practiceTileTitle}>Repaso Rápido</Text>
-            <Text style={styles.practiceTileSub}>10 palabras · 5 min</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.practiceTile}
-            onPress={() => router.push('/practice/listen-mode' as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.practiceTileEmoji}>🎧</Text>
-            <Text style={styles.practiceTileTitle}>Solo Escucha</Text>
-            <Text style={styles.practiceTileSub}>10 ejercicios</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.practiceTile}
-            onPress={() => router.push('/practice/order-mode' as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.practiceTileEmoji}>📝</Text>
-            <Text style={styles.practiceTileTitle}>Solo Ordenar</Text>
-            <Text style={styles.practiceTileSub}>10 ejercicios</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.practiceTile}
-            onPress={() => router.push('/practice/hard-words' as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.practiceTileEmoji}>🔥</Text>
-            <Text style={styles.practiceTileTitle}>Palabras Difíciles</Text>
-            <Text style={styles.practiceTileSub}>Repaso de errores</Text>
-          </TouchableOpacity>
+          {[
+            { emoji: '⚡', title: 'Repaso Rápido', sub: '10 palabras · 5 min', colors: ['#1D4ED8', '#60A5FA'] as [string,string], route: '/practice/quick-review' },
+            { emoji: '🎧', title: 'Solo Escucha', sub: '10 ejercicios', colors: ['#065F46', '#34D399'] as [string,string], route: '/practice/listen-mode' },
+            { emoji: '📝', title: 'Solo Ordenar', sub: '10 ejercicios', colors: ['#78350F', '#FBBF24'] as [string,string], route: '/practice/order-mode' },
+            { emoji: '🔥', title: 'Palabras Difíciles', sub: 'Repaso de errores', colors: ['#7F1D1D', '#F87171'] as [string,string], route: '/practice/hard-words' },
+          ].map((mode) => (
+            <TouchableOpacity
+              key={mode.title}
+              style={styles.practiceTileWrapper}
+              onPress={() => router.push(mode.route as any)}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={mode.colors}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={styles.practiceTileGradient}
+              >
+                <Text style={styles.practiceTileEmojiLg}>{mode.emoji}</Text>
+                <Text style={styles.practiceTileTitle}>{mode.title}</Text>
+                <Text style={styles.practiceTileSub}>{mode.sub}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -754,35 +748,44 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2D3148',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 14,
   },
   headerLeft: { flex: 1 },
+  greetingTime: { fontSize: 13, fontWeight: '500', color: '#A78BFA', letterSpacing: 0.3 },
+  greetingName: { fontSize: 24, fontWeight: '900', color: '#FFFFFF', marginTop: 1, letterSpacing: -0.5 },
+  xpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
+  xpStar: { fontSize: 14 },
+  xpAmount: { fontSize: 16, fontWeight: '800', color: '#FCD34D', marginLeft: 4 },
+  xpLabel: { fontSize: 13, fontWeight: '600', color: '#FCD34D80' },
+  headerRight: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 4 },
+  statPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 5,
+    minWidth: 60,
+    justifyContent: 'center',
+  },
+  statPillEmoji: { fontSize: 15 },
+  statPillValue: { fontSize: 16, fontWeight: '900', color: '#FFFFFF' },
+  // Legacy aliases (keep for backward compat)
   greeting: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
   progressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   xpText: { fontSize: 13, color: '#FFD700', fontWeight: '600' },
-  headerRight: { flexDirection: 'row', gap: 8 },
   statBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1D27',
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: '#2D3148',
-    gap: 4,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#1A1D27', borderRadius: 20,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#2D3148', gap: 4,
   },
   statBadgeGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    gap: 5,
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, gap: 5,
   },
   statEmoji: { fontSize: 14 },
   statValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
@@ -804,76 +807,86 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: '#1E1B3A',
     backgroundColor: '#0D0D1A',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    marginBottom: 6,
-    opacity: 0.5,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 8,
+    opacity: 0.45,
   },
   // Tarjeta completada
   levelCardCompleted: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: '#34D39940',
-    marginBottom: 6,
+    borderColor: '#34D39950',
+    marginBottom: 8,
     overflow: 'hidden',
   },
   // Tarjeta desbloqueada
   levelCardUnlocked: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: '#2D1B5E',
-    marginBottom: 6,
+    borderColor: '#7C3AED60',
+    marginBottom: 8,
     overflow: 'hidden',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   levelCardGradientInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   levelLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   levelIconBgLocked: {
-    width: 44, height: 44, borderRadius: 12,
+    width: 48, height: 48, borderRadius: 14,
     backgroundColor: '#1E1B3A',
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
   levelIconBgCompleted: {
-    width: 44, height: 44, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    width: 48, height: 48, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
   levelIconBgGradient: {
-    width: 44, height: 44, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    width: 48, height: 48, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
-  levelIconText: { fontSize: 22 },
+  levelIconText: { fontSize: 24 },
   levelInfo: { flex: 1 },
-  levelNum: { fontSize: 14, fontWeight: '700' },
-  levelNumLocked: { fontSize: 14, fontWeight: '700', color: '#4B5563' },
-  levelTopic: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+  levelNum: { fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+  levelNumLocked: { fontSize: 15, fontWeight: '700', color: '#4B5563' },
+  levelTopic: { fontSize: 13, fontWeight: '700', marginTop: 2 },
   levelTopicLocked: { fontSize: 12, fontWeight: '500', marginTop: 2, color: '#374151' },
   levelRight: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
   completedRight: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
   completedBadge: { fontSize: 22 },
   completedBadgeGradient: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 38, height: 38, borderRadius: 19,
     justifyContent: 'center', alignItems: 'center',
   },
-  completedBadgeText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  completedBadgeText: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
   playBtn: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 38, height: 38, borderRadius: 19,
     justifyContent: 'center', alignItems: 'center',
   },
   playBtnGradient: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 42, height: 42, borderRadius: 21,
     justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  playBtnText: { color: '#FFFFFF', fontSize: 12, marginLeft: 2 },
-  lockedText: { fontSize: 18 },
+  playBtnText: { color: '#FFFFFF', fontSize: 14, marginLeft: 2 },
+  lockedText: { fontSize: 20 },
   statBadgeStreak: {
     backgroundColor: '#FF6B0022',
     borderWidth: 1,
@@ -927,9 +940,26 @@ const styles = StyleSheet.create({
     borderColor: '#2D3148',
     alignItems: 'flex-start',
   },
+  practiceTileWrapper: {
+    width: '47.5%',
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  practiceTileGradient: {
+    padding: 18,
+    alignItems: 'flex-start',
+    minHeight: 110,
+    justifyContent: 'space-between',
+  },
+  practiceTileEmojiLg: { fontSize: 32, marginBottom: 8 },
   practiceTileEmoji: { fontSize: 26, marginBottom: 8 },
-  practiceTileTitle: { fontSize: 14, fontWeight: '800', color: '#FFFFFF', marginBottom: 2 },
-  practiceTileSub: { fontSize: 11, color: '#8E5AF5', fontWeight: '600' },
+  practiceTileTitle: { fontSize: 14, fontWeight: '900', color: '#FFFFFF', marginBottom: 3, letterSpacing: -0.2 },
+  practiceTileSub: { fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: '600' },
   // Filtro de categorías
   categoryScroll: {
     borderBottomWidth: 1,
@@ -1091,11 +1121,35 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   challengeGradient: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 14,
+  },
+  challengeTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    marginBottom: 10,
+  },
+  challengeDayBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  challengeDayText: {
+    fontSize: 10, fontWeight: '900', color: '#FFFFFF',
+    letterSpacing: 1.2, textTransform: 'uppercase',
+  },
+  challengeBody: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  challengeIconCircle: {
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center',
   },
   challengeCard: {
     flexDirection: 'row',
