@@ -153,3 +153,11 @@
 - [x] Nombre de usuario editable en el Perfil (con migración de datos)
 - [x] Animación de confeti al completar un nivel con puntuación perfecta (componente ConfettiOverlay)
 - [x] Filtro de niveles por tema en el mapa (24 categorías con chips horizontales)
+
+## v1.18 — Mejoras aprobadas
+- [x] Expandir cada nivel de 10 a 20 ejercicios
+- [x] Nuevo tipo de ejercicio: Pronunciación (grabar voz + TTS modelo + autoevaluación)
+- [x] Nuevo tipo de ejercicio: Ordenar oración (chips tocables, 6 palabras)
+- [x] Nuevo tipo de ejercicio: Completar la oración (hueco con 4 opciones)
+- [x] Validación de respuestas escritas sin distinción de mayúsculas ni acentos
+- [x] Actualizar tests para reflejar 20 ejercicios y 7 tipos

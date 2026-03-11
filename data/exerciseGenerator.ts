@@ -1,6 +1,13 @@
 import { getLevelData, getAllWords, getLevelIcon, Word } from './lessons';
 
-export type ExerciseType = 'multiple-choice' | 'translate' | 'match-pairs' | 'listen-write';
+export type ExerciseType =
+  | 'multiple-choice'
+  | 'translate'
+  | 'match-pairs'
+  | 'listen-write'
+  | 'pronunciation'
+  | 'sentence-order'
+  | 'fill-blank';
 
 export interface MultipleChoiceExercise {
   type: 'multiple-choice';
@@ -39,7 +46,49 @@ export interface ListenWriteExercise {
   hint: string;
 }
 
-export type Exercise = MultipleChoiceExercise | TranslateExercise | MatchPairsExercise | ListenWriteExercise;
+// Nuevo: ejercicio de pronunciación
+export interface PronunciationExercise {
+  type: 'pronunciation';
+  question: string;
+  questionEs: string;
+  wordToSpeak: string;      // palabra/frase en inglés para pronunciar
+  pronunciation: string;    // notación fonética /IPA/
+  translation: string;      // traducción al español
+  example: string;          // oración de ejemplo en inglés
+  exampleEs: string;        // oración de ejemplo en español
+}
+
+// Nuevo: ordenar oración
+export interface SentenceOrderExercise {
+  type: 'sentence-order';
+  question: string;
+  questionEs: string;
+  words: string[];          // palabras en orden correcto
+  shuffledWords: string[];  // palabras mezcladas para mostrar al usuario
+  sentence: string;         // oración completa correcta
+}
+
+// Nuevo: completar la oración
+export interface FillBlankExercise {
+  type: 'fill-blank';
+  question: string;
+  questionEs: string;
+  sentenceBefore: string;   // parte antes del hueco
+  sentenceAfter: string;    // parte después del hueco
+  options: string[];        // 4 opciones de respuesta
+  correct: number;          // índice de la opción correcta
+  correctAnswer: string;    // respuesta correcta
+  fullSentence: string;     // oración completa para mostrar al verificar
+}
+
+export type Exercise =
+  | MultipleChoiceExercise
+  | TranslateExercise
+  | MatchPairsExercise
+  | ListenWriteExercise
+  | PronunciationExercise
+  | SentenceOrderExercise
+  | FillBlankExercise;
 
 export interface Level {
   id: number;
@@ -64,6 +113,72 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
+// Genera una oración de ejemplo para ordenar usando el ejemplo de la palabra
+function buildSentenceOrderExercise(word: Word): SentenceOrderExercise {
+  // Usar el ejemplo de la palabra (en inglés) como oración a ordenar
+  const sentence = word.example;
+  // Dividir en palabras (sin puntuación al final)
+  const cleanSentence = sentence.replace(/[.,!?;:]$/, '');
+  const words = cleanSentence.split(' ').filter(w => w.length > 0);
+  const shuffledWords = shuffleArray([...words]);
+
+  return {
+    type: 'sentence-order',
+    question: 'Ordena las palabras para formar una oración:',
+    questionEs: `Ordena las palabras para formar la oración en inglés:`,
+    words,
+    shuffledWords,
+    sentence: cleanSentence,
+  };
+}
+
+// Genera un ejercicio de completar la oración
+function buildFillBlankExercise(
+  word: Word,
+  wrongWords: Word[]
+): FillBlankExercise {
+  // Usar el ejemplo de la palabra y reemplazar la palabra clave con un hueco
+  const sentence = word.example.replace(/[.,!?;:]$/, '');
+  const wordLower = word.word.toLowerCase();
+
+  // Buscar la palabra en la oración (case insensitive)
+  const regex = new RegExp(`\\b${word.word}\\b`, 'i');
+  const match = sentence.match(regex);
+
+  let sentenceBefore = '';
+  let sentenceAfter = '';
+
+  if (match && match.index !== undefined) {
+    sentenceBefore = sentence.substring(0, match.index);
+    sentenceAfter = sentence.substring(match.index + match[0].length);
+  } else {
+    // Si no se encuentra la palabra exacta, poner el hueco al final
+    sentenceBefore = sentence + ' ';
+    sentenceAfter = '';
+  }
+
+  // Opciones: la correcta + 3 incorrectas
+  const wrongOptions = shuffleArray(wrongWords.slice(0, 6))
+    .filter(w => w.word.toLowerCase() !== wordLower)
+    .slice(0, 3)
+    .map(w => w.word);
+
+  const allOptions = shuffleArray([word.word, ...wrongOptions]);
+  const correctIdx = allOptions.indexOf(word.word);
+
+  return {
+    type: 'fill-blank',
+    question: 'Completa la oración:',
+    questionEs: 'Elige la palabra correcta para completar la oración:',
+    sentenceBefore: sentenceBefore.trim(),
+    sentenceAfter: sentenceAfter.trim(),
+    options: allOptions,
+    correct: correctIdx,
+    correctAnswer: word.word,
+    fullSentence: sentence,
+  };
+}
+
 export function generateLevel(levelNum: number): Level | null {
   const levelData = getLevelData(levelNum);
   if (!levelData) return null;
@@ -77,6 +192,8 @@ export function generateLevel(levelNum: number): Level | null {
   const shuffled = shuffleArray([...words]);
 
   const exercises: Exercise[] = [];
+
+  // ── BLOQUE 1: Ejercicios 1-10 (tipos existentes) ─────────────────────────
 
   // Ejercicio 1: Opción múltiple — significado
   const w1 = shuffled[0];
@@ -194,6 +311,78 @@ export function generateLevel(levelNum: number): Level | null {
     answerAlt: removeAccents(w10.word.toLowerCase()),
     correctAnswer: w10.word,
     hint: w10.word,
+  });
+
+  // ── BLOQUE 2: Ejercicios 11-20 (nuevos tipos) ────────────────────────────
+
+  // Ejercicio 11: Pronunciación
+  const wp1 = shuffled[0];
+  exercises.push({
+    type: 'pronunciation',
+    question: 'Practica tu pronunciación:',
+    questionEs: 'Lee en voz alta y graba tu pronunciación:',
+    wordToSpeak: wp1.word,
+    pronunciation: wp1.pronunciation,
+    translation: wp1.translation,
+    example: wp1.example,
+    exampleEs: wp1.exampleEs,
+  });
+
+  // Ejercicio 12: Ordenar oración
+  exercises.push(buildSentenceOrderExercise(shuffled[1]));
+
+  // Ejercicio 13: Completar la oración
+  exercises.push(buildFillBlankExercise(shuffled[2], shuffledWrong));
+
+  // Ejercicio 14: Pronunciación
+  const wp2 = shuffled[3];
+  exercises.push({
+    type: 'pronunciation',
+    question: 'Practica tu pronunciación:',
+    questionEs: 'Lee en voz alta y graba tu pronunciación:',
+    wordToSpeak: wp2.word,
+    pronunciation: wp2.pronunciation,
+    translation: wp2.translation,
+    example: wp2.example,
+    exampleEs: wp2.exampleEs,
+  });
+
+  // Ejercicio 15: Ordenar oración
+  exercises.push(buildSentenceOrderExercise(shuffled[4]));
+
+  // Ejercicio 16: Completar la oración
+  exercises.push(buildFillBlankExercise(shuffled[5], shuffledWrong));
+
+  // Ejercicio 17: Pronunciación
+  const wp3 = shuffled[6];
+  exercises.push({
+    type: 'pronunciation',
+    question: 'Practica tu pronunciación:',
+    questionEs: 'Lee en voz alta y graba tu pronunciación:',
+    wordToSpeak: wp3.word,
+    pronunciation: wp3.pronunciation,
+    translation: wp3.translation,
+    example: wp3.example,
+    exampleEs: wp3.exampleEs,
+  });
+
+  // Ejercicio 18: Ordenar oración
+  exercises.push(buildSentenceOrderExercise(shuffled[7]));
+
+  // Ejercicio 19: Completar la oración
+  exercises.push(buildFillBlankExercise(shuffled[8], shuffledWrong));
+
+  // Ejercicio 20: Pronunciación final (con oración de ejemplo)
+  const wpFinal = shuffled[9] || shuffled[0];
+  exercises.push({
+    type: 'pronunciation',
+    question: 'Pronunciación final del nivel:',
+    questionEs: 'Pronuncia la oración completa del nivel:',
+    wordToSpeak: wpFinal.example,
+    pronunciation: wpFinal.pronunciation,
+    translation: wpFinal.exampleEs,
+    example: wpFinal.example,
+    exampleEs: wpFinal.exampleEs,
   });
 
   return {

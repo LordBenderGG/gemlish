@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, TextInput,
-  ScrollView, Alert, Animated, StatusBar,
+  ScrollView, Alert, Animated, StatusBar, Platform,
 } from 'react-native';
 import { ConfettiOverlay } from '@/components/confetti-overlay';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,10 +18,33 @@ import {
   TranslateExercise,
   MatchPairsExercise,
   ListenWriteExercise,
+  PronunciationExercise,
+  SentenceOrderExercise,
+  FillBlankExercise,
 } from '@/data/exerciseGenerator';
+import {
+  useAudioRecorder,
+  useAudioRecorderState,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  createAudioPlayer,
+} from 'expo-audio';
 
-const TOTAL_EXERCISES = 10;
+const TOTAL_EXERCISES = 20;
 const HINT_COST = 10;
+
+// ─── Normalizar respuestas (sin mayúsculas ni acentos) ──────────────────────
+
+function normalizeAnswer(str: string): string {
+  return str
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // quitar acentos
+    .replace(/[^a-z0-9\s]/g, '')     // quitar puntuación
+    .replace(/\s+/g, ' ');           // colapsar espacios
+}
 
 // ─── Opción Múltiple ─────────────────────────────────────────────────────────
 
@@ -78,16 +101,6 @@ function MultipleChoiceView({
 }
 
 // ─── Traducción ──────────────────────────────────────────────────────────────
-
-function normalizeAnswer(str: string): string {
-  return str
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // quitar acentos
-    .replace(/[^a-z0-9\s]/g, '')     // quitar puntuación
-    .replace(/\s+/g, ' ');           // colapsar espacios
-}
 
 function TranslateView({
   exercise,
@@ -167,21 +180,16 @@ function MatchPairsView({
 }) {
   const pairs = exercise.pairs;
 
-  // Columna izquierda: palabras en inglés (mezcladas)
   const leftItems = useMemo(() => {
     return [...pairs.map(p => p.left)].sort(() => Math.random() - 0.5);
   }, []);
 
-  // Columna derecha: traducciones (mezcladas independientemente)
   const rightItems = useMemo(() => {
     return [...pairs.map(p => p.right)].sort(() => Math.random() - 0.5);
   }, []);
 
-  // selectedLeft: índice en leftItems del ítem seleccionado
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
-  // connectedPairs: { leftIdx, rightIdx } pares correctamente conectados
   const [connectedPairs, setConnectedPairs] = useState<{ leftIdx: number; rightIdx: number }[]>([]);
-  // wrongFlash: índices que parpadean en rojo
   const [wrongLeft, setWrongLeft] = useState<number | null>(null);
   const [wrongRight, setWrongRight] = useState<number | null>(null);
 
@@ -200,7 +208,6 @@ function MatchPairsView({
     const leftWord = leftItems[selectedLeft];
     const rightWord = rightItems[rIdx];
 
-    // Buscar si el par es correcto (el left y right pertenecen al mismo par original)
     const isCorrectPair = pairs.some(
       p => p.left === leftWord && p.right === rightWord
     );
@@ -213,7 +220,6 @@ function MatchPairsView({
         setTimeout(() => onAnswer(true), 500);
       }
     } else {
-      // Flash rojo y deseleccionar
       setWrongLeft(selectedLeft);
       setWrongRight(rIdx);
       setTimeout(() => {
@@ -231,7 +237,6 @@ function MatchPairsView({
       <Text style={styles.matchHint}>Toca una palabra en inglés y luego su traducción</Text>
 
       <View style={styles.matchGrid}>
-        {/* Columna izquierda — inglés */}
         <View style={styles.matchColumn}>
           <Text style={styles.matchColHeader}>🇺🇸 Inglés</Text>
           {leftItems.map((word, idx) => {
@@ -265,7 +270,6 @@ function MatchPairsView({
           })}
         </View>
 
-        {/* Columna derecha — español */}
         <View style={styles.matchColumn}>
           <Text style={styles.matchColHeader}>🇪🇸 Español</Text>
           {rightItems.map((word, rIdx) => {
@@ -324,7 +328,6 @@ function ListenWriteView({
     toggle(exercise.wordToSpeak);
   }, [exercise.wordToSpeak, toggle]);
 
-  // Pronunciar automáticamente al montar
   useEffect(() => {
     const timer = setTimeout(() => {
       speak(exercise.wordToSpeak);
@@ -399,6 +402,416 @@ function ListenWriteView({
   );
 }
 
+// ─── Pronunciación ───────────────────────────────────────────────────────────
+
+function PronunciationView({
+  exercise,
+  onAnswer,
+}: {
+  exercise: PronunciationExercise;
+  onAnswer: (correct: boolean) => void;
+}) {
+  const { speaking, speak, toggle } = useSpeech();
+  const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'recorded'>('idle');
+  const [recordedUri, setRecordedUri] = useState<string | null>(null);
+  const [isPlayingBack, setIsPlayingBack] = useState(false);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [completed, setCompleted] = useState(false);
+
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder);
+
+  // Pedir permisos al montar
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS === 'web') {
+        setPermissionGranted(true);
+        return;
+      }
+      try {
+        await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
+        const status = await requestRecordingPermissionsAsync();
+        setPermissionGranted(status.granted);
+      } catch {
+        setPermissionGranted(false);
+      }
+    })();
+  }, []);
+
+  const handleListenModel = useCallback(() => {
+    toggle(exercise.wordToSpeak);
+  }, [exercise.wordToSpeak, toggle]);
+
+  const handleStartRecording = async () => {
+    if (recordingState === 'recording') return;
+    try {
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
+      setRecordingState('recording');
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo iniciar la grabación. Verifica los permisos del micrófono.');
+    }
+  };
+
+  const handleStopRecording = async () => {
+    if (recordingState !== 'recording') return;
+    try {
+      await audioRecorder.stop();
+      const uri = audioRecorder.uri;
+      setRecordedUri(uri);
+      setRecordingState('recorded');
+    } catch (e) {
+      setRecordingState('idle');
+    }
+  };
+
+  const handlePlayback = async () => {
+    if (!recordedUri || isPlayingBack) return;
+    try {
+      setIsPlayingBack(true);
+      const player = createAudioPlayer({ uri: recordedUri });
+      player.play();
+      // Estimar duración y limpiar
+      setTimeout(() => {
+        player.remove();
+        setIsPlayingBack(false);
+      }, 5000);
+    } catch {
+      setIsPlayingBack(false);
+    }
+  };
+
+  const handleComplete = () => {
+    setCompleted(true);
+    // La pronunciación siempre cuenta como correcta (autoevaluación)
+    setTimeout(() => onAnswer(true), 600);
+  };
+
+  const handleSkip = () => {
+    // Si no hay micrófono disponible, permitir saltar
+    setTimeout(() => onAnswer(true), 300);
+  };
+
+  if (permissionGranted === false) {
+    return (
+      <View style={styles.exerciseContainer}>
+        <Text style={styles.questionLabel}>🎙 Pronunciación</Text>
+        <Text style={styles.questionText}>{exercise.wordToSpeak}</Text>
+        <Text style={styles.pronunciationPhonetic}>{exercise.pronunciation}</Text>
+        <Text style={styles.pronunciationTranslation}>"{exercise.translation}"</Text>
+
+        <View style={styles.pronunciationExampleBox}>
+          <Text style={styles.pronunciationExampleEn}>{exercise.example}</Text>
+          <Text style={styles.pronunciationExampleEs}>{exercise.exampleEs}</Text>
+        </View>
+
+        <TouchableOpacity style={styles.listenBtn} onPress={handleListenModel} activeOpacity={0.8}>
+          <Text style={styles.listenBtnEmoji}>{speaking ? '⏹' : '🔊'}</Text>
+          <Text style={styles.listenBtnText}>{speaking ? 'Reproduciendo...' : 'Escuchar modelo'}</Text>
+        </TouchableOpacity>
+
+        <View style={styles.noMicBox}>
+          <Text style={styles.noMicText}>⚠️ Sin acceso al micrófono</Text>
+          <Text style={styles.noMicSubtext}>Practica en voz alta y continúa</Text>
+        </View>
+
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSkip}>
+          <Text style={styles.submitBtnText}>Continuar →</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.exerciseContainer}>
+      <Text style={styles.questionLabel}>🎙 Pronunciación</Text>
+
+      {/* Palabra principal */}
+      <Text style={styles.pronunciationWord}>{exercise.wordToSpeak}</Text>
+      <Text style={styles.pronunciationPhonetic}>{exercise.pronunciation}</Text>
+      <Text style={styles.pronunciationTranslation}>"{exercise.translation}"</Text>
+
+      {/* Ejemplo */}
+      <View style={styles.pronunciationExampleBox}>
+        <Text style={styles.pronunciationExampleEn}>{exercise.example}</Text>
+        <Text style={styles.pronunciationExampleEs}>{exercise.exampleEs}</Text>
+      </View>
+
+      {/* Botón escuchar modelo */}
+      <TouchableOpacity
+        style={[styles.listenBtn, speaking && styles.listenBtnActive]}
+        onPress={handleListenModel}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.listenBtnEmoji}>{speaking ? '⏹' : '🔊'}</Text>
+        <Text style={styles.listenBtnText}>
+          {speaking ? 'Reproduciendo modelo...' : '▶ Escuchar modelo'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Botón grabar */}
+      {!completed && (
+        <TouchableOpacity
+          style={[
+            styles.recordBtn,
+            recordingState === 'recording' && styles.recordBtnActive,
+            recordingState === 'recorded' && styles.recordBtnDone,
+          ]}
+          onPress={recordingState === 'recording' ? handleStopRecording : handleStartRecording}
+          activeOpacity={0.8}
+          disabled={permissionGranted === null}
+        >
+          <Text style={styles.recordBtnEmoji}>
+            {recordingState === 'recording' ? '⏹' : recordingState === 'recorded' ? '✅' : '🎙'}
+          </Text>
+          <Text style={styles.recordBtnText}>
+            {recordingState === 'recording'
+              ? 'Grabando... (toca para parar)'
+              : recordingState === 'recorded'
+              ? 'Grabación guardada'
+              : 'Grabar mi pronunciación'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Botón reproducir grabación */}
+      {recordingState === 'recorded' && !completed && (
+        <TouchableOpacity
+          style={[styles.playbackBtn, isPlayingBack && styles.playbackBtnActive]}
+          onPress={handlePlayback}
+          activeOpacity={0.8}
+          disabled={isPlayingBack}
+        >
+          <Text style={styles.playbackBtnText}>
+            {isPlayingBack ? '🔈 Reproduciendo...' : '▶ Escuchar mi grabación'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Botón completar */}
+      {(recordingState === 'recorded' || recordingState === 'idle') && !completed && (
+        <TouchableOpacity
+          style={[styles.submitBtn, { marginTop: 16 }]}
+          onPress={handleComplete}
+        >
+          <Text style={styles.submitBtnText}>
+            {recordingState === 'recorded' ? '✅ ¡Lo hice bien! Continuar' : 'Continuar sin grabar →'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {completed && (
+        <View style={styles.pronunciationDone}>
+          <Text style={styles.pronunciationDoneText}>¡Excelente práctica! 🎉</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ─── Ordenar Oración ─────────────────────────────────────────────────────────
+
+function SentenceOrderView({
+  exercise,
+  onAnswer,
+}: {
+  exercise: SentenceOrderExercise;
+  onAnswer: (correct: boolean) => void;
+}) {
+  const [availableWords, setAvailableWords] = useState<string[]>(exercise.shuffledWords);
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const handleSelectWord = (word: string, idx: number) => {
+    if (submitted) return;
+    const newAvailable = [...availableWords];
+    newAvailable.splice(idx, 1);
+    setAvailableWords(newAvailable);
+    setSelectedWords(prev => [...prev, word]);
+  };
+
+  const handleRemoveWord = (word: string, idx: number) => {
+    if (submitted) return;
+    const newSelected = [...selectedWords];
+    newSelected.splice(idx, 1);
+    setSelectedWords(newSelected);
+    setAvailableWords(prev => [...prev, word]);
+  };
+
+  const handleVerify = () => {
+    if (selectedWords.length === 0 || submitted) return;
+    const userSentence = normalizeAnswer(selectedWords.join(' '));
+    const correctSentence = normalizeAnswer(exercise.sentence);
+    const correct = userSentence === correctSentence;
+    setIsCorrect(correct);
+    setSubmitted(true);
+    setTimeout(() => onAnswer(correct), 1200);
+  };
+
+  const handleReset = () => {
+    if (submitted) return;
+    setAvailableWords(exercise.shuffledWords);
+    setSelectedWords([]);
+  };
+
+  return (
+    <View style={styles.exerciseContainer}>
+      <Text style={styles.questionLabel}>📝 Ordena la oración:</Text>
+      <Text style={styles.questionText}>{exercise.questionEs}</Text>
+
+      {/* Área de oración construida */}
+      <View style={styles.sentenceBuilderArea}>
+        {selectedWords.length === 0 ? (
+          <Text style={styles.sentencePlaceholder}>Toca las palabras para ordenarlas aquí...</Text>
+        ) : (
+          <View style={styles.sentenceWordRow}>
+            {selectedWords.map((word, idx) => (
+              <TouchableOpacity
+                key={`sel-${idx}-${word}`}
+                style={[
+                  styles.sentenceChip,
+                  styles.sentenceChipSelected,
+                  submitted && (isCorrect ? styles.sentenceChipCorrect : styles.sentenceChipWrong),
+                ]}
+                onPress={() => handleRemoveWord(word, idx)}
+                disabled={submitted}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  styles.sentenceChipText,
+                  submitted && (isCorrect ? { color: '#58CC02' } : { color: '#FF4B4B' }),
+                ]}>
+                  {word}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Separador */}
+      <View style={styles.sentenceDivider} />
+
+      {/* Palabras disponibles */}
+      <View style={styles.sentenceWordRow}>
+        {availableWords.map((word, idx) => (
+          <TouchableOpacity
+            key={`avail-${idx}-${word}`}
+            style={styles.sentenceChip}
+            onPress={() => handleSelectWord(word, idx)}
+            disabled={submitted}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.sentenceChipText}>{word}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Feedback */}
+      {submitted && (
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#58CC02' : '#FF4B4B', marginTop: 16 }]}>
+          {isCorrect
+            ? '¡Correcto! ✅'
+            : `Oración correcta: "${exercise.sentence}" ❌`}
+        </Text>
+      )}
+
+      {/* Botones */}
+      {!submitted && (
+        <View style={styles.sentenceButtonRow}>
+          <TouchableOpacity
+            style={styles.resetBtn}
+            onPress={handleReset}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.resetBtnText}>↺ Reiniciar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.submitBtn, { flex: 1 }, selectedWords.length === 0 && styles.submitBtnDisabled]}
+            onPress={handleVerify}
+            disabled={selectedWords.length === 0}
+          >
+            <Text style={styles.submitBtnText}>Verificar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ─── Completar la Oración ────────────────────────────────────────────────────
+
+function FillBlankView({
+  exercise,
+  onAnswer,
+}: {
+  exercise: FillBlankExercise;
+  onAnswer: (correct: boolean) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answered, setAnswered] = useState(false);
+
+  const handleSelect = (idx: number) => {
+    if (answered) return;
+    setSelected(idx);
+    setAnswered(true);
+    const correct = idx === exercise.correct;
+    setTimeout(() => onAnswer(correct), 900);
+  };
+
+  return (
+    <View style={styles.exerciseContainer}>
+      <Text style={styles.questionLabel}>✏️ Completa la oración:</Text>
+      <Text style={styles.questionText}>{exercise.questionEs}</Text>
+
+      {/* Oración con hueco */}
+      <View style={styles.fillSentenceBox}>
+        <Text style={styles.fillSentenceText}>
+          {exercise.sentenceBefore}
+          <Text style={styles.fillBlank}>
+            {answered ? ` ${exercise.options[selected!]} ` : ' _____ '}
+          </Text>
+          {exercise.sentenceAfter}
+        </Text>
+      </View>
+
+      {/* Opciones */}
+      <View style={styles.fillOptionsGrid}>
+        {exercise.options.map((opt, idx) => {
+          let bg = '#1A1D27';
+          let border = '#2D3148';
+          let textColor = '#FFFFFF';
+          if (answered) {
+            if (idx === exercise.correct) { bg = '#1A3A1A'; border = '#58CC02'; textColor = '#58CC02'; }
+            else if (idx === selected) { bg = '#3A1A1A'; border = '#FF4B4B'; textColor = '#FF4B4B'; }
+          } else if (selected === idx) {
+            bg = '#1A2A3A'; border = '#1CB0F6';
+          }
+          return (
+            <TouchableOpacity
+              key={idx}
+              style={[styles.fillOptionBtn, { backgroundColor: bg, borderColor: border }]}
+              onPress={() => handleSelect(idx)}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.fillOptionText, { color: textColor }]}>{opt}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {answered && (
+        <Text style={[styles.feedbackText, { color: selected === exercise.correct ? '#58CC02' : '#FF4B4B', marginTop: 8 }]}>
+          {selected === exercise.correct
+            ? '¡Correcto! ✅'
+            : `Respuesta correcta: "${exercise.correctAnswer}" ❌`}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 // ─── Pantalla Principal ───────────────────────────────────────────────────────
 
 export default function ExerciseScreen() {
@@ -432,7 +845,6 @@ export default function ExerciseScreen() {
   }, [progressAnim]);
 
   const handleAnswer = useCallback(async (correct: boolean, wordEn?: string) => {
-    // Reproducir sonido de feedback inmediatamente
     if (correct) {
       playCorrect();
     } else {
@@ -440,7 +852,6 @@ export default function ExerciseScreen() {
     }
     if (!correct) {
       setWrongCount(w => w + 1);
-      // Guardar la palabra fallida
       if (wordEn) {
         setErrorWords(prev => prev.includes(wordEn) ? prev : [...prev, wordEn]);
       }
@@ -464,7 +875,6 @@ export default function ExerciseScreen() {
       const xpEarned = level?.xp || 10;
       const gemsEarned = wrongCount === 0 ? 5 : 2;
       await completeLevel(levelNum, xpEarned, gemsEarned);
-      // Verificar logros desbloqueados
       if (username) {
         const levelsCompleted = Object.values(game.levelProgress).filter(p => p.completed).length + 1;
         await checkAchievements(username, {
@@ -477,7 +887,6 @@ export default function ExerciseScreen() {
           practiceSessionsCompleted: 0,
         });
       }
-      // Guardar errores del nivel
       const finalErrors = errorWords;
       if (wordEn && !correct && !finalErrors.includes(wordEn)) {
         finalErrors.push(wordEn);
@@ -634,6 +1043,27 @@ export default function ExerciseScreen() {
             hintUsed={hintUsed}
           />
         )}
+        {exercise.type === 'pronunciation' && (
+          <PronunciationView
+            key={exerciseKey}
+            exercise={exercise as PronunciationExercise}
+            onAnswer={handleAnswer}
+          />
+        )}
+        {exercise.type === 'sentence-order' && (
+          <SentenceOrderView
+            key={exerciseKey}
+            exercise={exercise as SentenceOrderExercise}
+            onAnswer={handleAnswer}
+          />
+        )}
+        {exercise.type === 'fill-blank' && (
+          <FillBlankView
+            key={exerciseKey}
+            exercise={exercise as FillBlankExercise}
+            onAnswer={handleAnswer}
+          />
+        )}
       </ScrollView>
     </View>
   );
@@ -728,6 +1158,119 @@ const styles = StyleSheet.create({
   listenBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#1CB0F6' },
   listenBtnEmoji: { fontSize: 32 },
   listenBtnText: { fontSize: 16, fontWeight: '700', color: '#1CB0F6' },
+  // Pronunciación
+  pronunciationWord: {
+    fontSize: 36, fontWeight: '800', color: '#FFFFFF',
+    textAlign: 'center', marginBottom: 8,
+  },
+  pronunciationPhonetic: {
+    fontSize: 18, color: '#1CB0F6', textAlign: 'center',
+    marginBottom: 6, fontStyle: 'italic',
+  },
+  pronunciationTranslation: {
+    fontSize: 16, color: '#9CA3AF', textAlign: 'center',
+    marginBottom: 20,
+  },
+  pronunciationExampleBox: {
+    backgroundColor: '#1A1D27', borderRadius: 12, padding: 16,
+    marginBottom: 20, borderWidth: 1, borderColor: '#2D3148',
+  },
+  pronunciationExampleEn: {
+    fontSize: 15, color: '#FFFFFF', fontWeight: '600',
+    marginBottom: 6, lineHeight: 22,
+  },
+  pronunciationExampleEs: {
+    fontSize: 13, color: '#9CA3AF', fontStyle: 'italic', lineHeight: 20,
+  },
+  recordBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    backgroundColor: '#FF4B4B20', borderRadius: 16, padding: 20, marginBottom: 12,
+    borderWidth: 2, borderColor: '#FF4B4B60',
+  },
+  recordBtnActive: {
+    backgroundColor: '#FF4B4B40', borderColor: '#FF4B4B',
+  },
+  recordBtnDone: {
+    backgroundColor: '#58CC0220', borderColor: '#58CC0260',
+  },
+  recordBtnEmoji: { fontSize: 28 },
+  recordBtnText: { fontSize: 15, fontWeight: '700', color: '#FF6B6B' },
+  playbackBtn: {
+    backgroundColor: '#8E5AF520', borderRadius: 12, padding: 14,
+    alignItems: 'center', marginBottom: 12,
+    borderWidth: 2, borderColor: '#8E5AF560',
+  },
+  playbackBtnActive: { backgroundColor: '#8E5AF540', borderColor: '#8E5AF5' },
+  playbackBtnText: { fontSize: 15, fontWeight: '600', color: '#8E5AF5' },
+  noMicBox: {
+    backgroundColor: '#FF9500' + '20', borderRadius: 12, padding: 16,
+    marginBottom: 16, borderWidth: 1, borderColor: '#FF9500' + '40',
+    alignItems: 'center',
+  },
+  noMicText: { fontSize: 15, fontWeight: '700', color: '#FF9500', marginBottom: 4 },
+  noMicSubtext: { fontSize: 13, color: '#9CA3AF' },
+  pronunciationDone: {
+    backgroundColor: '#58CC0220', borderRadius: 12, padding: 16,
+    alignItems: 'center', marginTop: 16,
+  },
+  pronunciationDoneText: { fontSize: 18, fontWeight: '700', color: '#58CC02' },
+  // Ordenar oración
+  sentenceBuilderArea: {
+    minHeight: 80, backgroundColor: '#1A1D27', borderRadius: 12,
+    borderWidth: 2, borderColor: '#2D3148', padding: 12,
+    marginBottom: 16, justifyContent: 'center',
+  },
+  sentencePlaceholder: {
+    color: '#6B7280', fontSize: 14, textAlign: 'center', fontStyle: 'italic',
+  },
+  sentenceWordRow: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12,
+  },
+  sentenceChip: {
+    backgroundColor: '#2D3148', borderRadius: 10, paddingHorizontal: 14,
+    paddingVertical: 10, borderWidth: 2, borderColor: '#3D4168',
+  },
+  sentenceChipSelected: {
+    backgroundColor: '#1A2A3A', borderColor: '#1CB0F6',
+  },
+  sentenceChipCorrect: {
+    backgroundColor: '#1A3A1A', borderColor: '#58CC02',
+  },
+  sentenceChipWrong: {
+    backgroundColor: '#3A1A1A', borderColor: '#FF4B4B',
+  },
+  sentenceChipText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  sentenceDivider: {
+    height: 1, backgroundColor: '#2D3148', marginVertical: 8,
+  },
+  sentenceButtonRow: {
+    flexDirection: 'row', gap: 12, marginTop: 16,
+  },
+  resetBtn: {
+    backgroundColor: '#1A1D27', borderRadius: 12, padding: 16,
+    alignItems: 'center', borderWidth: 1, borderColor: '#2D3148',
+    paddingHorizontal: 20,
+  },
+  resetBtnText: { color: '#9CA3AF', fontSize: 15, fontWeight: '600' },
+  // Completar la oración
+  fillSentenceBox: {
+    backgroundColor: '#1A1D27', borderRadius: 12, padding: 16,
+    marginBottom: 20, borderWidth: 1, borderColor: '#2D3148',
+  },
+  fillSentenceText: {
+    fontSize: 18, color: '#FFFFFF', lineHeight: 28, fontWeight: '500',
+  },
+  fillBlank: {
+    color: '#1CB0F6', fontWeight: '800', textDecorationLine: 'underline',
+  },
+  fillOptionsGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 10,
+  },
+  fillOptionBtn: {
+    borderRadius: 12, borderWidth: 2, padding: 14,
+    minWidth: '45%', alignItems: 'center', flex: 1,
+  },
+  fillOptionText: { fontSize: 16, fontWeight: '600' },
   // Resultado
   resultContainer: { justifyContent: 'center', alignItems: 'center', padding: 32 },
   resultEmoji: { fontSize: 80, marginBottom: 16 },
