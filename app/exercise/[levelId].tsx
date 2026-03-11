@@ -9,6 +9,7 @@ import Reanimated, {
   withRepeat,
   withTiming,
   withSequence,
+  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { ConfettiOverlay } from '@/components/confetti-overlay';
@@ -615,6 +616,280 @@ function FillBlankView({
   );
 }
 
+// ─── Pantalla ¡Perfecto! ────────────────────────────────────────────────────
+
+interface PerfectScreenProps {
+  levelNum: number;
+  levelTopic: string;
+  xpEarned: number;
+  gemsEarned: number;
+  totalTime: string;
+  maxStreak: number;
+  insets: { top: number; bottom: number };
+  onContinue: () => void;
+  onRepeat: () => void;
+}
+
+function PerfectScreen({
+  levelNum, levelTopic, xpEarned, gemsEarned, totalTime, maxStreak, insets, onContinue, onRepeat,
+}: PerfectScreenProps) {
+  // Animaciones de entrada
+  const trophyScale = useSharedValue(0);
+  const trophyRotate = useSharedValue(-15);
+  const titleOpacity = useSharedValue(0);
+  const titleTranslateY = useSharedValue(20);
+  const statsOpacity = useSharedValue(0);
+  const statsTranslateY = useSharedValue(30);
+  const buttonsOpacity = useSharedValue(0);
+  const trophyPulse = useSharedValue(1);
+
+  useEffect(() => {
+    // 1. Trofeo entra con rebote
+    trophyScale.value = withSequence(
+      withTiming(1.3, { duration: 350, easing: Easing.out(Easing.back(2)) }),
+      withTiming(1.0, { duration: 200, easing: Easing.inOut(Easing.ease) }),
+    );
+    trophyRotate.value = withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) });
+    // 2. Título aparece
+    titleOpacity.value = withDelay(300, withTiming(1, { duration: 350 }));
+    titleTranslateY.value = withDelay(300, withTiming(0, { duration: 350, easing: Easing.out(Easing.ease) }));
+    // 3. Estadísticas aparecen
+    statsOpacity.value = withDelay(550, withTiming(1, { duration: 400 }));
+    statsTranslateY.value = withDelay(550, withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) }));
+    // 4. Botones aparecen
+    buttonsOpacity.value = withDelay(800, withTiming(1, { duration: 350 }));
+    // 5. Pulso suave del trofeo en bucle
+    trophyPulse.value = withDelay(600, withRepeat(
+      withSequence(
+        withTiming(1.06, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1, false,
+    ));
+  }, []);
+
+  const trophyStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: trophyScale.value * trophyPulse.value },
+      { rotate: `${trophyRotate.value}deg` },
+    ],
+  }));
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+    transform: [{ translateY: titleTranslateY.value }],
+  }));
+  const statsStyle = useAnimatedStyle(() => ({
+    opacity: statsOpacity.value,
+    transform: [{ translateY: statsTranslateY.value }],
+  }));
+  const buttonsStyle = useAnimatedStyle(() => ({
+    opacity: buttonsOpacity.value,
+  }));
+
+  return (
+    <View style={[perfectStyles.container, { paddingTop: insets.top }]}>
+      <ConfettiOverlay visible />
+      <StatusBar barStyle="light-content" />
+      <ScrollView contentContainerStyle={[perfectStyles.scroll, { paddingBottom: Math.max(insets.bottom, 32) }]} showsVerticalScrollIndicator={false}>
+        {/* Trofeo animado */}
+        <Reanimated.View style={[perfectStyles.trophyWrapper, trophyStyle]}>
+          <View style={perfectStyles.trophyGlow}>
+            <Text style={perfectStyles.trophyEmoji}>🏆</Text>
+          </View>
+        </Reanimated.View>
+
+        {/* Título */}
+        <Reanimated.View style={titleStyle}>
+          <Text style={perfectStyles.perfectTitle}>¡Perfecto!</Text>
+          <Text style={perfectStyles.perfectSubtitle}>Nivel {levelNum}: {levelTopic}</Text>
+          <Text style={perfectStyles.perfectTagline}>Sin ningún error • ¡Increíble!</Text>
+        </Reanimated.View>
+
+        {/* Tarjetas de estadísticas */}
+        <Reanimated.View style={[perfectStyles.statsGrid, statsStyle]}>
+          <View style={[perfectStyles.statCard, perfectStyles.statCardGold]}>
+            <Text style={perfectStyles.statEmoji}>⭐</Text>
+            <Text style={perfectStyles.statValue}>+{xpEarned}</Text>
+            <Text style={perfectStyles.statLabel}>XP Ganados</Text>
+          </View>
+          <View style={[perfectStyles.statCard, perfectStyles.statCardBlue]}>
+            <Text style={perfectStyles.statEmoji}>💎</Text>
+            <Text style={perfectStyles.statValue}>+{gemsEarned}</Text>
+            <Text style={perfectStyles.statLabel}>Diamantes</Text>
+          </View>
+          <View style={[perfectStyles.statCard, perfectStyles.statCardGreen]}>
+            <Text style={perfectStyles.statEmoji}>⏱</Text>
+            <Text style={perfectStyles.statValue}>{totalTime}</Text>
+            <Text style={perfectStyles.statLabel}>Tiempo</Text>
+          </View>
+          {maxStreak >= 3 && (
+            <View style={[perfectStyles.statCard, perfectStyles.statCardRed]}>
+              <Text style={perfectStyles.statEmoji}>🔥</Text>
+              <Text style={perfectStyles.statValue}>{maxStreak}</Text>
+              <Text style={perfectStyles.statLabel}>Racha máx.</Text>
+            </View>
+          )}
+          <View style={[perfectStyles.statCard, perfectStyles.statCardPurple, maxStreak >= 3 ? {} : perfectStyles.statCardWide]}>
+            <Text style={perfectStyles.statEmoji}>🎯</Text>
+            <Text style={perfectStyles.statValue}>100%</Text>
+            <Text style={perfectStyles.statLabel}>Precisión</Text>
+          </View>
+        </Reanimated.View>
+
+        {/* Botones */}
+        <Reanimated.View style={[perfectStyles.buttonsContainer, buttonsStyle]}>
+          <TouchableOpacity style={perfectStyles.continueBtn} onPress={onContinue} activeOpacity={0.85}>
+            <Text style={perfectStyles.continueBtnText}>Continuar →</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={perfectStyles.repeatBtn} onPress={onRepeat} activeOpacity={0.85}>
+            <Text style={perfectStyles.repeatBtnText}>🔄 Repetir nivel</Text>
+          </TouchableOpacity>
+        </Reanimated.View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const perfectStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0D1117',
+  },
+  scroll: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 32,
+  },
+  trophyWrapper: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  trophyGlow: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#FFD70020',
+    borderWidth: 2,
+    borderColor: '#FFD70050',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  trophyEmoji: {
+    fontSize: 72,
+  },
+  perfectTitle: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#FFD700',
+    textAlign: 'center',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  perfectSubtitle: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  perfectTagline: {
+    fontSize: 13,
+    color: '#58CC02',
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 32,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 32,
+  },
+  statCard: {
+    borderRadius: 18,
+    padding: 18,
+    alignItems: 'center',
+    minWidth: 100,
+    flex: 1,
+    borderWidth: 1,
+  },
+  statCardWide: {
+    minWidth: '100%',
+    flex: 0,
+  },
+  statCardGold: {
+    backgroundColor: '#FFD70015',
+    borderColor: '#FFD70040',
+  },
+  statCardBlue: {
+    backgroundColor: '#1CB0F615',
+    borderColor: '#1CB0F640',
+  },
+  statCardGreen: {
+    backgroundColor: '#58CC0215',
+    borderColor: '#58CC0240',
+  },
+  statCardRed: {
+    backgroundColor: '#FF4B4B15',
+    borderColor: '#FF4B4B40',
+  },
+  statCardPurple: {
+    backgroundColor: '#CE82FF15',
+    borderColor: '#CE82FF40',
+  },
+  statEmoji: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  buttonsContainer: {
+    width: '100%',
+    gap: 10,
+  },
+  continueBtn: {
+    backgroundColor: '#FFD700',
+    borderRadius: 18,
+    paddingVertical: 18,
+    alignItems: 'center',
+  },
+  continueBtnText: {
+    color: '#0D1117',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  repeatBtn: {
+    backgroundColor: '#1A1D27',
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2D3148',
+  },
+  repeatBtnText: {
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+
 // ─── Pantalla Principal ───────────────────────────────────────────────────────
 
 export default function ExerciseScreen() {
@@ -897,13 +1172,38 @@ export default function ExerciseScreen() {
       'sentence-order': '📝 Ordenar',
       'fill-blank': '✏️ Completar',
     };
+
+    if (isPerfect) {
+      return <PerfectScreen
+        levelNum={levelNum}
+        levelTopic={level.topic}
+        xpEarned={xpEarned}
+        gemsEarned={gemsEarned}
+        totalTime={totalTime}
+        maxStreak={maxStreak}
+        insets={insets}
+        onContinue={() => router.back()}
+        onRepeat={() => {
+          setCurrentIdx(0);
+          setHearts(game.hearts);
+          setWrongCount(0);
+          setErrorWords([]);
+          setInternalStreak(0);
+          setMaxStreak(0);
+          setTypeBreakdown({});
+          setElapsedSeconds(0);
+          setExerciseKey(k => k + 1);
+          setShowResult(false);
+        }}
+      />;
+    }
+
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-        <ConfettiOverlay visible={isPerfect} />
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+        <StatusBar barStyle="light-content" />
         <ScrollView contentContainerStyle={[styles.resultContainer, { paddingBottom: 40 }]}>
-          <Text style={styles.resultEmoji}>{wrongCount === 0 ? '🏆' : '⭐'}</Text>
-          <Text style={styles.resultTitle}>{wrongCount === 0 ? '¡Perfecto!' : '¡Nivel Completado!'}</Text>
+          <Text style={styles.resultEmoji}>⭐</Text>
+          <Text style={styles.resultTitle}>¡Nivel Completado!</Text>
           <Text style={styles.resultSubtitle}>Nivel {levelNum}: {level.topic}</Text>
 
           {/* Recompensas */}
@@ -920,12 +1220,6 @@ export default function ExerciseScreen() {
               <Text style={styles.rewardEmoji}>⏱</Text>
               <Text style={styles.rewardValue}>{totalTime}</Text>
             </View>
-            {wrongCount === 0 && (
-              <View style={styles.rewardBadge}>
-                <Text style={styles.rewardEmoji}>🎯</Text>
-                <Text style={styles.rewardValue}>¡Sin errores!</Text>
-              </View>
-            )}
             {maxStreak >= 3 && (
               <View style={[styles.rewardBadge, { borderColor: '#FF6B6B40' }]}>
                 <Text style={styles.rewardEmoji}>🔥</Text>

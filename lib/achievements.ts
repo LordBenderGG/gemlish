@@ -36,6 +36,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'streak_3', emoji: '🔥', title: 'En Racha', description: '3 días seguidos estudiando', check: s => s.streak >= 3, category: 'streak' },
   { id: 'streak_7', emoji: '🔥🔥', title: 'Semana Perfecta', description: '7 días de racha', check: s => s.streak >= 7, category: 'streak' },
   { id: 'streak_30', emoji: '🌙', title: 'Mes de Estudio', description: '30 días de racha', check: s => s.streak >= 30, category: 'streak' },
+  { id: 'streak_60', emoji: '🌟', title: 'Dos Meses', description: '60 días de racha', check: s => s.streak >= 60, category: 'streak' },
   { id: 'streak_100', emoji: '⚡', title: 'Imparable', description: '100 días de racha', check: s => s.streak >= 100, category: 'streak' },
   // Palabras
   { id: 'words_10', emoji: '📖', title: 'Primeras Palabras', description: 'Aprende 10 palabras en tarea diaria', check: s => s.totalWordsLearned >= 10, category: 'words' },

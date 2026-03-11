@@ -244,3 +244,7 @@
 ## v1.27 — Mejoras aprobadas
 - [x] Pantalla de logros (Achievements) en el perfil con medallas, iconos y fechas
 - [x] Notificación diaria personalizada con el nombre del siguiente nivel pendiente
+
+## v1.28 — Mejoras aprobadas
+- [x] Logros de racha extendida: medallas para 30, 60 y 100 días consecutivos
+- [x] Pantalla especial "¡Perfecto!" al completar nivel con 100% de aciertos (tiempo récord, racha máxima, XP ganados)
