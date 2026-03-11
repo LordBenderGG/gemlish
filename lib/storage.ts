@@ -20,6 +20,8 @@ export interface GameState {
   levelErrors: Record<number, string[]>;
   // Fechas de niveles completados: fecha (YYYY-MM-DD) -> cantidad de niveles completados ese día
   levelCompletedDates: Record<string, number>;
+  // Total de desafíos del día completados (acumulado)
+  dailyChallengesCompleted: number;
 }
 
 export interface DailyState {
@@ -162,6 +164,7 @@ const DEFAULT_GAME_STATE: GameState = {
   lastHeartRefill: new Date().toISOString(),
   levelErrors: {},
   levelCompletedDates: {},
+  dailyChallengesCompleted: 0,
 };
 
 export async function getGameState(username: string): Promise<GameState> {

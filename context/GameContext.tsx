@@ -6,6 +6,7 @@ import {
   getMiniGameState, saveMiniGameState,
   getCurrentUser, loginUser, logoutUser, registerUser, renameUser,
 } from '@/lib/storage';
+import { getDailyChallenge, saveDailyChallenge } from '@/lib/daily-challenge';
 
 // ─── Tipos del contexto ──────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [game, setGame] = useState<GameState>({
     xp: 0, gems: 0, streak: 0, hearts: 5,
     maxUnlockedLevel: 1, levelProgress: {}, lastHeartRefill: new Date().toISOString(),
-    levelErrors: {}, levelCompletedDates: {},
+    levelErrors: {}, levelCompletedDates: {}, dailyChallengesCompleted: 0,
   });
   const [daily, setDaily] = useState<DailyState>({
     lastDailyDate: '', learnedWords: {}, dailyCompleted: false, totalDaysCompleted: 0,
@@ -149,10 +150,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
       [today]: (prevDates[today] ?? 0) + 1,
     };
 
+    // Verificar si este nivel es el desafío del día y no ha sido completado aún
+    let bonusXp = 0;
+    let bonusGems = 0;
+    let newDailyChallengesCompleted = game.dailyChallengesCompleted ?? 0;
+    try {
+      const challenge = await getDailyChallenge(username);
+      if (challenge && challenge.date === today && !challenge.completed && challenge.levelId === levelId) {
+        // Marcar el desafío como completado
+        await saveDailyChallenge(username, { ...challenge, completed: true });
+        // El bonus es la recompensa base del desafío (ya incluye x2, así que el bonus es xpEarned adicional)
+        bonusXp = challenge.xpEarned - xpEarned; // diferencia entre recompensa x2 y recompensa normal
+        bonusGems = challenge.gemsEarned - gemsEarned;
+        newDailyChallengesCompleted += 1;
+      }
+    } catch {
+      // No interrumpir el flujo si falla la lógica del desafío
+    }
+
     const next: GameState = {
       ...game,
-      xp: game.xp + xpEarned,
-      gems: game.gems + gemsEarned,
+      xp: game.xp + xpEarned + bonusXp,
+      gems: game.gems + gemsEarned + bonusGems,
       streak: newStreak,
       hearts: Math.min(game.hearts + 1, 5),
       maxUnlockedLevel: Math.max(game.maxUnlockedLevel, levelId + 1),
@@ -161,6 +180,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         [levelId]: { completed: true, score: 100 },
       },
       levelCompletedDates: updatedDates,
+      dailyChallengesCompleted: newDailyChallengesCompleted,
     };
     setGame(next);
     await saveGameState(username, next);

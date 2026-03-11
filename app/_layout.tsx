@@ -37,17 +37,36 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   // Verificar logros pendientes al abrir la app (logros desbloqueados mientras estaba cerrada)
   usePendingAchievements();
 
-  // Programar recordatorio de racha en riesgo al abrir la app
-  const { scheduleStreakRiskReminder } = useNotifications();
+  // Programar notificaciones al abrir la app
+  const { scheduleStreakRiskReminder, scheduleDailyChallengeNotification } = useNotifications();
   useEffect(() => {
     if (!username || isLoading) return;
     const today = new Date().toISOString().split('T')[0];
     const completedTodayCount = game.levelCompletedDates?.[today] ?? 0;
+
+    // Recordatorio de racha en riesgo a las 20:00
     scheduleStreakRiskReminder({
       streak: game.streak,
       completedTodayCount,
     });
-  }, [username, isLoading, game.streak, game.levelCompletedDates, scheduleStreakRiskReminder]);
+
+    // Notificación del desafío del día a las 8:00 AM
+    import('@/lib/daily-challenge').then(({ getOrCreateDailyChallenge }) => {
+      import('@/data/lessons').then(({ getLevelData }) => {
+        const maxLevel = game.maxUnlockedLevel > 0 ? game.maxUnlockedLevel : 1;
+        const levelData = getLevelData(maxLevel);
+        getOrCreateDailyChallenge(username!, maxLevel, levelData.xp, 5).then(challenge => {
+          scheduleDailyChallengeNotification({
+            levelId: challenge.levelId,
+            levelName: getLevelData(challenge.levelId).name,
+            xpEarned: challenge.xpEarned,
+            gemsEarned: challenge.gemsEarned,
+          });
+        }).catch(() => {});
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, isLoading]);
 
   useEffect(() => {
     if (isLoading) return;

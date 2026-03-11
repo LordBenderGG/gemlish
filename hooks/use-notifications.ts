@@ -234,6 +234,82 @@ export function useNotifications() {
    * Incluye niveles completados la semana pasada, racha actual y palabras aprendidas.
    */
   /**
+   * Programa la notificación diaria de Desafío del día a las 8:00 AM.
+   * Informa el nivel del desafío, su tema y la recompensa doble.
+   * Solo se programa una vez por día para evitar duplicados.
+   *
+   * @param levelId - ID del nivel del desafío del día
+   * @param levelName - Nombre del tema del nivel
+   * @param xpEarned - XP que se ganarán al completarlo (ya incluye x2)
+   * @param gemsEarned - Diamantes que se ganarán al completarlo (ya incluye x2)
+   */
+  const scheduleDailyChallengeNotification = useCallback(async (params: {
+    levelId: number;
+    levelName: string;
+    xpEarned: number;
+    gemsEarned: number;
+  }): Promise<void> => {
+    const CHALLENGE_NOTIF_KEY = '@gemlish_challenge_notif_id';
+    const CHALLENGE_NOTIF_DATE_KEY = '@gemlish_challenge_notif_date';
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+      const granted = await requestPermission();
+      if (!granted) return;
+
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('gemlish-daily-challenge', {
+          name: 'Desafío del día',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 200, 250],
+          lightColor: '#FFD700',
+          sound: 'default',
+        });
+      }
+
+      // Verificar si ya se programó hoy
+      const prevDate = await AsyncStorage.getItem(CHALLENGE_NOTIF_DATE_KEY);
+      if (prevDate === today) return;
+
+      // Cancelar notificación anterior si existe
+      const prevId = await AsyncStorage.getItem(CHALLENGE_NOTIF_KEY);
+      if (prevId) {
+        await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
+        await AsyncStorage.removeItem(CHALLENGE_NOTIF_KEY);
+      }
+
+      // Verificar que las 8:00 no hayan pasado ya
+      const now = new Date();
+      const target = new Date();
+      target.setHours(8, 0, 0, 0);
+      if (now >= target) return; // Ya pasaron las 8:00 AM, no programar
+
+      const { levelId, levelName, xpEarned, gemsEarned } = params;
+
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '🎯 ¡Desafío del día disponible!',
+          body: `Nivel ${levelId}: ${levelName} — Gana ${xpEarned} XP y ${gemsEarned} 💎 con recompensa ×2`,
+          sound: 'default',
+          data: { screen: 'home' },
+          ...(Platform.OS === 'android' && { channelId: 'gemlish-daily-challenge' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          hour: 8,
+          minute: 0,
+          repeats: false,
+        } as Notifications.CalendarTriggerInput,
+      });
+
+      await AsyncStorage.setItem(CHALLENGE_NOTIF_KEY, id);
+      await AsyncStorage.setItem(CHALLENGE_NOTIF_DATE_KEY, today);
+    } catch (err) {
+      console.warn('[useNotifications] Error scheduling daily challenge notification:', err);
+    }
+  }, [requestPermission]);
+
+  /**
    * Programa (o cancela) el recordatorio de racha en riesgo a las 20:00.
    * Se activa solo si el usuario tiene racha >= 3 y no ha completado ningún nivel hoy.
    * Debe llamarse cada vez que el usuario abre la app o completa un nivel.
@@ -380,5 +456,6 @@ export function useNotifications() {
     requestPermission,
     scheduleWeeklySummary,
     scheduleStreakRiskReminder,
+    scheduleDailyChallengeNotification,
   };
 }

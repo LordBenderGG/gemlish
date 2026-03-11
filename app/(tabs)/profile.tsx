@@ -591,6 +591,7 @@ export default function ProfileScreen() {
             { label: 'Diamantes', value: stats.gems, emoji: '💎', color: '#00D4FF' },
             { label: 'XP Total', value: stats.xp.toLocaleString(), emoji: '⭐', color: '#8E5AF5' },
             { label: 'Días Tarea', value: stats.totalDaysCompleted, emoji: '📅', color: '#FF4B4B' },
+            { label: 'Desafíos', value: game.dailyChallengesCompleted ?? 0, emoji: '🏆', color: '#FFD700' },
           ].map(stat => (
             <View key={stat.label} style={styles.statCard}>
               <Text style={styles.statEmoji}>{stat.emoji}</Text>

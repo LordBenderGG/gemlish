@@ -253,3 +253,8 @@
 - [x] Desafío del día: nivel aleatorio desbloqueado diario con recompensa doble de XP y diamantes
 - [x] Desafío del día visible en la pantalla principal (tarjeta destacada)
 - [x] Recordatorio de racha en riesgo: notificación a las 20:00 si no se completó ningún nivel y racha >= 3
+
+## v1.30 — Mejoras aprobadas
+- [x] Recompensa doble del desafío del día aplicada automáticamente al completar el nivel del desafío
+- [x] Contador de desafíos completados en el Perfil (junto al mapa de calor)
+- [x] Notificación diaria a las 8:00 AM con el nivel del desafío del día y su recompensa
