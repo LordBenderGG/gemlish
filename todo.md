@@ -188,3 +188,47 @@
 - [x] Eliminar ejercicios de pronunciación del generador y la pantalla de ejercicios
 - [x] Mejorar fill-blank: dificultad progresiva según el nivel (frases simples en niveles bajos)
 - [x] Añadir traducción al español de la frase en ejercicios fill-blank
+
+## v1.24 — Bloques A-F completados
+
+### Bloque A: Bugs críticos
+- [x] A1: Ejercicios usan solo palabras del nivel actual (fill-blank, sentence-order, multiple-choice)
+- [x] A2: Multiple-choice con opciones lógicas del mismo nivel y categoría semántica
+- [x] A3: Chips de filtro visibles en el mapa de niveles (contraste mejorado)
+- [x] A4: Notificaciones — re-verificar permiso al volver de Configuración del sistema (AppState listener)
+
+### Bloque B: Mejoras de ejercicios
+- [x] B1: Traducción al español en ejercicios sentence-order
+- [x] B2: Desglose por tipo de ejercicio en pantalla de resultado
+- [x] B3: Ejercicio de dictado extendido (escuchar frase completa y escribirla)
+- [x] B4: Ejercicio de completar diálogo (dos personajes con burbujas)
+- [x] B5: Dificultad adaptativa (>90% aciertos sube complejidad en siguiente nivel)
+- [x] B6: Modo “Solo Escucha” — sesión de 10 ejercicios listen-write
+- [x] B7: Modo “Solo Ordenar” — sesión de 10 sentence-order
+- [x] B8: Cronómetro opcional por ejercicio en el sub-header
+- [x] B9: Contador de XP flotante al acertar (+5 XP sube animado)
+- [x] B10: Toast “¡En racha! 🔥” al alcanzar exactamente 5 seguidas
+
+### Bloque C: Pantalla de resultado
+- [x] C1: Desglose por tipo de ejercicio (tabla aciertos/fallos por tipo)
+- [x] C2: Tiempo total del nivel mostrado en resultado
+- [x] C3: Botón “Repetir nivel” en pantalla de resultado
+- [x] C4: Comparar con mejor intento anterior
+
+### Bloque D: Mapa de niveles
+- [x] D1: Barra de progreso por categoría al seleccionar chip
+- [x] D2: Búsqueda de palabras en el mapa
+- [x] D3: Vista previa de nivel bloqueado (modal con palabras)
+- [x] D4: Animación de desbloqueo al completar nivel
+
+### Bloque E: Perfil y estadísticas
+- [x] E1: Mapa de calor de actividad (calendario estilo GitHub, 3 meses)
+- [x] E2: Nivel de inglés estimado A1/A2/B1/B2
+- [x] E3: Gráfica de precisión por tipo de ejercicio (en /stats)
+- [x] E4: Tarjeta de estadísticas para compartir (imagen)
+- [x] E5: Comparar con amigos por código
+
+### Bloque F: Tarea diaria y repaso
+- [x] F1: Tarea diaria con mini quiz de 5 preguntas antes de completar
+- [x] F2: Repaso espaciado inteligente con algoritmo SM-2
+- [x] F3: Audio TTS en cada tarjeta de palabra de la tarea diaria (ya existía)

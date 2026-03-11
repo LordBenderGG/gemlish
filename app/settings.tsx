@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeContext } from '@/lib/theme-provider';
 import { useNotifications } from '@/hooks/use-notifications';
+import * as Notifications from 'expo-notifications';
 import { useSoundSettings } from '@/lib/sound-settings';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
 import { useGame } from '@/context/GameContext';
@@ -132,18 +133,28 @@ export default function SettingsScreen() {
     if (saving) return;
     setSaving(true);
     if (value) {
+      // Verificar si el permiso ya está concedido antes de pedir
+      const { status: currentStatus } = await Notifications.getPermissionsAsync();
+      if (currentStatus !== 'granted') {
+        // Intentar solicitar el permiso
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        if (newStatus !== 'granted') {
+          // El usuario denegó el permiso — mostrar opción de ir a Configuración
+          Alert.alert(
+            '🔔 Permisos necesarios',
+            'Para recibir recordatorios, activa las notificaciones en la Configuración del sistema y vuelve a activar el recordatorio.',
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              { text: '⚙️ Abrir Configuración', onPress: openSystemSettings },
+            ]
+          );
+          setSaving(false);
+          return;
+        }
+      }
+      // Permiso concedido — activar notificaciones directamente
       const ok = await enableNotifications(settings.hour, settings.minute);
-      if (!ok) {
-        Alert.alert(
-          '🔔 Permisos necesarios',
-          'Para recibir recordatorios de racha, necesitas activar las notificaciones en la Configuración del sistema.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: '⚙️ Abrir Configuración', onPress: openSystemSettings },
-          ]
-        );
-      } else {
-        // Programar también el resumen semanal de los lunes
+      if (ok) {
         const totalLevels = Object.values(game.levelProgress).filter(p => p.completed).length;
         const levelsLastWeek = Object.entries(game.levelCompletedDates ?? {}).filter(([date]) => {
           const d = new Date(date);

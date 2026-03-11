@@ -2,7 +2,7 @@
 import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  StatusBar, Animated, ScrollView,
+  StatusBar, Animated, ScrollView, TextInput,
 } from 'react-native';
 import Reanimated, {
   useSharedValue, useAnimatedStyle, withRepeat, withSequence,
@@ -219,6 +219,7 @@ export default function LevelsScreen() {
   const { username, game } = useGame();
   const { xp, gems, streak, maxUnlockedLevel, levelProgress } = game;
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const allLevels = useMemo(() =>
     Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1),
@@ -226,15 +227,30 @@ export default function LevelsScreen() {
   );
 
   const levels = useMemo(() => {
-    if (selectedCategory === 'all') return allLevels;
-    const cat = CATEGORIES.find(c => c.id === selectedCategory);
-    if (!cat || !cat.levels) return allLevels;
-    // Filtrar niveles que corresponden a esas lecciones
-    return allLevels.filter(levelNum => {
-      const lessonId = ((levelNum - 1) % 40) + 1;
-      return cat.levels!.includes(lessonId);
-    });
-  }, [selectedCategory, allLevels]);
+    let filtered = allLevels;
+    // Filtro por categoría
+    if (selectedCategory !== 'all') {
+      const cat = CATEGORIES.find(c => c.id === selectedCategory);
+      if (cat && cat.levels) {
+        filtered = filtered.filter(levelNum => {
+          const lessonId = ((levelNum - 1) % 40) + 1;
+          return cat.levels!.includes(lessonId);
+        });
+      }
+    }
+    // Filtro por búsqueda
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(levelNum => {
+        const data = getLevelData(levelNum);
+        return (
+          String(levelNum).includes(q) ||
+          data.name.toLowerCase().includes(q)
+        );
+      });
+    }
+    return filtered;
+  }, [selectedCategory, searchQuery, allLevels]);
 
   const handleLevelPress = useCallback((levelNum: number) => {
     const isCompleted = !!game.levelProgress[levelNum]?.completed;
@@ -298,21 +314,70 @@ export default function LevelsScreen() {
         ))}
       </ScrollView>
 
-      {/* Botón de Repaso Rápido */}
-      <TouchableOpacity
-        style={styles.quickReviewBtn}
-        onPress={() => router.push('/practice/quick-review' as any)}
-        activeOpacity={0.85}
-      >
-        <View style={styles.quickReviewLeft}>
-          <Text style={styles.quickReviewEmoji}>⚡</Text>
-          <View>
-            <Text style={styles.quickReviewTitle}>Repaso Rápido</Text>
-            <Text style={styles.quickReviewSub}>10 palabras · 5 minutos</Text>
+      {/* Barra de búsqueda */}
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar nivel o tema..."
+          placeholderTextColor="#4B5563"
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.searchClear}>
+            <Text style={styles.searchClearText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Modos de práctica */}
+      <View style={styles.practiceRow}>
+        <TouchableOpacity
+          style={styles.quickReviewBtn}
+          onPress={() => router.push('/practice/quick-review' as any)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.quickReviewLeft}>
+            <Text style={styles.quickReviewEmoji}>⚡</Text>
+            <View>
+              <Text style={styles.quickReviewTitle}>Repaso Rápido</Text>
+              <Text style={styles.quickReviewSub}>10 palabras · 5 min</Text>
+            </View>
           </View>
-        </View>
-        <Text style={styles.quickReviewArrow}>›</Text>
-      </TouchableOpacity>
+          <Text style={styles.quickReviewArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickReviewBtn, { flex: 1 }]}
+          onPress={() => router.push('/practice/listen-mode' as any)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.quickReviewLeft}>
+            <Text style={styles.quickReviewEmoji}>🎧</Text>
+            <View>
+              <Text style={styles.quickReviewTitle}>Solo Escucha</Text>
+              <Text style={styles.quickReviewSub}>10 ejercicios</Text>
+            </View>
+          </View>
+          <Text style={styles.quickReviewArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickReviewBtn, { flex: 1 }]}
+          onPress={() => router.push('/practice/order-mode' as any)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.quickReviewLeft}>
+            <Text style={styles.quickReviewEmoji}>📝</Text>
+            <View>
+              <Text style={styles.quickReviewTitle}>Solo Ordenar</Text>
+              <Text style={styles.quickReviewSub}>10 ejercicios</Text>
+            </View>
+          </View>
+          <Text style={styles.quickReviewArrow}>›</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Barra de progreso global */}
       <View style={styles.globalProgress}>
@@ -465,24 +530,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   categoryChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#252836',
+    backgroundColor: '#2D3148',
     borderWidth: 1.5,
-    borderColor: '#3D4266',
+    borderColor: '#4A5080',
   },
   categoryChipActive: {
-    backgroundColor: '#8E5AF540',
+    backgroundColor: '#8E5AF5',
     borderColor: '#8E5AF5',
   },
   categoryChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#C4C9D4',
+    color: '#FFFFFF',
   },
   categoryChipTextActive: {
-    color: '#C4A8FF',
+    color: '#FFFFFF',
     fontWeight: '700',
+  },
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#1A1D27', borderRadius: 12,
+    marginHorizontal: 16, marginVertical: 6,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, borderColor: '#2D3148',
+  },
+  searchIcon: { fontSize: 14, marginRight: 8 },
+  searchInput: {
+    flex: 1, color: '#FFFFFF', fontSize: 14,
+    paddingVertical: 0,
+  },
+  searchClear: { padding: 4 },
+  searchClearText: { color: '#9CA3AF', fontSize: 14 },
+  practiceRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    flexWrap: 'wrap',
   },
 });

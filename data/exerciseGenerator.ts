@@ -1,4 +1,4 @@
-import { getLevelData, getAllWords, getLevelIcon, Word } from './lessons';
+import { getLevelData, getLevelIcon, Word } from './lessons';
 
 export type ExerciseType =
   | 'multiple-choice'
@@ -38,36 +38,34 @@ export interface ListenWriteExercise {
   type: 'listen-write';
   question: string;
   questionEs: string;
-  wordToSpeak: string;   // palabra en inglés que el TTS pronuncia
-  answer: string;        // respuesta esperada (lowercase)
-  answerAlt: string;     // sin acentos
-  correctAnswer: string; // para mostrar al usuario
+  wordToSpeak: string;
+  answer: string;
+  answerAlt: string;
+  correctAnswer: string;
   hint: string;
 }
 
-// Ordenar oración
 export interface SentenceOrderExercise {
   type: 'sentence-order';
   question: string;
   questionEs: string;
-  words: string[];          // palabras en orden correcto
-  shuffledWords: string[];  // palabras mezcladas para mostrar al usuario
-  sentence: string;         // oración completa correcta
-  sentenceEs: string;       // traducción al español
+  words: string[];
+  shuffledWords: string[];
+  sentence: string;
+  sentenceEs: string;
 }
 
-// Completar la oración
 export interface FillBlankExercise {
   type: 'fill-blank';
   question: string;
   questionEs: string;
-  sentenceBefore: string;   // parte antes del hueco
-  sentenceAfter: string;    // parte después del hueco
-  sentenceEs: string;       // traducción completa al español
-  options: string[];        // 4 opciones de respuesta
-  correct: number;          // índice de la opción correcta
-  correctAnswer: string;    // respuesta correcta
-  fullSentence: string;     // oración completa para mostrar al verificar
+  sentenceBefore: string;
+  sentenceAfter: string;
+  sentenceEs: string;
+  options: string[];
+  correct: number;
+  correctAnswer: string;
+  fullSentence: string;
 }
 
 export type Exercise =
@@ -101,55 +99,97 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-// Genera un ejercicio de ordenar oración usando el ejemplo de la palabra
-function buildSentenceOrderExercise(word: Word): SentenceOrderExercise {
-  const sentence = word.example.replace(/[.,!?;:]$/, '');
+/**
+ * Obtiene 3 palabras incorrectas del MISMO nivel para usar como distractores.
+ * Garantiza que las opciones incorrectas son palabras que el usuario ya vio en este nivel.
+ */
+function getWrongWords(correctWord: Word, levelWords: Word[]): Word[] {
+  const others = levelWords.filter(w => w.word.toLowerCase() !== correctWord.word.toLowerCase());
+  return shuffleArray(others).slice(0, 3);
+}
+
+/**
+ * Genera un ejercicio de ordenar oración.
+ * Para niveles bajos (1-5) usa oraciones muy simples de 3-4 palabras.
+ * Para niveles altos usa el ejemplo completo de la palabra.
+ */
+function buildSentenceOrderExercise(word: Word, levelNum: number): SentenceOrderExercise {
+  let sentence: string;
+  let sentenceEs: string;
+
+  if (levelNum <= 5) {
+    // Oraciones simples de 3-4 palabras para principiantes
+    const simpleTemplates = [
+      { en: `I say ${word.word}`, es: `Yo digo ${word.translation}` },
+      { en: `This is ${word.word}`, es: `Esto es ${word.translation}` },
+      { en: `I like ${word.word}`, es: `Me gusta ${word.translation}` },
+    ];
+    const tpl = simpleTemplates[Math.floor(Math.random() * simpleTemplates.length)];
+    sentence = tpl.en;
+    sentenceEs = tpl.es;
+  } else if (levelNum <= 15) {
+    // Oraciones cortas del ejemplo, sin puntuación
+    const raw = word.example.replace(/[.,!?;:]$/, '');
+    const wordCount = raw.split(' ').length;
+    if (wordCount <= 6) {
+      sentence = raw;
+      sentenceEs = word.exampleEs;
+    } else {
+      // Recortar a las primeras 5 palabras si es muy larga
+      sentence = raw.split(' ').slice(0, 5).join(' ');
+      sentenceEs = word.exampleEs;
+    }
+  } else {
+    // Niveles avanzados: ejemplo completo
+    sentence = word.example.replace(/[.,!?;:]$/, '');
+    sentenceEs = word.exampleEs;
+  }
+
   const words = sentence.split(' ').filter(w => w.length > 0);
   const shuffledWords = shuffleArray([...words]);
 
   return {
     type: 'sentence-order',
     question: 'Ordena las palabras para formar una oración:',
-    questionEs: `Ordena las palabras para formar la oración en inglés:`,
+    questionEs: 'Ordena las palabras para formar la oración en inglés:',
     words,
     shuffledWords,
     sentence,
-    sentenceEs: word.exampleEs,
+    sentenceEs,
   };
 }
 
 /**
  * Genera un ejercicio fill-blank con dificultad adaptada al nivel.
- * Niveles bajos (1-5): oraciones muy cortas y simples (solo la palabra clave).
- * Niveles medios (6-20): oraciones del ejemplo de la palabra.
- * Niveles altos (21+): oraciones completas del ejemplo.
+ * IMPORTANTE: las opciones incorrectas son siempre palabras del mismo nivel.
  */
 function buildFillBlankExercise(
   word: Word,
-  wrongWords: Word[],
+  levelWords: Word[],
   levelNum: number
 ): FillBlankExercise {
   let sentence: string;
   let sentenceEs: string;
 
   if (levelNum <= 5) {
-    // Niveles 1-5: oración muy simple — solo "The ___ is ..." con la palabra
+    // Oraciones muy simples para principiantes absolutos
     const simpleTemplates = [
-      { en: `The ${word.word} is important.`, es: `El/La ${word.translation} es importante.` },
-      { en: `I see a ${word.word}.`, es: `Veo un/una ${word.translation}.` },
-      { en: `This is a ${word.word}.`, es: `Esto es un/una ${word.translation}.` },
-      { en: `I like the ${word.word}.`, es: `Me gusta el/la ${word.translation}.` },
+      { en: `I say ${word.word} every day.`, es: `Digo ${word.translation} todos los días.` },
+      { en: `This is ${word.word}.`, es: `Esto es ${word.translation}.` },
+      { en: `I know the word ${word.word}.`, es: `Conozco la palabra ${word.translation}.` },
     ];
     const tpl = simpleTemplates[Math.floor(Math.random() * simpleTemplates.length)];
     sentence = tpl.en;
     sentenceEs = tpl.es;
+  } else if (levelNum <= 15) {
+    // Usar el ejemplo de la palabra directamente
+    sentence = word.example.replace(/[.,!?;:]$/, '');
+    sentenceEs = word.exampleEs;
   } else {
-    // Niveles 6+: usar el ejemplo real de la palabra
     sentence = word.example.replace(/[.,!?;:]$/, '');
     sentenceEs = word.exampleEs;
   }
 
-  const wordLower = word.word.toLowerCase();
   const regex = new RegExp(`\\b${word.word}\\b`, 'i');
   const match = sentence.match(regex);
 
@@ -164,11 +204,9 @@ function buildFillBlankExercise(
     sentenceAfter = '';
   }
 
-  // Opciones: la correcta + 3 incorrectas del mismo nivel de dificultad
-  const wrongOptions = shuffleArray(wrongWords.slice(0, 8))
-    .filter(w => w.word.toLowerCase() !== wordLower)
-    .slice(0, 3)
-    .map(w => w.word);
+  // Opciones incorrectas: SOLO palabras del mismo nivel
+  const wrongWords = getWrongWords(word, levelWords);
+  const wrongOptions = wrongWords.map(w => w.word);
 
   const allOptions = shuffleArray([word.word, ...wrongOptions]);
   const correctIdx = allOptions.indexOf(word.word);
@@ -187,35 +225,60 @@ function buildFillBlankExercise(
   };
 }
 
+/**
+ * Genera un ejercicio multiple-choice con opciones del mismo nivel.
+ * Garantiza que las opciones incorrectas son palabras que el usuario ya conoce de este nivel.
+ */
+function buildMultipleChoice(
+  word: Word,
+  levelWords: Word[],
+  mode: 'meaning' | 'english'
+): MultipleChoiceExercise {
+  const wrongWords = getWrongWords(word, levelWords);
+
+  if (mode === 'meaning') {
+    // Pregunta: ¿Qué significa "word"? → opciones en español
+    const opts = shuffleArray([word.translation, ...wrongWords.map(w => w.translation)]);
+    return {
+      type: 'multiple-choice',
+      question: `What does "${word.word}" mean?`,
+      questionEs: `¿Qué significa "${word.word}"?`,
+      options: opts,
+      correct: opts.indexOf(word.translation),
+      correctAnswer: word.translation,
+    };
+  } else {
+    // Pregunta: ¿Cómo se dice "traducción"? → opciones en inglés
+    const opts = shuffleArray([word.word, ...wrongWords.map(w => w.word)]);
+    return {
+      type: 'multiple-choice',
+      question: `Select the English word for "${word.translation}"`,
+      questionEs: `Selecciona la palabra en inglés para "${word.translation}"`,
+      options: opts,
+      correct: opts.indexOf(word.word),
+      correctAnswer: word.word,
+    };
+  }
+}
+
 export function generateLevel(levelNum: number): Level | null {
   const levelData = getLevelData(levelNum);
   if (!levelData) return null;
 
   const words = levelData.words;
-  const allWords = getAllWords();
-  const wrongWords = allWords.filter(
-    w => !words.some(lw => lw.word.toLowerCase() === w.word.toLowerCase())
-  );
-  const shuffledWrong = shuffleArray(wrongWords);
-  const shuffled = shuffleArray([...words]);
 
+  // Necesitamos al menos 10 palabras para generar 20 ejercicios variados
+  if (words.length < 4) return null;
+
+  const shuffled = shuffleArray([...words]);
   const exercises: Exercise[] = [];
 
-  // ── BLOQUE 1: Ejercicios 1-10 (tipos existentes) ─────────────────────────
+  // ── BLOQUE 1: Ejercicios 1-10 ─────────────────────────────────────────────
 
-  // Ejercicio 1: Opción múltiple — significado
-  const w1 = shuffled[0];
-  const opts1 = shuffleArray([w1.translation, ...shuffledWrong.slice(0, 3).map(w => w.translation)]);
-  exercises.push({
-    type: 'multiple-choice',
-    question: `What does "${w1.word}" mean?`,
-    questionEs: `¿Qué significa "${w1.word}"?`,
-    options: opts1,
-    correct: opts1.indexOf(w1.translation),
-    correctAnswer: w1.translation,
-  });
+  // 1: Opción múltiple — significado (¿qué significa X?)
+  exercises.push(buildMultipleChoice(shuffled[0], words, 'meaning'));
 
-  // Ejercicio 2: Traducción — escribe en inglés
+  // 2: Traducción — escribe en inglés
   const w2 = shuffled[1];
   exercises.push({
     type: 'translate',
@@ -227,19 +290,10 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w2.word,
   });
 
-  // Ejercicio 3: Opción múltiple — palabra en inglés
-  const w3 = shuffled[2];
-  const opts3 = shuffleArray([w3.word, ...shuffledWrong.slice(3, 6).map(w => w.word)]);
-  exercises.push({
-    type: 'multiple-choice',
-    question: `Select the English word for "${w3.translation}"`,
-    questionEs: `Selecciona la palabra en inglés para "${w3.translation}"`,
-    options: opts3,
-    correct: opts3.indexOf(w3.word),
-    correctAnswer: w3.word,
-  });
+  // 3: Opción múltiple — palabra en inglés
+  exercises.push(buildMultipleChoice(shuffled[2], words, 'english'));
 
-  // Ejercicio 4: Traducción
+  // 4: Traducción
   const w4 = shuffled[3];
   exercises.push({
     type: 'translate',
@@ -251,20 +305,11 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w4.word,
   });
 
-  // Ejercicio 5: Opción múltiple
-  const w5 = shuffled[4];
-  const opts5 = shuffleArray([w5.translation, ...shuffledWrong.slice(6, 9).map(w => w.translation)]);
-  exercises.push({
-    type: 'multiple-choice',
-    question: `Choose: "${w5.word}" = ?`,
-    questionEs: `Elige: "${w5.word}" = ?`,
-    options: opts5,
-    correct: opts5.indexOf(w5.translation),
-    correctAnswer: w5.translation,
-  });
+  // 5: Opción múltiple — significado
+  exercises.push(buildMultipleChoice(shuffled[4 % words.length], words, 'meaning'));
 
-  // Ejercicio 6: Emparejamiento de pares (4 pares)
-  const pairWords = shuffled.slice(5, 9);
+  // 6: Emparejamiento de pares (4 pares del nivel)
+  const pairWords = shuffled.slice(0, Math.min(4, words.length));
   exercises.push({
     type: 'match-pairs',
     question: 'Match the words with their translations',
@@ -272,8 +317,8 @@ export function generateLevel(levelNum: number): Level | null {
     pairs: pairWords.map(w => ({ left: w.word, right: w.translation })),
   });
 
-  // Ejercicio 7: Traducción
-  const w7 = shuffled[5];
+  // 7: Traducción
+  const w7 = shuffled[5 % words.length];
   exercises.push({
     type: 'translate',
     question: `Translate: "${w7.translation}"`,
@@ -284,20 +329,11 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w7.word,
   });
 
-  // Ejercicio 8: Opción múltiple
-  const w8 = shuffled[6];
-  const opts8 = shuffleArray([w8.word, ...shuffledWrong.slice(0, 3).map(w => w.word)]);
-  exercises.push({
-    type: 'multiple-choice',
-    question: `What is the English for "${w8.translation}"?`,
-    questionEs: `¿Cuál es la palabra en inglés para "${w8.translation}"?`,
-    options: opts8,
-    correct: opts8.indexOf(w8.word),
-    correctAnswer: w8.word,
-  });
+  // 8: Opción múltiple — inglés
+  exercises.push(buildMultipleChoice(shuffled[6 % words.length], words, 'english'));
 
-  // Ejercicio 9: Traducción
-  const w9 = shuffled[7];
+  // 9: Traducción
+  const w9 = shuffled[7 % words.length];
   exercises.push({
     type: 'translate',
     question: `"${w9.translation}" in English is:`,
@@ -308,8 +344,8 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w9.word,
   });
 
-  // Ejercicio 10: Escucha y escribe (listen-write)
-  const w10 = shuffled[9] || shuffled[0];
+  // 10: Escucha y escribe
+  const w10 = shuffled[8 % words.length];
   exercises.push({
     type: 'listen-write',
     question: 'Listen and write the word you hear',
@@ -321,28 +357,19 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w10.word,
   });
 
-  // ── BLOQUE 2: Ejercicios 11-20 (sin pronunciación) ───────────────────────
+  // ── BLOQUE 2: Ejercicios 11-20 ────────────────────────────────────────────
 
-  // Ejercicio 11: Opción múltiple (repaso)
-  const w11 = shuffled[0];
-  const opts11 = shuffleArray([w11.translation, ...shuffledWrong.slice(9, 12).map(w => w.translation)]);
-  exercises.push({
-    type: 'multiple-choice',
-    question: `"${w11.word}" means:`,
-    questionEs: `"${w11.word}" significa:`,
-    options: opts11,
-    correct: opts11.indexOf(w11.translation),
-    correctAnswer: w11.translation,
-  });
+  // 11: Opción múltiple — repaso
+  exercises.push(buildMultipleChoice(shuffled[9 % words.length], words, 'meaning'));
 
-  // Ejercicio 12: Ordenar oración
-  exercises.push(buildSentenceOrderExercise(shuffled[1]));
+  // 12: Ordenar oración (con dificultad según nivel)
+  exercises.push(buildSentenceOrderExercise(shuffled[1 % words.length], levelNum));
 
-  // Ejercicio 13: Completar la oración (con dificultad según nivel)
-  exercises.push(buildFillBlankExercise(shuffled[2], shuffledWrong, levelNum));
+  // 13: Completar la oración (con opciones del mismo nivel)
+  exercises.push(buildFillBlankExercise(shuffled[2 % words.length], words, levelNum));
 
-  // Ejercicio 14: Escucha y escribe
-  const w14 = shuffled[3];
+  // 14: Escucha y escribe
+  const w14 = shuffled[3 % words.length];
   exercises.push({
     type: 'listen-write',
     question: 'Listen and write what you hear',
@@ -354,14 +381,14 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w14.word,
   });
 
-  // Ejercicio 15: Ordenar oración
-  exercises.push(buildSentenceOrderExercise(shuffled[4]));
+  // 15: Ordenar oración
+  exercises.push(buildSentenceOrderExercise(shuffled[4 % words.length], levelNum));
 
-  // Ejercicio 16: Completar la oración
-  exercises.push(buildFillBlankExercise(shuffled[5], shuffledWrong, levelNum));
+  // 16: Completar la oración
+  exercises.push(buildFillBlankExercise(shuffled[5 % words.length], words, levelNum));
 
-  // Ejercicio 17: Traducción
-  const w17 = shuffled[6];
+  // 17: Traducción
+  const w17 = shuffled[6 % words.length];
   exercises.push({
     type: 'translate',
     question: `Write in English: "${w17.translation}"`,
@@ -372,14 +399,14 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w17.word,
   });
 
-  // Ejercicio 18: Ordenar oración
-  exercises.push(buildSentenceOrderExercise(shuffled[7]));
+  // 18: Ordenar oración
+  exercises.push(buildSentenceOrderExercise(shuffled[7 % words.length], levelNum));
 
-  // Ejercicio 19: Completar la oración
-  exercises.push(buildFillBlankExercise(shuffled[8], shuffledWrong, levelNum));
+  // 19: Completar la oración
+  exercises.push(buildFillBlankExercise(shuffled[8 % words.length], words, levelNum));
 
-  // Ejercicio 20: Emparejamiento final (repaso de todo el nivel)
-  const finalPairWords = shuffled.slice(0, 4);
+  // 20: Emparejamiento final (repaso de todo el nivel)
+  const finalPairWords = shuffled.slice(0, Math.min(4, words.length));
   exercises.push({
     type: 'match-pairs',
     question: 'Final review: match all pairs',

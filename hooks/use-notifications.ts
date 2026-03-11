@@ -2,9 +2,9 @@
  * useNotifications — Gestión de notificaciones diarias de Gemlish
  * Permite al usuario configurar un recordatorio diario a una hora específica
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NOTIFICATION_HOUR_KEY = '@gemlish_notification_hour';
@@ -42,6 +42,33 @@ export function useNotifications() {
   // Cargar configuración guardada
   useEffect(() => {
     loadSettings();
+  }, []);
+
+  // Re-verificar permisos cuando el usuario vuelve a la app desde Configuración del sistema
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        // La app volvió al primer plano — re-verificar permisos
+        const { status } = await Notifications.getPermissionsAsync();
+        const isGranted = status === 'granted';
+        setPermissionGranted(isGranted);
+
+        if (isGranted) {
+          // Si el permiso fue concedido, actualizar el estado habilitado
+          const savedEnabled = await AsyncStorage.getItem(NOTIFICATION_ENABLED_KEY);
+          if (savedEnabled === 'true') {
+            setSettings(prev => ({ ...prev, enabled: true }));
+          }
+        } else {
+          // Si el permiso fue revocado, deshabilitar
+          setSettings(prev => ({ ...prev, enabled: false }));
+          await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
+        }
+      }
+      appState.current = nextState;
+    });
+    return () => subscription.remove();
   }, []);
 
   const loadSettings = async () => {

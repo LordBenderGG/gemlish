@@ -600,6 +600,83 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Nivel de inglés estimado A1-B2 */}
+        <View style={styles.englishLevelCard}>
+          <Text style={styles.englishLevelTitle}>Nivel de Inglés Estimado</Text>
+          {(() => {
+            const lvls = stats.levelsCompleted;
+            let cefr = 'A1', cefrColor = '#9CA3AF', cefrDesc = 'Principiante absoluto', cefrPct = 0;
+            if (lvls >= 400) { cefr = 'B2'; cefrColor = '#8E5AF5'; cefrDesc = 'Independiente avanzado'; cefrPct = 95; }
+            else if (lvls >= 250) { cefr = 'B1'; cefrColor = '#1CB0F6'; cefrDesc = 'Independiente intermedio'; cefrPct = 70; }
+            else if (lvls >= 100) { cefr = 'A2'; cefrColor = '#58CC02'; cefrDesc = 'Usuario básico'; cefrPct = 40; }
+            else if (lvls >= 10) { cefr = 'A1+'; cefrColor = '#FF9500'; cefrDesc = 'Principiante avanzado'; cefrPct = 15; }
+            else { cefrPct = Math.round((lvls / 10) * 15); }
+            return (
+              <View>
+                <View style={styles.englishLevelRow}>
+                  <View style={[styles.englishLevelBadge, { backgroundColor: cefrColor + '22', borderColor: cefrColor }]}>
+                    <Text style={[styles.englishLevelBadgeText, { color: cefrColor }]}>{cefr}</Text>
+                  </View>
+                  <View style={styles.englishLevelInfo}>
+                    <Text style={styles.englishLevelName}>{cefrDesc}</Text>
+                    <Text style={styles.englishLevelSub}>{lvls} niveles completados</Text>
+                  </View>
+                </View>
+                <View style={styles.englishLevelBarBg}>
+                  <View style={[styles.englishLevelBarFill, { width: `${cefrPct}%` as any, backgroundColor: cefrColor }]} />
+                </View>
+                <View style={styles.englishLevelScale}>
+                  {['A1', 'A2', 'B1', 'B2'].map(l => (
+                    <Text key={l} style={[styles.englishLevelScaleLabel, l === cefr.replace('+','') && { color: cefrColor, fontWeight: '700' }]}>{l}</Text>
+                  ))}
+                </View>
+              </View>
+            );
+          })()}
+        </View>
+
+        {/* Mapa de calor de actividad */}
+        {(() => {
+          const today = new Date();
+          const days: { date: string; active: boolean }[] = [];
+          // Usamos lastDailyDate y totalDaysCompleted para estimar actividad
+          // Marcamos como activo el día actual si dailyCompleted, y los últimos N días según streak
+          const activeStreak = game.streak;
+          for (let i = 89; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            // Activo si está dentro de la racha actual (desde hoy hacia atrás)
+            const isInStreak = i < activeStreak;
+            const isToday = i === 0 && daily.dailyCompleted;
+            days.push({ date: key, active: isInStreak || isToday });
+          }
+          const weeks: typeof days[] = [];
+          for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+          return (
+            <View style={styles.heatmapContainer}>
+              <Text style={styles.sectionTitle}>🗓 Actividad (90 días)</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.heatmapGrid}>
+                  {weeks.map((week, wi) => (
+                    <View key={wi} style={styles.heatmapWeek}>
+                      {week.map((day, di) => (
+                        <View
+                          key={di}
+                          style={[styles.heatmapCell, day.active && styles.heatmapCellActive]}
+                        />
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+              <Text style={styles.heatmapLegend}>
+                {days.filter(d => d.active).length} días activos de los últimos 90
+              </Text>
+            </View>
+          );
+        })()}
+
         {/* Acceso rápido a Configuración */}
         <TouchableOpacity style={styles.settingsLink} onPress={() => router.push('/settings' as any)} activeOpacity={0.8}>
           <Text style={styles.settingsLinkEmoji}>⚙️</Text>
@@ -970,4 +1047,33 @@ const styles = StyleSheet.create({
   },
   nameEditCancelText: { color: '#9CA3AF', fontSize: 16, fontWeight: '700' },
   nameError: { fontSize: 12, color: '#FF4B4B', marginTop: 4, textAlign: 'center' },
+  // Nivel de inglés A1-B2
+  englishLevelCard: {
+    backgroundColor: '#1A1D27', borderRadius: 16, padding: 16,
+    marginVertical: 8, borderWidth: 1, borderColor: '#2D3148',
+  },
+  englishLevelTitle: { fontSize: 13, color: '#9CA3AF', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase' },
+  englishLevelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  englishLevelBadge: {
+    width: 56, height: 56, borderRadius: 12, borderWidth: 2,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  englishLevelBadgeText: { fontSize: 20, fontWeight: '900' },
+  englishLevelInfo: { flex: 1 },
+  englishLevelName: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
+  englishLevelSub: { fontSize: 12, color: '#9CA3AF' },
+  englishLevelBarBg: { height: 8, backgroundColor: '#2D3148', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
+  englishLevelBarFill: { height: 8, borderRadius: 4 },
+  englishLevelScale: { flexDirection: 'row', justifyContent: 'space-between' },
+  englishLevelScaleLabel: { fontSize: 11, color: '#4B5563', fontWeight: '600' },
+  // Mapa de calor
+  heatmapContainer: { marginVertical: 8 },
+  heatmapGrid: { flexDirection: 'row', gap: 3 },
+  heatmapWeek: { flexDirection: 'column', gap: 3 },
+  heatmapCell: {
+    width: 12, height: 12, borderRadius: 2,
+    backgroundColor: '#2D3148',
+  },
+  heatmapCellActive: { backgroundColor: '#58CC02' },
+  heatmapLegend: { fontSize: 11, color: '#9CA3AF', marginTop: 8, textAlign: 'center' },
 });

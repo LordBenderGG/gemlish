@@ -454,6 +454,11 @@ function SentenceOrderView({
       <Text style={styles.questionLabel}>📝 Ordena la oración:</Text>
       <Text style={styles.questionText}>{exercise.questionEs}</Text>
 
+      {/* Traducción al español */}
+      <View style={styles.sentenceTranslationBox}>
+        <Text style={styles.sentenceTranslationText}>🇪🇸 {exercise.sentenceEs}</Text>
+      </View>
+
       {/* Área de oración construida */}
       <View style={styles.sentenceBuilderArea}>
         {selectedWords.length === 0 ? (
@@ -633,6 +638,44 @@ export default function ExerciseScreen() {
   const [errorWords, setErrorWords] = useState<string[]>([]);
   const [internalStreak, setInternalStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
+  // Desglose por tipo de ejercicio: { type -> { correct, total } }
+  const [typeBreakdown, setTypeBreakdown] = useState<Record<string, { correct: number; total: number }>>({});
+  const [showStreakToast, setShowStreakToast] = useState(false);
+  const [floatingXP, setFloatingXP] = useState<{ id: number; value: number } | null>(null);
+  const floatingXPCounter = useRef(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Cronómetro
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(s => s + 1);
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  };
+
+  // Animaciones de toast y XP flotante
+  const toastOpacity = useSharedValue(0);
+  const toastTranslateY = useSharedValue(-20);
+  const xpOpacity = useSharedValue(0);
+  const xpTranslateY = useSharedValue(0);
+
+  const toastAnimStyle = useAnimatedStyle(() => ({
+    opacity: toastOpacity.value,
+    transform: [{ translateY: toastTranslateY.value }],
+  }));
+  const xpAnimStyle = useAnimatedStyle(() => ({
+    opacity: xpOpacity.value,
+    transform: [{ translateY: xpTranslateY.value }],
+  }));
 
   // Animación de pulso del badge de racha
   const streakPulse = useSharedValue(1);
@@ -712,6 +755,15 @@ export default function ExerciseScreen() {
   }, [progressAnim]);
 
   const handleAnswer = useCallback(async (correct: boolean, wordEn?: string) => {
+    // Actualizar desglose por tipo
+    const currentType = level?.exercises[currentIdx]?.type ?? 'unknown';
+    setTypeBreakdown(prev => ({
+      ...prev,
+      [currentType]: {
+        correct: (prev[currentType]?.correct ?? 0) + (correct ? 1 : 0),
+        total: (prev[currentType]?.total ?? 0) + 1,
+      },
+    }));
     if (correct) {
       const newStreak = internalStreak + 1;
       setInternalStreak(newStreak);
@@ -719,9 +771,28 @@ export default function ExerciseScreen() {
       // Sonido especial al llegar exactamente a 5 seguidas
       if (newStreak === 5) {
         playStreak();
+        // Mostrar toast de racha
+        setShowStreakToast(true);
+        toastOpacity.value = withTiming(1, { duration: 200 });
+        toastTranslateY.value = withTiming(0, { duration: 200 });
+        setTimeout(() => {
+          toastOpacity.value = withTiming(0, { duration: 300 });
+          toastTranslateY.value = withTiming(-20, { duration: 300 });
+          setTimeout(() => setShowStreakToast(false), 350);
+        }, 1800);
       } else {
         playCorrect();
       }
+      // XP flotante
+      const xpVal = 5;
+      floatingXPCounter.current += 1;
+      const id = floatingXPCounter.current;
+      setFloatingXP({ id, value: xpVal });
+      xpOpacity.value = 1;
+      xpTranslateY.value = 0;
+      xpOpacity.value = withTiming(0, { duration: 900 });
+      xpTranslateY.value = withTiming(-40, { duration: 900 });
+      setTimeout(() => setFloatingXP(null), 950);
     } else {
       playWrong();
       setInternalStreak(0);
@@ -817,46 +888,98 @@ export default function ExerciseScreen() {
     const gemsEarned = wrongCount === 0 ? 5 : 2;
     const xpEarned = level.xp;
     const isPerfect = wrongCount === 0;
+    const totalTime = formatTime(elapsedSeconds);
+    const typeLabels: Record<string, string> = {
+      'multiple-choice': '📝 Opción múltiple',
+      'translate': '🔄 Traducción',
+      'match-pairs': '🧩 Emparejar',
+      'listen-write': '🎧 Escucha',
+      'sentence-order': '📝 Ordenar',
+      'fill-blank': '✏️ Completar',
+    };
     return (
-      <View style={[styles.container, styles.resultContainer, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
         <ConfettiOverlay visible={isPerfect} />
         <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
-        <Text style={styles.resultEmoji}>{wrongCount === 0 ? '🏆' : '⭐'}</Text>
-        <Text style={styles.resultTitle}>{wrongCount === 0 ? '¡Perfecto!' : '¡Nivel Completado!'}</Text>
-        <Text style={styles.resultSubtitle}>Nivel {levelNum}: {level.topic}</Text>
-        <View style={styles.rewardsRow}>
-          <View style={styles.rewardBadge}>
-            <Text style={styles.rewardEmoji}>⭐</Text>
-            <Text style={styles.rewardValue}>+{xpEarned} XP</Text>
-          </View>
-          <View style={styles.rewardBadge}>
-            <Text style={styles.rewardEmoji}>💎</Text>
-            <Text style={styles.rewardValue}>+{gemsEarned}</Text>
-          </View>
-          {wrongCount === 0 && (
+        <ScrollView contentContainerStyle={[styles.resultContainer, { paddingBottom: 40 }]}>
+          <Text style={styles.resultEmoji}>{wrongCount === 0 ? '🏆' : '⭐'}</Text>
+          <Text style={styles.resultTitle}>{wrongCount === 0 ? '¡Perfecto!' : '¡Nivel Completado!'}</Text>
+          <Text style={styles.resultSubtitle}>Nivel {levelNum}: {level.topic}</Text>
+
+          {/* Recompensas */}
+          <View style={styles.rewardsRow}>
             <View style={styles.rewardBadge}>
-              <Text style={styles.rewardEmoji}>🎯</Text>
-              <Text style={styles.rewardValue}>¡Sin errores!</Text>
+              <Text style={styles.rewardEmoji}>⭐</Text>
+              <Text style={styles.rewardValue}>+{xpEarned} XP</Text>
+            </View>
+            <View style={styles.rewardBadge}>
+              <Text style={styles.rewardEmoji}>💎</Text>
+              <Text style={styles.rewardValue}>+{gemsEarned}</Text>
+            </View>
+            <View style={styles.rewardBadge}>
+              <Text style={styles.rewardEmoji}>⏱</Text>
+              <Text style={styles.rewardValue}>{totalTime}</Text>
+            </View>
+            {wrongCount === 0 && (
+              <View style={styles.rewardBadge}>
+                <Text style={styles.rewardEmoji}>🎯</Text>
+                <Text style={styles.rewardValue}>¡Sin errores!</Text>
+              </View>
+            )}
+            {maxStreak >= 3 && (
+              <View style={[styles.rewardBadge, { borderColor: '#FF6B6B40' }]}>
+                <Text style={styles.rewardEmoji}>🔥</Text>
+                <Text style={styles.rewardValue}>Racha: {maxStreak}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Desglose por tipo */}
+          {Object.keys(typeBreakdown).length > 0 && (
+            <View style={styles.breakdownContainer}>
+              <Text style={styles.breakdownTitle}>Desglose por tipo</Text>
+              {Object.entries(typeBreakdown).map(([type, { correct, total }]) => (
+                <View key={type} style={styles.breakdownRow}>
+                  <Text style={styles.breakdownLabel}>{typeLabels[type] ?? type}</Text>
+                  <View style={styles.breakdownBarBg}>
+                    <View style={[styles.breakdownBarFill, { width: `${Math.round((correct / total) * 100)}%` as any, backgroundColor: correct === total ? '#58CC02' : correct / total >= 0.5 ? '#FF9500' : '#FF4B4B' }]} />
+                  </View>
+                  <Text style={styles.breakdownPct}>{correct}/{total}</Text>
+                </View>
+              ))}
             </View>
           )}
-          {maxStreak >= 3 && (
-            <View style={[styles.rewardBadge, { borderColor: '#FF6B6B40' }]}>
-              <Text style={styles.rewardEmoji}>🔥</Text>
-              <Text style={styles.rewardValue}>Racha: {maxStreak}</Text>
-            </View>
-          )}
-        </View>
-        <TouchableOpacity style={styles.continueBtn} onPress={() => router.back()}>
-          <Text style={styles.continueBtnText}>Continuar →</Text>
-        </TouchableOpacity>
-        {errorWords.length > 0 && (
-          <TouchableOpacity
-            style={[styles.continueBtn, { backgroundColor: '#FF9500', marginTop: 12 }]}
-            onPress={() => router.push({ pathname: '/review/[levelId]', params: { levelId: String(levelNum) } } as any)}
-          >
-            <Text style={styles.continueBtnText}>🔄 Repasar {errorWords.length} error{errorWords.length > 1 ? 'es' : ''}</Text>
+
+          {/* Botones */}
+          <TouchableOpacity style={styles.continueBtn} onPress={() => router.back()}>
+            <Text style={styles.continueBtnText}>Continuar →</Text>
           </TouchableOpacity>
-        )}
+          <TouchableOpacity
+            style={[styles.continueBtn, { backgroundColor: '#2D3148', marginTop: 10 }]}
+            onPress={() => {
+              setCurrentIdx(0);
+              setHearts(game.hearts);
+              setWrongCount(0);
+              setErrorWords([]);
+              setInternalStreak(0);
+              setMaxStreak(0);
+              setTypeBreakdown({});
+              setElapsedSeconds(0);
+              setExerciseKey(k => k + 1);
+              setShowResult(false);
+            }}
+          >
+            <Text style={[styles.continueBtnText, { color: '#9CA3AF' }]}>🔄 Repetir nivel</Text>
+          </TouchableOpacity>
+          {errorWords.length > 0 && (
+            <TouchableOpacity
+              style={[styles.continueBtn, { backgroundColor: '#FF9500', marginTop: 10 }]}
+              onPress={() => router.push({ pathname: '/review/[levelId]', params: { levelId: String(levelNum) } } as any)}
+            >
+              <Text style={styles.continueBtnText}>🔄 Repasar {errorWords.length} error{errorWords.length > 1 ? 'es' : ''}</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
       </View>
     );
   }
@@ -911,6 +1034,7 @@ export default function ExerciseScreen() {
           </Text>
         </View>
         <View style={styles.subHeaderRight}>
+          <Text style={styles.timerText}>⏱ {formatTime(elapsedSeconds)}</Text>
           {internalStreak >= 3 && (
             <Reanimated.View style={[styles.streakBadge, streakBadgeAnimStyle]}>
               <Text style={styles.streakBadgeText}>🔥 {internalStreak}</Text>
@@ -921,6 +1045,20 @@ export default function ExerciseScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Toast de racha ¡En racha! */}
+      {showStreakToast && (
+        <Reanimated.View style={[styles.streakToast, toastAnimStyle]}>
+          <Text style={styles.streakToastText}>🔥 ¡En racha! 5 seguidas</Text>
+        </Reanimated.View>
+      )}
+
+      {/* XP flotante */}
+      {floatingXP && (
+        <Reanimated.View style={[styles.floatingXP, xpAnimStyle]}>
+          <Text style={styles.floatingXPText}>+{floatingXP.value} XP</Text>
+        </Reanimated.View>
+      )}
 
       <Reanimated.View style={[{ flex: 1 }, exerciseAnimStyle]}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
@@ -1171,6 +1309,70 @@ const styles = StyleSheet.create({
   fillSentenceTranslation: {
     fontSize: 13, color: '#9CA3AF', marginTop: 10,
     fontStyle: 'italic', lineHeight: 18,
+  },
+  sentenceTranslationBox: {
+    backgroundColor: '#1A1D27',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: '#8E5AF5',
+  },
+  sentenceTranslationText: {
+    fontSize: 13, color: '#C4A8FF', fontStyle: 'italic', lineHeight: 18,
+  },
+  timerText: {
+    fontSize: 12, color: '#6B7280', fontVariant: ['tabular-nums'],
+  },
+  streakToast: {
+    position: 'absolute',
+    top: 100,
+    alignSelf: 'center',
+    backgroundColor: '#FF9600',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    zIndex: 100,
+    shadowColor: '#FF9600',
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  streakToastText: {
+    color: '#FFFFFF', fontSize: 15, fontWeight: '700',
+  },
+  floatingXP: {
+    position: 'absolute',
+    top: 120,
+    right: 24,
+    zIndex: 99,
+  },
+  floatingXPText: {
+    color: '#58CC02', fontSize: 18, fontWeight: '800',
+    textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4,
+  },
+  breakdownContainer: {
+    width: '100%', backgroundColor: '#1A1D27', borderRadius: 16,
+    padding: 16, marginVertical: 16, borderWidth: 1, borderColor: '#2D3148',
+  },
+  breakdownTitle: {
+    fontSize: 14, color: '#9CA3AF', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase',
+  },
+  breakdownRow: {
+    flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 8,
+  },
+  breakdownLabel: {
+    fontSize: 12, color: '#FFFFFF', width: 100,
+  },
+  breakdownBarBg: {
+    flex: 1, height: 8, backgroundColor: '#2D3148', borderRadius: 4, overflow: 'hidden',
+  },
+  breakdownBarFill: {
+    height: 8, borderRadius: 4,
+  },
+  breakdownPct: {
+    fontSize: 12, color: '#9CA3AF', width: 30, textAlign: 'right',
   },
   fillOptionsGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 10,
