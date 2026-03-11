@@ -40,7 +40,8 @@ app-example
 
 # generated native folders
 /ios
-/android
+# /android is intentionally NOT ignored so the pre-generated gradle.properties
+# (with android.minSdkVersion=24) is included in the build checkpoint
 
 # IDE
 .vscode/
