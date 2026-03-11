@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   StatusBar, Alert, Switch, Modal, FlatList, Platform, Share, TextInput,
@@ -559,10 +560,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0A0A14' }]}>
+      <StatusBar barStyle="light-content" />
 
-      <View style={styles.header}>
+      <LinearGradient
+        colors={['#1A0A2E', '#0D0D1F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <Text style={styles.headerTitle}>👤 Perfil</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/stats' as any)} activeOpacity={0.7}>
@@ -575,7 +581,7 @@ export default function ProfileScreen() {
             <Text style={styles.logoutBtnText}>Salir</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
@@ -587,16 +593,26 @@ export default function ProfileScreen() {
           onClose={() => setShowAvatarPicker(false)}
         />
 
-        {/* Tarjeta de usuario */}
-        <View style={styles.userCard}>
+        {/* Tarjeta de usuario — Hero con gradiente */}
+        <LinearGradient
+          colors={['#1A0A2E', '#12121F', '#0A0A14']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.userCard}
+        >
           <TouchableOpacity
             style={{ position: 'relative' }}
             onPress={() => setShowAvatarPicker(true)}
             activeOpacity={0.8}
           >
-            <View style={styles.avatarCircle}>
+            <LinearGradient
+              colors={['#7C3AED', '#A855F7']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatarCircle}
+            >
               <Text style={{ fontSize: 42 }}>{avatar}</Text>
-            </View>
+            </LinearGradient>
             <View style={styles.avatarEditBtn}>
               <Text style={styles.avatarEditIcon}>✏️</Text>
             </View>
@@ -644,7 +660,7 @@ export default function ProfileScreen() {
             </View>
             <Text style={styles.courseProgressSub}>{stats.levelsCompleted} / 500 niveles completados</Text>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Estadísticas */}
         <Text style={styles.sectionTitle}>📊 Estadísticas</Text>
@@ -889,13 +905,14 @@ const styles = StyleSheet.create({
   settingsLinkArrow: { fontSize: 22, color: '#6B7280' },
   scroll: { padding: 16, gap: 16 },
   userCard: {
-    backgroundColor: '#1A1D27', borderRadius: 20, padding: 20,
-    alignItems: 'center', borderWidth: 1.5, borderColor: '#2D3148',
+    borderRadius: 24, padding: 24,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#2D1B5E',
+    overflow: 'hidden',
   },
   avatarCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#8E5AF5', justifyContent: 'center', alignItems: 'center',
-    marginBottom: 12, borderWidth: 3, borderColor: '#8E5AF540',
+    width: 88, height: 88, borderRadius: 44,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 12,
   },
   avatarText: { fontSize: 36, fontWeight: '800', color: '#FFFFFF' },
   userName: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },

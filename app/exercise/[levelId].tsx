@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, TouchableOpacity, StyleSheet, TextInput,
   ScrollView, Alert, Animated, StatusBar, Platform,
@@ -1229,8 +1230,14 @@ export default function ExerciseScreen() {
     }
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0A0A14' }]}>
         <StatusBar barStyle="light-content" />
+        <LinearGradient
+          colors={['#1A0A2E', '#0A0A14', '#0A0A14']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 220 }}
+        />
         <ScrollView contentContainerStyle={[styles.resultContainer, { paddingBottom: 40 }]}>
           <Text style={styles.resultEmoji}>⭐</Text>
           <Text style={styles.resultTitle}>¡Nivel Completado!</Text>
@@ -1334,11 +1341,16 @@ export default function ExerciseScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0A0A14' }]}>
+      <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={styles.exerciseHeader}>
+      {/* Header con gradiente */}
+      <LinearGradient
+        colors={['#1A0A2E', '#0D0D1F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.exerciseHeader}
+      >
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>✕</Text>
         </TouchableOpacity>
@@ -1352,7 +1364,7 @@ export default function ExerciseScreen() {
             </Text>
           ))}
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Sub-header */}
       <View style={styles.exerciseSubHeader}>
@@ -1474,17 +1486,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     gap: 12,
   },
   backBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#1A1D27',
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
   },
-  backBtnText: { color: '#9CA3AF', fontSize: 16, fontWeight: '700' },
-  progressBarBg: { flex: 1, height: 8, backgroundColor: '#2D3148', borderRadius: 4, overflow: 'hidden' },
-  progressBarFill: { height: 8, borderRadius: 4 },
+  backBtnText: { color: '#E0E0FF', fontSize: 16, fontWeight: '700' },
+  progressBarBg: { flex: 1, height: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' },
+  progressBarFill: { height: 10, borderRadius: 5 },
   heartsRow: { flexDirection: 'row', gap: 2 },
   heartIcon: { fontSize: 14 },
   heartEmpty: { opacity: 0.4 },
@@ -1508,14 +1521,19 @@ const styles = StyleSheet.create({
   optionsGrid: { gap: 10 },
   optionBtn: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 12, borderWidth: 2, padding: 14, gap: 12,
+    borderRadius: 16, borderWidth: 2, padding: 16, gap: 14,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
   optionLetter: {
-    width: 32, height: 32, borderRadius: 8, borderWidth: 1.5,
+    width: 36, height: 36, borderRadius: 10, borderWidth: 1.5,
     justifyContent: 'center', alignItems: 'center',
   },
-  optionLetterText: { fontSize: 14, fontWeight: '700' },
-  optionText: { fontSize: 15, fontWeight: '500', flex: 1 },
+  optionLetterText: { fontSize: 15, fontWeight: '800' },
+  optionText: { fontSize: 16, fontWeight: '600', flex: 1, lineHeight: 22 },
   hintBox: {
     backgroundColor: '#FFD70020', borderRadius: 10, padding: 12,
     marginBottom: 16, borderWidth: 1, borderColor: '#FFD70040',
@@ -1740,18 +1758,29 @@ const styles = StyleSheet.create({
   fillOptionText: { fontSize: 16, fontWeight: '600' },
   // Resultado
   resultContainer: { justifyContent: 'center', alignItems: 'center', padding: 32 },
-  resultEmoji: { fontSize: 80, marginBottom: 16 },
-  resultTitle: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },
-  resultSubtitle: { fontSize: 16, color: '#9CA3AF', marginBottom: 32 },
-  rewardsRow: { flexDirection: 'row', gap: 12, marginBottom: 40 },
-  rewardBadge: {
-    backgroundColor: '#1A1D27', borderRadius: 14, padding: 16,
-    alignItems: 'center', borderWidth: 1, borderColor: '#2D3148', minWidth: 80,
+  resultEmoji: { fontSize: 90, marginBottom: 16 },
+  resultTitle: {
+    fontSize: 34, fontWeight: '900', color: '#FFFFFF', marginBottom: 8,
+    textShadowColor: 'rgba(124,58,237,0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 12,
   },
-  rewardEmoji: { fontSize: 28, marginBottom: 4 },
-  rewardValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  continueBtn: { backgroundColor: '#58CC02', borderRadius: 16, paddingHorizontal: 40, paddingVertical: 18 },
-  continueBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  resultSubtitle: { fontSize: 16, color: '#A78BFA', marginBottom: 32, fontWeight: '600' },
+  rewardsRow: { flexDirection: 'row', gap: 10, marginBottom: 32, flexWrap: 'wrap', justifyContent: 'center' },
+  rewardBadge: {
+    backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 18, padding: 18,
+    alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.12)', minWidth: 80,
+    shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, shadowRadius: 12, elevation: 4,
+  },
+  rewardEmoji: { fontSize: 30, marginBottom: 6 },
+  rewardValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  continueBtn: {
+    backgroundColor: '#7C3AED', borderRadius: 18, paddingHorizontal: 48, paddingVertical: 18,
+    shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
+  },
+  continueBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
   // Pulso del botón de grabar
   recordPulseWrapper: {
     alignItems: 'center', justifyContent: 'center',

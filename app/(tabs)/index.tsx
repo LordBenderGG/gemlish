@@ -6,6 +6,7 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   StatusBar, Animated, ScrollView, TextInput, Modal,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Reanimated, {
   useSharedValue, useAnimatedStyle, withRepeat, withSequence,
   withTiming, withSpring, withDelay, Easing,
@@ -145,29 +146,42 @@ function StatsHeader({ username, gems, xp, streak }: {
   username: string; gems: number; xp: number; streak: number;
 }) {
   return (
-    <View>
+    <LinearGradient
+      colors={['#1A0A2E', '#0D0D1F', '#0A0A14']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.greeting}>¡Hola, {username}! 👋</Text>
           <View style={styles.progressRow}>
-            <Text style={styles.xpText}>⭐ {xp} XP</Text>
+            <Text style={styles.xpText}>⭐ {xp.toLocaleString()} XP</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
-          <View style={styles.statBadge}>
+          <LinearGradient
+            colors={['#0891B2', '#22D3EE']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.statBadgeGradient}
+          >
             <Text style={styles.statEmoji}>💎</Text>
-            <Text style={styles.statValue}>{gems}</Text>
-          </View>
-          <View style={[styles.statBadge, streak >= 3 && styles.statBadgeStreak]}>
+            <Text style={styles.statValueWhite}>{gems}</Text>
+          </LinearGradient>
+          <LinearGradient
+            colors={streak >= 3 ? ['#DC2626', '#F97316'] : ['#2D1B4E', '#3D2B5E']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.statBadgeGradient}
+          >
             <FireAnimation streak={streak} />
-            <Text style={[styles.statValue, streak >= 3 && styles.statValueStreak]}>{streak}</Text>
-            {streak >= 7 && <Text style={styles.streakLabel}>días</Text>}
-            {streak > 3 && <Text style={styles.streakHot}>🌡️</Text>}
-          </View>
+            <Text style={styles.statValueWhite}>{streak}</Text>
+            {streak >= 7 && <Text style={styles.streakLabel}>d</Text>}
+          </LinearGradient>
         </View>
       </View>
       <OfflineBadge />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -253,36 +267,100 @@ function LevelCard({ levelNum, isCompleted, isUnlocked, onPress, onPressLocked }
   const levelData = useMemo(() => getLevelData(levelNum), [levelNum]);
   const icon = useMemo(() => getLevelIcon(levelNum), [levelNum]);
 
-  const bgColor = !isUnlocked ? '#1A1D27' : isCompleted ? '#1A3A1A' : levelData.color + '22';
-  const borderColor = !isUnlocked ? '#2D3148' : isCompleted ? '#58CC02' : levelData.color;
-  const textColor = !isUnlocked ? '#4B5563' : '#FFFFFF';
+  if (!isUnlocked) {
+    return (
+      <TouchableOpacity
+        style={styles.levelCardLocked}
+        onPress={onPressLocked}
+        activeOpacity={0.7}
+      >
+        <View style={styles.levelLeft}>
+          <View style={styles.levelIconBgLocked}>
+            <Text style={styles.levelIconText}>🔒</Text>
+          </View>
+          <View style={styles.levelInfo}>
+            <Text style={styles.levelNumLocked}>Nivel {levelNum}</Text>
+            <Text style={styles.levelTopicLocked} numberOfLines={1}>{levelData.name}</Text>
+          </View>
+        </View>
+        <Text style={styles.lockedText}>🔒</Text>
+      </TouchableOpacity>
+    );
+  }
 
+  if (isCompleted) {
+    return (
+      <TouchableOpacity
+        style={styles.levelCardCompleted}
+        onPress={onPress}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={[levelData.color + '30', levelData.color + '10']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.levelCardGradientInner}
+        >
+          <View style={styles.levelLeft}>
+            <View style={[styles.levelIconBgCompleted, { backgroundColor: levelData.color + '40' }]}>
+              <Text style={styles.levelIconText}>{icon}</Text>
+            </View>
+            <View style={styles.levelInfo}>
+              <Text style={[styles.levelNum, { color: '#F0EEFF' }]}>Nivel {levelNum}</Text>
+              <Text style={[styles.levelTopic, { color: levelData.color }]} numberOfLines={1}>{levelData.name}</Text>
+            </View>
+          </View>
+          <View style={styles.completedRight}>
+            <LinearGradient
+              colors={['#059669', '#34D399']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.completedBadgeGradient}
+            >
+              <Text style={styles.completedBadgeText}>✓</Text>
+            </LinearGradient>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  // Nivel desbloqueado sin completar
   return (
     <TouchableOpacity
-      style={[styles.levelCard, { backgroundColor: bgColor, borderColor }]}
-      onPress={isUnlocked ? onPress : onPressLocked}
-      activeOpacity={0.75}
+      style={styles.levelCardUnlocked}
+      onPress={onPress}
+      activeOpacity={0.8}
     >
-      <View style={styles.levelLeft}>
-        <View style={[styles.levelIconBg, { backgroundColor: isUnlocked ? levelData.color + '33' : '#2D3148' }]}>
-          <Text style={styles.levelIconText}>{isUnlocked ? icon : '🔒'}</Text>
-        </View>
-        <View style={styles.levelInfo}>
-          <Text style={[styles.levelNum, { color: textColor }]}>Nivel {levelNum}</Text>
-          <Text style={[styles.levelTopic, { color: isUnlocked ? levelData.color : '#4B5563' }]} numberOfLines={1}>
-            {levelData.name}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.levelRight}>
-        {isCompleted && <Text style={styles.completedBadge}>✅</Text>}
-        {isUnlocked && !isCompleted && (
-          <View style={[styles.playBtn, { backgroundColor: levelData.color }]}>
-            <Text style={styles.playBtnText}>▶</Text>
+      <LinearGradient
+        colors={['#1A1535', '#12121F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.levelCardGradientInner}
+      >
+        <View style={styles.levelLeft}>
+          <LinearGradient
+            colors={[levelData.color + '60', levelData.color + '30']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.levelIconBgGradient}
+          >
+            <Text style={styles.levelIconText}>{icon}</Text>
+          </LinearGradient>
+          <View style={styles.levelInfo}>
+            <Text style={[styles.levelNum, { color: '#F0EEFF' }]}>Nivel {levelNum}</Text>
+            <Text style={[styles.levelTopic, { color: levelData.color }]} numberOfLines={1}>{levelData.name}</Text>
           </View>
-        )}
-        {!isUnlocked && <Text style={styles.lockedText}>🔒</Text>}
-      </View>
+        </View>
+        <LinearGradient
+          colors={[levelData.color, levelData.color + 'CC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.playBtnGradient}
+        >
+          <Text style={styles.playBtnText}>▶</Text>
+        </LinearGradient>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
@@ -475,48 +553,57 @@ export default function LevelsScreen() {
         const isCompleted = dailyChallenge.completed;
         return (
           <TouchableOpacity
-            style={[styles.challengeCard, isCompleted && styles.challengeCardDone]}
+            style={styles.challengeCardOuter}
             onPress={handleChallengePress}
             activeOpacity={0.88}
           >
-            {/* Fondo de brillo animado */}
-            {!isCompleted && (
-              <Reanimated.View
-                style={[StyleSheet.absoluteFill, styles.challengeShine, challengeShineStyle]}
-                pointerEvents="none"
-              />
-            )}
-            <View style={styles.challengeLeft}>
-              <View style={[styles.challengeIconBg, { backgroundColor: challengeLevelData.color + '33' }]}>
-                <Text style={styles.challengeIcon}>
-                  {isCompleted ? '✅' : '🎯'}
-                </Text>
-              </View>
-              <View style={styles.challengeInfo}>
-                <View style={styles.challengeTitleRow}>
-                  <Text style={styles.challengeLabel}>Desafío del día</Text>
-                  {!isCompleted && (
-                    <View style={styles.challengeX2Badge}>
-                      <Text style={styles.challengeX2Text}>×2 XP</Text>
-                    </View>
-                  )}
+            <LinearGradient
+              colors={isCompleted
+                ? ['#064E3B', '#065F46', '#059669']
+                : ['#78350F', '#92400E', '#B45309']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.challengeGradient}
+            >
+              {/* Brillo animado */}
+              {!isCompleted && (
+                <Reanimated.View
+                  style={[StyleSheet.absoluteFill, styles.challengeShine, challengeShineStyle]}
+                  pointerEvents="none"
+                />
+              )}
+              <View style={styles.challengeLeft}>
+                <View style={styles.challengeIconBgNew}>
+                  <Text style={styles.challengeIcon}>
+                    {isCompleted ? '🏆' : '🎯'}
+                  </Text>
                 </View>
-                <Text style={[styles.challengeLevelName, { color: challengeLevelData.color }]} numberOfLines={1}>
-                  Nivel {dailyChallenge.levelId}: {challengeLevelData.name}
-                </Text>
-                {isCompleted ? (
-                  <Text style={styles.challengeCompletedText}>✨ ¡Completado! +{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎</Text>
-                ) : (
-                  <Text style={styles.challengeRewardText}>+{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎 al completar</Text>
-                )}
-                {countdownText ? (
-                  <Text style={styles.challengeCountdown}>⏱ Caduca en {countdownText}</Text>
-                ) : null}
+                <View style={styles.challengeInfo}>
+                  <View style={styles.challengeTitleRow}>
+                    <Text style={styles.challengeLabelNew}>DESAFÍO DEL DÍA</Text>
+                    {!isCompleted && (
+                      <View style={styles.challengeX2BadgeNew}>
+                        <Text style={styles.challengeX2TextNew}>×2 XP</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.challengeLevelNameNew} numberOfLines={1}>
+                    Nivel {dailyChallenge.levelId}: {challengeLevelData.name}
+                  </Text>
+                  {isCompleted ? (
+                    <Text style={styles.challengeCompletedTextNew}>✨ ¡Completado! +{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎</Text>
+                  ) : (
+                    <Text style={styles.challengeRewardTextNew}>+{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎 al completar</Text>
+                  )}
+                  {countdownText ? (
+                    <Text style={styles.challengeCountdownNew}>⏱ {countdownText}</Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
-            <Text style={[styles.challengeArrow, { color: isCompleted ? '#58CC02' : challengeLevelData.color }]}>
-              {isCompleted ? '✓' : '›'}
-            </Text>
+              <View style={styles.challengeArrowContainer}>
+                <Text style={styles.challengeArrowNew}>{isCompleted ? '✓' : '›'}</Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
         );
       })()}
@@ -692,8 +779,17 @@ const styles = StyleSheet.create({
     borderColor: '#2D3148',
     gap: 4,
   },
+  statBadgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    gap: 5,
+  },
   statEmoji: { fontSize: 14 },
   statValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
+  statValueWhite: { fontSize: 15, fontWeight: '800', color: '#FFFFFF' },
   globalProgress: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -705,39 +801,79 @@ const styles = StyleSheet.create({
   progressPct: { fontSize: 12, color: '#58CC02', fontWeight: '700' },
   progressBarBg: { height: 6, backgroundColor: '#2D3148', borderRadius: 3 },
   progressBarFill: { height: 6, backgroundColor: '#58CC02', borderRadius: 3 },
-  list: { padding: 12, paddingBottom: 20 },
-  levelCard: {
+  list: { padding: 10, paddingBottom: 20 },
+  // Tarjeta bloqueada
+  levelCardLocked: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 14,
-    borderWidth: 1.5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#1E1B3A',
+    backgroundColor: '#0D0D1A',
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 8,
-    height: 68,
+    paddingVertical: 11,
+    marginBottom: 6,
+    opacity: 0.5,
+  },
+  // Tarjeta completada
+  levelCardCompleted: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#34D39940',
+    marginBottom: 6,
+    overflow: 'hidden',
+  },
+  // Tarjeta desbloqueada
+  levelCardUnlocked: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#2D1B5E',
+    marginBottom: 6,
+    overflow: 'hidden',
+  },
+  levelCardGradientInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   levelLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  levelIconBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+  levelIconBgLocked: {
+    width: 44, height: 44, borderRadius: 12,
+    backgroundColor: '#1E1B3A',
+    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+  },
+  levelIconBgCompleted: {
+    width: 44, height: 44, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+  },
+  levelIconBgGradient: {
+    width: 44, height: 44, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center', marginRight: 12,
   },
   levelIconText: { fontSize: 22 },
   levelInfo: { flex: 1 },
   levelNum: { fontSize: 14, fontWeight: '700' },
-  levelTopic: { fontSize: 12, fontWeight: '500', marginTop: 2 },
+  levelNumLocked: { fontSize: 14, fontWeight: '700', color: '#4B5563' },
+  levelTopic: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+  levelTopicLocked: { fontSize: 12, fontWeight: '500', marginTop: 2, color: '#374151' },
   levelRight: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  completedRight: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
   completedBadge: { fontSize: 22 },
+  completedBadgeGradient: {
+    width: 34, height: 34, borderRadius: 17,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  completedBadgeText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
   playBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 34, height: 34, borderRadius: 17,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  playBtnGradient: {
+    width: 36, height: 36, borderRadius: 18,
+    justifyContent: 'center', alignItems: 'center',
   },
   playBtnText: { color: '#FFFFFF', fontSize: 12, marginLeft: 2 },
   lockedText: { fontSize: 18 },
@@ -925,7 +1061,26 @@ const styles = StyleSheet.create({
   unlockTitle: { fontSize: 22, fontWeight: '900', color: '#58CC02', marginBottom: 6 },
   unlockSubtitle: { fontSize: 15, color: '#FFFFFF', fontWeight: '600', marginBottom: 4 },
   unlockDesc: { fontSize: 13, color: '#9CA3AF', textAlign: 'center' },
-  // ─── Desafío del día ─────────────────────────────────────────────────────
+  //  // ─── Desafío del día (nuevo diseño) ─────────────────────────────────────
+  challengeCardOuter: {
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 4,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  challengeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
   challengeCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -946,8 +1101,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#58CC0210',
   },
   challengeShine: {
-    backgroundColor: '#FFD700',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.05,
+    borderRadius: 20,
   },
   challengeLeft: {
     flexDirection: 'row',
@@ -956,65 +1112,62 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   challengeIconBg: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 46, height: 46, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
   },
-  challengeIcon: { fontSize: 24 },
+  challengeIconBgNew: {
+    width: 50, height: 50, borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  challengeIcon: { fontSize: 26 },
   challengeInfo: { flex: 1 },
   challengeTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3,
   },
   challengeLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFD700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 11, fontWeight: '800', color: '#FFD700',
+    textTransform: 'uppercase', letterSpacing: 0.5,
+  },
+  challengeLabelNew: {
+    fontSize: 10, fontWeight: '900', color: 'rgba(255,255,255,0.8)',
+    textTransform: 'uppercase', letterSpacing: 1.2,
   },
   challengeX2Badge: {
-    backgroundColor: '#FFD70025',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: '#FFD70060',
+    backgroundColor: '#FFD70025', borderRadius: 6,
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderWidth: 1, borderColor: '#FFD70060',
   },
-  challengeX2Text: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#FFD700',
+  challengeX2BadgeNew: {
+    backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
   },
-  challengeLevelName: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 2,
+  challengeX2Text: { fontSize: 10, fontWeight: '900', color: '#FFD700' },
+  challengeX2TextNew: { fontSize: 11, fontWeight: '900', color: '#FFFFFF' },
+  challengeLevelName: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  challengeLevelNameNew: {
+    fontSize: 15, fontWeight: '800', color: '#FFFFFF', marginBottom: 2,
   },
-  challengeRewardText: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    fontWeight: '500',
+  challengeRewardText: { fontSize: 11, color: '#9CA3AF', fontWeight: '500' },
+  challengeRewardTextNew: {
+    fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '600',
   },
-  challengeCompletedText: {
-    fontSize: 11,
-    color: '#58CC02',
-    fontWeight: '600',
+  challengeCompletedText: { fontSize: 11, color: '#58CC02', fontWeight: '600' },
+  challengeCompletedTextNew: {
+    fontSize: 12, color: 'rgba(255,255,255,0.9)', fontWeight: '700',
   },
-  challengeArrow: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginLeft: 8,
+  challengeArrow: { fontSize: 26, fontWeight: '700', marginLeft: 8 },
+  challengeArrowContainer: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center', marginLeft: 8,
   },
+  challengeArrowNew: { fontSize: 22, fontWeight: '900', color: '#FFFFFF' },
   challengeCountdown: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    marginTop: 2,
-    fontVariant: ['tabular-nums'],
+    fontSize: 10, color: '#9CA3AF', marginTop: 2, fontVariant: ['tabular-nums'],
+  },
+  challengeCountdownNew: {
+    fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontVariant: ['tabular-nums'],
   },
 });
 

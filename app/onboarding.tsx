@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   Dimensions, Animated, StatusBar, FlatList,
@@ -230,12 +231,17 @@ export default function OnboardingScreen() {
   // Si hay usuarios existentes, mostrar pantalla de bienvenida de vuelta
   if (showWelcomeBack) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <StatusBar barStyle="light-content" backgroundColor="#0F1117" />
+      <LinearGradient
+        colors={['#0A0A14', '#12082A', '#0A0A14']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+      >
+        <StatusBar barStyle="light-content" />
         <View style={styles.welcomeBackWrapper}>
           <WelcomeBackScreen onContinue={handleWelcomeBackContinue} />
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -243,8 +249,13 @@ export default function OnboardingScreen() {
   const isLast = currentIndex === SLIDES.length - 1;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F1117" />
+    <LinearGradient
+      colors={['#0A0A14', '#12082A', '#0A0A14']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+    >
+      <StatusBar barStyle="light-content" />
 
       {/* Botón Saltar */}
       {!isLast && (
@@ -315,14 +326,13 @@ export default function OnboardingScreen() {
           {currentIndex + 1} / {SLIDES.length}
         </Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1117',
     alignItems: 'center',
   },
   skipBtn: {
