@@ -4,6 +4,10 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   StatusBar, Animated,
 } from 'react-native';
+import Reanimated, {
+  useSharedValue, useAnimatedStyle, withRepeat, withSequence,
+  withTiming, withSpring, Easing,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
@@ -49,25 +53,65 @@ function OfflineBadge() {
   );
 }
 
+function FireAnimation({ streak }: { streak: number }) {
+  // Animación de llama cuando la racha es > 3 días
+  const scale = useSharedValue(1);
+  const rotate = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    if (streak > 3) {
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.35, { duration: 400, easing: Easing.out(Easing.quad) }),
+          withTiming(1.0, { duration: 400, easing: Easing.in(Easing.quad) }),
+        ),
+        -1, true
+      );
+      rotate.value = withRepeat(
+        withSequence(
+          withTiming(-8, { duration: 300 }),
+          withTiming(8, { duration: 300 }),
+          withTiming(0, { duration: 200 }),
+        ),
+        -1, false
+      );
+      opacity.value = withRepeat(
+        withSequence(
+          withTiming(0.75, { duration: 500 }),
+          withTiming(1, { duration: 500 }),
+        ),
+        -1, true
+      );
+    } else if (streak > 0) {
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.2, { duration: 600 }),
+          withTiming(1.0, { duration: 600 }),
+        ),
+        -1, true
+      );
+    }
+  }, [streak]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { rotate: `${rotate.value}deg` },
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Reanimated.Text style={[styles.statEmoji, animStyle]}>
+      {streak > 3 ? '🔥' : '🔥'}
+    </Reanimated.Text>
+  );
+}
+
 function StatsHeader({ username, gems, xp, streak }: {
   username: string; gems: number; xp: number; streak: number;
 }) {
-  // Animación de pulso para la racha
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (streak > 0) {
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.25, duration: 600, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1.0, duration: 600, useNativeDriver: true }),
-        ])
-      );
-      pulse.start();
-      return () => pulse.stop();
-    }
-  }, [streak, pulseAnim]);
-
   return (
     <View>
       <View style={styles.header}>
@@ -83,11 +127,10 @@ function StatsHeader({ username, gems, xp, streak }: {
             <Text style={styles.statValue}>{gems}</Text>
           </View>
           <View style={[styles.statBadge, streak >= 3 && styles.statBadgeStreak]}>
-            <Animated.Text style={[styles.statEmoji, streak > 0 && { transform: [{ scale: pulseAnim }] }]}>
-              🔥
-            </Animated.Text>
+            <FireAnimation streak={streak} />
             <Text style={[styles.statValue, streak >= 3 && styles.statValueStreak]}>{streak}</Text>
             {streak >= 7 && <Text style={styles.streakLabel}>días</Text>}
+            {streak > 3 && <Text style={styles.streakHot}>🌡️</Text>}
           </View>
         </View>
       </View>
@@ -316,6 +359,7 @@ const styles = StyleSheet.create({
   },
   statValueStreak: { color: '#FF9500' },
   streakLabel: { fontSize: 9, color: '#FF9500', fontWeight: '600', marginLeft: 2 },
+  streakHot: { fontSize: 10, marginLeft: 1 },
   offlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',

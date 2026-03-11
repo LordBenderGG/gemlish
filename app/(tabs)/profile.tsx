@@ -4,6 +4,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   StatusBar, Alert, Switch, Modal, FlatList, Platform, Share,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -365,6 +366,43 @@ function HardWordsSection({ levelErrors }: { levelErrors: Record<number, string[
 
 // ─── Pantalla de Perfil ───────────────────────────────────────────────────────
 
+const AVATAR_EMOJIS = [
+  '🦊', '🐻', '🐸', '🦁', '🐼', '🐯', '🦋', '🐮',
+  '🐶', '🐱', '🐧', '🐷', '🐺', '🦍', '🐢', '🦉',
+  '🐬', '🦈', '🐙', '🐮‍💨', '🦖', '🦒', '🦓', '🦚',
+];
+const AVATAR_KEY = '@gemlish_avatar';
+
+function AvatarPickerModal({
+  visible, current, onSelect, onClose,
+}: { visible: boolean; current: string; onSelect: (e: string) => void; onClose: () => void }) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.avatarModalOverlay}>
+        <View style={styles.avatarModalBox}>
+          <Text style={styles.avatarModalTitle}>🎨 Elige tu avatar</Text>
+          <Text style={styles.avatarModalSub}>Toca un emoji para usarlo como tu avatar</Text>
+          <View style={styles.avatarGrid}>
+            {AVATAR_EMOJIS.map(emoji => (
+              <TouchableOpacity
+                key={emoji}
+                style={[styles.avatarOption, current === emoji && styles.avatarOptionSelected]}
+                onPress={() => onSelect(emoji)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.avatarOptionEmoji}>{emoji}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.avatarModalClose} onPress={onClose} activeOpacity={0.8}>
+            <Text style={styles.avatarModalCloseText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
@@ -372,6 +410,18 @@ export default function ProfileScreen() {
   const { colorScheme, setColorScheme, isManual, resetToSystem } = useThemeContext();
   const isDark = colorScheme === 'dark';
   const [practiceHistory, setPracticeHistory] = useState<PracticeSession[]>([]);
+  const [avatar, setAvatar] = useState('🦊');
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(AVATAR_KEY).then(v => { if (v) setAvatar(v); });
+  }, []);
+
+  const handleSelectAvatar = useCallback(async (emoji: string) => {
+    setAvatar(emoji);
+    await AsyncStorage.setItem(AVATAR_KEY, emoji);
+    setShowAvatarPicker(false);
+  }, []);
 
   useEffect(() => {
     if (username) {
@@ -441,13 +491,28 @@ export default function ProfileScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
+        {/* Selector de avatar */}
+        <AvatarPickerModal
+          visible={showAvatarPicker}
+          current={avatar}
+          onSelect={handleSelectAvatar}
+          onClose={() => setShowAvatarPicker(false)}
+        />
+
         {/* Tarjeta de usuario */}
         <View style={styles.userCard}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>
-              {username ? username.charAt(0).toUpperCase() : '?'}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={{ position: 'relative' }}
+            onPress={() => setShowAvatarPicker(true)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.avatarCircle}>
+              <Text style={{ fontSize: 42 }}>{avatar}</Text>
+            </View>
+            <View style={styles.avatarEditBtn}>
+              <Text style={styles.avatarEditIcon}>✏️</Text>
+            </View>
+          </TouchableOpacity>
           <Text style={styles.userName}>{username}</Text>
           <View style={[styles.levelBadge, { borderColor: levelTitle.color }]}>
             <Text style={[styles.levelBadgeText, { color: levelTitle.color }]}>{levelTitle.title}</Text>
@@ -792,4 +857,37 @@ const styles = StyleSheet.create({
   },
   practiceHistoryAccuracyNum: { fontSize: 18, fontWeight: '800' },
   practiceHistoryAccuracyLabel: { fontSize: 10, color: '#9CA3AF', fontWeight: '600' },
+  // Avatar picker
+  avatarModalOverlay: {
+    flex: 1, backgroundColor: '#00000088',
+    justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  avatarModalBox: {
+    backgroundColor: '#1A1D27', borderRadius: 24, padding: 24,
+    width: '100%', maxWidth: 360,
+    borderWidth: 1, borderColor: '#2D3148',
+  },
+  avatarModalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', marginBottom: 4 },
+  avatarModalSub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginBottom: 20 },
+  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 20 },
+  avatarOption: {
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: '#0F1117', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#2D3148',
+  },
+  avatarOptionSelected: { borderColor: '#8E5AF5', backgroundColor: '#8E5AF520' },
+  avatarOptionEmoji: { fontSize: 26 },
+  avatarModalClose: {
+    backgroundColor: '#2D3148', borderRadius: 14,
+    paddingVertical: 14, alignItems: 'center',
+  },
+  avatarModalCloseText: { color: '#9CA3AF', fontWeight: '700', fontSize: 15 },
+  // Avatar edit button
+  avatarEditBtn: {
+    position: 'absolute', bottom: -4, right: -4,
+    backgroundColor: '#8E5AF5', borderRadius: 12,
+    width: 24, height: 24, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#1A1D27',
+  },
+  avatarEditIcon: { fontSize: 12 },
 });

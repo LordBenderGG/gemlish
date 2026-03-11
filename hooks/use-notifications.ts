@@ -11,6 +11,7 @@ const NOTIFICATION_HOUR_KEY = '@gemlish_notification_hour';
 const NOTIFICATION_MINUTE_KEY = '@gemlish_notification_minute';
 const NOTIFICATION_ENABLED_KEY = '@gemlish_notification_enabled';
 const NOTIFICATION_ID_KEY = '@gemlish_notification_id';
+const WEEKLY_NOTIFICATION_ID_KEY = '@gemlish_weekly_notification_id';
 
 // Configurar cómo se muestran las notificaciones en foreground
 Notifications.setNotificationHandler({
@@ -178,6 +179,65 @@ export function useNotifications() {
     }
   }, [settings.enabled, enableNotifications]);
 
+  /**
+   * Programa una notificación de resumen semanal los lunes a las 9:00 AM.
+   * Incluye niveles completados la semana pasada, racha actual y palabras aprendidas.
+   */
+  const scheduleWeeklySummary = useCallback(async (params: {
+    levelsLastWeek: number;
+    streak: number;
+    wordsLearned: number;
+  }): Promise<void> => {
+    try {
+      const granted = await requestPermission();
+      if (!granted) return;
+
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('gemlish-weekly', {
+          name: 'Resumen Semanal',
+          importance: Notifications.AndroidImportance.DEFAULT,
+          sound: 'default',
+        });
+      }
+
+      // Cancelar resumen semanal anterior
+      const prevId = await AsyncStorage.getItem(WEEKLY_NOTIFICATION_ID_KEY);
+      if (prevId) {
+        await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
+      }
+
+      const { levelsLastWeek, streak, wordsLearned } = params;
+      const title = '📊 Tu resumen semanal de Gemlish';
+      const body = [
+        levelsLastWeek > 0 ? `🏆 ${levelsLastWeek} niveles completados esta semana` : '💪 ¡Empieza esta semana con fuerza!',
+        streak > 0 ? `🔥 Racha actual: ${streak} días` : '',
+        wordsLearned > 0 ? `📚 ${wordsLearned} palabras aprendidas en total` : '',
+      ].filter(Boolean).join(' · ');
+
+      // Programar para el próximo lunes a las 9:00 AM
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          sound: 'default',
+          data: { screen: 'stats' },
+          ...(Platform.OS === 'android' && { channelId: 'gemlish-weekly' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          weekday: 2, // Lunes (1=Domingo, 2=Lunes)
+          hour: 9,
+          minute: 0,
+          repeats: true,
+        } as Notifications.CalendarTriggerInput,
+      });
+
+      await AsyncStorage.setItem(WEEKLY_NOTIFICATION_ID_KEY, id);
+    } catch (err) {
+      console.warn('[useNotifications] Error scheduling weekly summary:', err);
+    }
+  }, [requestPermission]);
+
   return {
     settings,
     permissionGranted,
@@ -186,5 +246,6 @@ export function useNotifications() {
     disableNotifications,
     updateTime,
     requestPermission,
+    scheduleWeeklySummary,
   };
 }

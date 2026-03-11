@@ -10,6 +10,7 @@ import { useThemeContext } from '@/lib/theme-provider';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useSoundSettings } from '@/lib/sound-settings';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useGame } from '@/context/GameContext';
 
 // ─── Selector de Hora ─────────────────────────────────────────────────────────
 
@@ -109,8 +110,9 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
   const { colorScheme, setColorScheme, isManual, resetToSystem } = useThemeContext();
-  const { settings, loading, enableNotifications, disableNotifications, updateTime } = useNotifications();
+  const { settings, loading, enableNotifications, disableNotifications, updateTime, scheduleWeeklySummary } = useNotifications();
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
+  const { game } = useGame();
   const isDark = colorScheme === 'dark';
 
   const openSystemSettings = useCallback(() => {
@@ -141,12 +143,25 @@ export default function SettingsScreen() {
             { text: '⚙️ Abrir Configuración', onPress: openSystemSettings },
           ]
         );
+      } else {
+        // Programar también el resumen semanal de los lunes
+        const totalLevels = Object.values(game.levelProgress).filter(p => p.completed).length;
+        const levelsLastWeek = Object.entries(game.levelCompletedDates ?? {}).filter(([date]) => {
+          const d = new Date(date);
+          const weekAgo = new Date(Date.now() - 7 * 86400000);
+          return d >= weekAgo;
+        }).reduce((acc, [, count]) => acc + count, 0);
+        await scheduleWeeklySummary({
+          levelsLastWeek,
+          streak: game.streak,
+          wordsLearned: totalLevels * 10,
+        });
       }
     } else {
       await disableNotifications();
     }
     setSaving(false);
-  }, [saving, settings, enableNotifications, disableNotifications, openSystemSettings]);
+  }, [saving, settings, game, enableNotifications, disableNotifications, openSystemSettings, scheduleWeeklySummary]);
 
   const handleTimeConfirm = useCallback(async (h: number, m: number) => {
     setShowPicker(false);

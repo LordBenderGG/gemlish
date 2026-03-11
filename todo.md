@@ -142,3 +142,9 @@
 - [x] Registrar fecha de cada nivel completado en GameState (levelCompletedDates)
 - [x] Actualizar gráfica de /stats con niveles completados reales por día
 - [x] Mostrar toast de logros pendientes al abrir la app (logros desbloqueados mientras estaba cerrada)
+
+## v1.16 — Mejoras aprobadas
+- [x] Animación de fuego mejorada en racha del mapa (Reanimated, con rotación y opacidad cuando streak > 3)
+- [x] Notificación de resumen semanal los lunes a las 9:00 AM (se activa junto al recordatorio diario)
+- [x] Selector de avatar/emoji en el Perfil (24 opciones, persiste en AsyncStorage)
+
