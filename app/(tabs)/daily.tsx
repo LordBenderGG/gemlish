@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   StatusBar, Alert,
 } from 'react-native';
-import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
 import { getDailyWords, Word } from '@/data/lessons';
+import { useSpeech } from '@/hooks/use-speech';
 
 interface WordCardProps {
   word: Word;
@@ -15,52 +15,12 @@ interface WordCardProps {
 }
 
 function WordCard({ word, isLearned, onLearn }: WordCardProps) {
-  const [speaking, setSpeaking] = useState(false);
-  const speakingRef = useRef(false);
+  const { speaking, toggle, currentWord } = useSpeech();
+  const isThisWordSpeaking = speaking && currentWord === word.word;
 
   const handleSpeak = useCallback(() => {
-    // Si ya está hablando, detener
-    if (speakingRef.current) {
-      Speech.stop();
-      speakingRef.current = false;
-      setSpeaking(false);
-      return;
-    }
-
-    speakingRef.current = true;
-    setSpeaking(true);
-
-    Speech.speak(word.word, {
-      language: 'en-US',
-      rate: 0.85,
-      pitch: 1.0,
-      onStart: () => {
-        speakingRef.current = true;
-        setSpeaking(true);
-      },
-      onDone: () => {
-        speakingRef.current = false;
-        setSpeaking(false);
-      },
-      onStopped: () => {
-        speakingRef.current = false;
-        setSpeaking(false);
-      },
-      onError: () => {
-        speakingRef.current = false;
-        setSpeaking(false);
-      },
-    });
-  }, [word.word]);
-
-  useEffect(() => {
-    return () => {
-      if (speakingRef.current) {
-        Speech.stop();
-        speakingRef.current = false;
-      }
-    };
-  }, []);
+    toggle(word.word);
+  }, [word.word, toggle]);
 
   return (
     <View style={[styles.wordCard, isLearned && styles.wordCardLearned]}>
@@ -70,11 +30,11 @@ function WordCard({ word, isLearned, onLearn }: WordCardProps) {
           <Text style={styles.wordPronunciation}>{word.pronunciation}</Text>
         </View>
         <TouchableOpacity
-          style={[styles.speakBtn, speaking && styles.speakBtnActive]}
+          style={[styles.speakBtn, isThisWordSpeaking && styles.speakBtnActive]}
           onPress={handleSpeak}
           activeOpacity={0.7}
         >
-          <Text style={styles.speakBtnText}>{speaking ? '⏹' : '🔊'}</Text>
+          <Text style={styles.speakBtnText}>{isThisWordSpeaking ? '⏹' : '🔊'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -106,9 +66,6 @@ export default function DailyScreen() {
 
   useEffect(() => {
     resetDailyIfNeeded();
-    return () => {
-      Speech.stop();
-    };
   }, []);
 
   const learnedCount = Object.values(daily.learnedWords).filter(Boolean).length;

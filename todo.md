@@ -75,3 +75,9 @@
 - [x] Pantalla de Perfil con estadísticas y 24 logros desbloqueables
 - [x] Ejercicio de escucha: TTS pronuncia, usuario escribe sin ver la palabra
 - [x] Sistema de logros y medallas (10 niveles, 7 días racha, 100 palabras, etc.)
+
+## v1.5 — Correcciones y mejoras aprobadas
+- [x] Bug: Audio TTS corregido con hook useSpeech centralizado y expo-speech v14.0.8
+- [x] Notificaciones diarias configurables con expo-notifications
+- [x] Pantalla de detalle de nivel con palabras aprendidas y repaso de pronunciación
+- [x] Expandir vocabulario a 50 lecciones (negocios, viajes, frases cotidianas, phrasal verbs, gramática, idioms)

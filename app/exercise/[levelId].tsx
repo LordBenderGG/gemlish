@@ -6,7 +6,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
-import * as Speech from 'expo-speech';
+import { useSpeech } from '@/hooks/use-speech';
 import {
   generateLevel,
   MultipleChoiceExercise,
@@ -313,41 +313,18 @@ function ListenWriteView({
   const [input, setInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
+  const { speaking, speak, toggle } = useSpeech();
 
   const handleSpeak = useCallback(() => {
-    if (speaking) {
-      Speech.stop();
-      setSpeaking(false);
-      return;
-    }
-    setSpeaking(true);
-    Speech.speak(exercise.wordToSpeak, {
-      language: 'en-US',
-      rate: 0.8,
-      pitch: 1.0,
-      onDone: () => setSpeaking(false),
-      onStopped: () => setSpeaking(false),
-      onError: () => setSpeaking(false),
-    });
-  }, [speaking, exercise.wordToSpeak]);
+    toggle(exercise.wordToSpeak);
+  }, [exercise.wordToSpeak, toggle]);
 
   // Pronunciar automáticamente al montar
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSpeaking(true);
-      Speech.speak(exercise.wordToSpeak, {
-        language: 'en-US',
-        rate: 0.8,
-        onDone: () => setSpeaking(false),
-        onStopped: () => setSpeaking(false),
-        onError: () => setSpeaking(false),
-      });
-    }, 400);
-    return () => {
-      clearTimeout(timer);
-      Speech.stop();
-    };
+      speak(exercise.wordToSpeak);
+    }, 600);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSubmit = () => {

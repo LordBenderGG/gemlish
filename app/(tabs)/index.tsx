@@ -92,8 +92,13 @@ export default function LevelsScreen() {
   );
 
   const handleLevelPress = useCallback((levelNum: number) => {
-    router.push(`/exercise/${levelNum}` as any);
-  }, []);
+    const isCompleted = !!game.levelProgress[levelNum]?.completed;
+    if (isCompleted) {
+      router.push(`/level/${levelNum}` as any);
+    } else {
+      router.push(`/exercise/${levelNum}` as any);
+    }
+  }, [game.levelProgress]);
 
   const renderItem = useCallback(({ item: levelNum }: { item: number }) => {
     const isCompleted = !!levelProgress[levelNum]?.completed;
