@@ -424,9 +424,14 @@ export default function ProfileScreen() {
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>👤 Perfil</Text>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutBtnText}>Salir</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/settings' as any)} activeOpacity={0.7}>
+            <Text style={styles.settingsBtnText}>⚙️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutBtnText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -455,31 +460,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Apariencia */}
-        <Text style={styles.sectionTitle}>🎨 Apariencia</Text>
-        <View style={styles.appearanceCard}>
-          <View style={styles.themeRow}>
-            <Text style={styles.themeEmoji}>{isDark ? '🌙' : '☀️'}</Text>
-            <View style={styles.themeInfo}>
-              <Text style={styles.themeTitle}>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</Text>
-              <Text style={styles.themeSub}>
-                {isManual ? 'Configurado manualmente' : 'Siguiendo el sistema'}
-              </Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={val => setColorScheme(val ? 'dark' : 'light')}
-              trackColor={{ false: '#FFD70040', true: '#8E5AF540' }}
-              thumbColor={isDark ? '#8E5AF5' : '#FFD700'}
-            />
-          </View>
-          {isManual && (
-            <TouchableOpacity style={styles.resetThemeBtn} onPress={resetToSystem} activeOpacity={0.8}>
-              <Text style={styles.resetThemeBtnText}>↩ Usar tema del sistema</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
         {/* Estadísticas */}
         <Text style={styles.sectionTitle}>📊 Estadísticas</Text>
         <View style={styles.statsGrid}>
@@ -499,8 +479,15 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Notificaciones */}
-        <NotificationsSection />
+        {/* Acceso rápido a Configuración */}
+        <TouchableOpacity style={styles.settingsLink} onPress={() => router.push('/settings' as any)} activeOpacity={0.8}>
+          <Text style={styles.settingsLinkEmoji}>⚙️</Text>
+          <View style={styles.settingsLinkInfo}>
+            <Text style={styles.settingsLinkTitle}>Configuración</Text>
+            <Text style={styles.settingsLinkSub}>Apariencia, sonidos y notificaciones</Text>
+          </View>
+          <Text style={styles.settingsLinkArrow}>›</Text>
+        </TouchableOpacity>
 
         {/* Palabras Difíciles */}
         <HardWordsSection levelErrors={game.levelErrors} />
@@ -568,12 +555,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#2D3148',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  settingsBtn: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: '#1A1D27', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#2D3148',
+  },
+  settingsBtnText: { fontSize: 18 },
   logoutBtn: {
     backgroundColor: '#FF4B4B20', borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 7,
     borderWidth: 1, borderColor: '#FF4B4B40',
   },
   logoutBtnText: { color: '#FF4B4B', fontSize: 13, fontWeight: '700' },
+  settingsLink: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#1A1D27', borderRadius: 14, padding: 16,
+    borderWidth: 1, borderColor: '#2D3148',
+  },
+  settingsLinkEmoji: { fontSize: 22 },
+  settingsLinkInfo: { flex: 1 },
+  settingsLinkTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
+  settingsLinkSub: { fontSize: 12, color: '#9CA3AF' },
+  settingsLinkArrow: { fontSize: 22, color: '#6B7280' },
   scroll: { padding: 16, gap: 16 },
   userCard: {
     backgroundColor: '#1A1D27', borderRadius: 20, padding: 20,

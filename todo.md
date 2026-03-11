@@ -109,3 +109,10 @@
 - [x] Notificaciones push de racha con hora configurable por el usuario (mejorar UI del selector de hora)
 - [x] Botón "Compartir" en cada logro desbloqueado (texto enriquecido via expo-sharing)
 - [x] Toggle de modo oscuro/claro en el Perfil (persistido en AsyncStorage)
+
+## v1.11 — Mejoras aprobadas
+- [x] Pantalla /settings dedicada con Apariencia y Notificaciones
+- [x] Botón ⚙️ en el header del Perfil para navegar a /settings
+- [x] Eliminar secciones de Apariencia y Notificaciones del Perfil principal
+- [x] Sonidos de feedback: correcto, incorrecto y nivel completado
+- [x] Toggle de sonidos en /settings

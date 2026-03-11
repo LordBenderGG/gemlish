@@ -10,6 +10,7 @@ import { useGame } from '@/context/GameContext';
 import { useAchievements } from '@/context/AchievementsContext';
 import { savePracticeSession } from '@/lib/practice-history';
 import { useSpeech } from '@/hooks/use-speech';
+import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
 
@@ -308,8 +309,16 @@ export default function HardWordsPracticeScreen() {
     }).start();
   }, [progressAnim]);
 
+  const { playCorrect, playWrong, playLevelComplete } = useFeedbackSounds();
+
   const handleAnswer = useCallback((correct: boolean) => {
     const current = queue[currentIdx];
+    // Reproducir sonido de feedback
+    if (correct) {
+      playCorrect();
+    } else {
+      playWrong();
+    }
     // Actualizar contadores de sesión
     if (correct) {
       current.sessionCorrect += 1;
@@ -321,11 +330,12 @@ export default function HardWordsPracticeScreen() {
     if (next >= queue.length) {
       animateProgress(1);
       setShowResult(true);
+      playLevelComplete();
     } else {
       animateProgress(next / queue.length);
       setCurrentIdx(next);
     }
-  }, [queue, currentIdx, animateProgress]);
+  }, [queue, currentIdx, animateProgress, playCorrect, playWrong, playLevelComplete]);
 
   const handleContinue = useCallback(() => {
     // Construir nueva ronda solo con las palabras que siguen fallando

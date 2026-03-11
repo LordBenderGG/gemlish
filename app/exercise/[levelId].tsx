@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
 import { useAchievements } from '@/context/AchievementsContext';
 import { useSpeech } from '@/hooks/use-speech';
+import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 import {
   generateLevel,
   MultipleChoiceExercise,
@@ -402,6 +403,7 @@ export default function ExerciseScreen() {
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const { username, game, completeLevel, saveLevelErrors, loseHeart, spendGems } = useGame();
   const { checkAchievements } = useAchievements();
+  const { playCorrect, playWrong, playLevelComplete } = useFeedbackSounds();
   const levelNum = parseInt(levelId || '1', 10);
 
   const level = useMemo(() => generateLevel(levelNum), [levelNum]);
@@ -425,6 +427,12 @@ export default function ExerciseScreen() {
   }, [progressAnim]);
 
   const handleAnswer = useCallback(async (correct: boolean, wordEn?: string) => {
+    // Reproducir sonido de feedback inmediatamente
+    if (correct) {
+      playCorrect();
+    } else {
+      playWrong();
+    }
     if (!correct) {
       setWrongCount(w => w + 1);
       // Guardar la palabra fallida
@@ -447,6 +455,7 @@ export default function ExerciseScreen() {
     if (next >= TOTAL_EXERCISES) {
       animateProgress(1);
       setShowResult(true);
+      playLevelComplete();
       const xpEarned = level?.xp || 10;
       const gemsEarned = wrongCount === 0 ? 5 : 2;
       await completeLevel(levelNum, xpEarned, gemsEarned);
@@ -477,7 +486,7 @@ export default function ExerciseScreen() {
       setHintUsed(false);
       setExerciseKey(k => k + 1);
     }
-  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, completeLevel, saveLevelErrors, loseHeart, animateProgress]);
+  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, completeLevel, saveLevelErrors, loseHeart, animateProgress, playCorrect, playWrong, playLevelComplete]);
 
   const handleHint = useCallback(async () => {
     if (hintUsed) return;
