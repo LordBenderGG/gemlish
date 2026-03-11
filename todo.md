@@ -175,3 +175,8 @@
 - [x] Sonido especial de fanfarria al llegar a racha de 5 seguidas
 - [x] Racha máxima del nivel mostrada en la pantalla de resultado
 - [x] Animación de pulso suave en el badge de racha (escala 1.0 → 1.1 → 1.0 en bucle)
+
+## v1.22 — Corrección de build
+- [x] Subir minSdkVersion de 22 a 24 para compatibilidad con react-native-worklets, expo-modules-core y react-native-screens
+- [x] Actualizar buildArchs a arm64-v8a + x86_64 (eliminar armeabi-v7a de 32 bits)
+- [x] Añadir compileSdkVersion 35 y targetSdkVersion 35 para Android moderno
