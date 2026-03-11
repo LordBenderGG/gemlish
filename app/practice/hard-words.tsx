@@ -13,6 +13,8 @@ import { useSpeech } from '@/hooks/use-speech';
 import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
+import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // ─── Algoritmo de Repetición Espaciada ───────────────────────────────────────
 //
@@ -271,6 +273,8 @@ function RoundResult({
 
 export default function HardWordsPracticeScreen() {
   const insets = useSafeAreaInsets();
+  const t = useThemeStyles();
+  const scheme = useColorScheme();
   const { username, game } = useGame();
   const { checkAchievements } = useAchievements();
   const sessionStartRef = useRef(Date.now());
@@ -389,8 +393,8 @@ export default function HardWordsPracticeScreen() {
 
   if (practiceWords.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🌟</Text>
           <Text style={styles.emptyTitle}>¡Sin palabras difíciles!</Text>
@@ -404,8 +408,8 @@ export default function HardWordsPracticeScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -465,7 +469,7 @@ export default function HardWordsPracticeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1117' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,

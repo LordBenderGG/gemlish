@@ -12,6 +12,8 @@ import { savePracticeSession } from '@/lib/practice-history';
 import { useSpeech } from '@/hooks/use-speech';
 import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
+import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -183,6 +185,8 @@ function QuestionCard({
 
 export default function QuickReviewScreen() {
   const insets = useSafeAreaInsets();
+  const t = useThemeStyles();
+  const scheme = useColorScheme();
   const { username, game } = useGame();
   const { checkAchievements } = useAchievements();
 
@@ -271,8 +275,8 @@ export default function QuickReviewScreen() {
     const elapsed = Date.now() - sessionStartRef.current;
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <View style={styles.resultContainer}>
           <Text style={styles.resultEmoji}>
             {timedOut ? '⏰' : accuracy >= 80 ? '🏆' : accuracy >= 60 ? '💪' : '📚'}
@@ -311,8 +315,8 @@ export default function QuickReviewScreen() {
 
   if (words.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📚</Text>
           <Text style={styles.emptyTitle}>Sin palabras disponibles</Text>
@@ -326,8 +330,8 @@ export default function QuickReviewScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -384,7 +388,7 @@ export default function QuickReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1117' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,

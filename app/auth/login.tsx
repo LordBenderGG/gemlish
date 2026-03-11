@@ -100,6 +100,14 @@ export default function LoginScreen() {
           >
             <Text style={styles.btnSecondaryText}>¿No tienes cuenta? <Text style={styles.link}>Regístrate</Text></Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.forgotBtn}
+            onPress={() => router.push('/auth/forgot-password' as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -175,4 +183,6 @@ const styles = StyleSheet.create({
   btnSecondary: { marginTop: 16, alignItems: 'center' },
   btnSecondaryText: { color: '#9CA3AF', fontSize: 14 },
   link: { color: '#58CC02', fontWeight: '700' },
+  forgotBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 4 },
+  forgotText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
 });

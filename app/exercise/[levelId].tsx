@@ -9,6 +9,8 @@ import { useGame } from '@/context/GameContext';
 import { useAchievements } from '@/context/AchievementsContext';
 import { useSpeech } from '@/hooks/use-speech';
 import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
+import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import {
   generateLevel,
   MultipleChoiceExercise,
@@ -400,6 +402,8 @@ function ListenWriteView({
 
 export default function ExerciseScreen() {
   const insets = useSafeAreaInsets();
+  const t = useThemeStyles();
+  const scheme = useColorScheme();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const { username, game, completeLevel, saveLevelErrors, loseHeart, spendGems } = useGame();
   const { checkAchievements } = useAchievements();
@@ -512,8 +516,8 @@ export default function ExerciseScreen() {
 
   if (!level) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>Nivel no encontrado</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <Text style={{ color: t.text, textAlign: 'center', marginTop: 40 }}>Nivel no encontrado</Text>
       </View>
     );
   }
@@ -526,8 +530,8 @@ export default function ExerciseScreen() {
     const gemsEarned = wrongCount === 0 ? 5 : 2;
     const xpEarned = level.xp;
     return (
-      <View style={[styles.container, styles.resultContainer, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, styles.resultContainer, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <Text style={styles.resultEmoji}>{wrongCount === 0 ? '🏆' : '⭐'}</Text>
         <Text style={styles.resultTitle}>{wrongCount === 0 ? '¡Perfecto!' : '¡Nivel Completado!'}</Text>
         <Text style={styles.resultSubtitle}>Nivel {levelNum}: {level.topic}</Text>
@@ -568,8 +572,8 @@ export default function ExerciseScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.exerciseHeader}>
@@ -633,7 +637,7 @@ export default function ExerciseScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1117' },
+  container: { flex: 1 },
   exerciseHeader: {
     flexDirection: 'row',
     alignItems: 'center',

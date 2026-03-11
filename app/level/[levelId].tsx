@@ -7,17 +7,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getLevelData, getLevelIcon, Word } from '@/data/lessons';
 import { useGame } from '@/context/GameContext';
 import { useSpeech } from '@/hooks/use-speech';
+import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
-function WordReviewCard({ word }: { word: Word }) {
+function WordReviewCard({ word, t }: { word: Word; t: ReturnType<typeof useThemeStyles> }) {
   const { speaking, toggle, currentWord } = useSpeech();
   const isThisWordSpeaking = speaking && currentWord === word.word;
 
   return (
-    <View style={styles.wordCard}>
+    <View style={[styles.wordCard, { backgroundColor: t.surface, borderColor: t.border }]}>
       <View style={styles.wordRow}>
         <View style={styles.wordInfo}>
-          <Text style={styles.wordEn}>{word.word}</Text>
-          <Text style={styles.wordPron}>{word.pronunciation}</Text>
+          <Text style={[styles.wordEn, { color: t.text }]}>{word.word}</Text>
+          <Text style={[styles.wordPron, { color: t.muted }]}>{word.pronunciation}</Text>
           <Text style={styles.wordEs}>{word.translation}</Text>
         </View>
         <TouchableOpacity
@@ -28,9 +30,9 @@ function WordReviewCard({ word }: { word: Word }) {
           <Text style={styles.speakBtnText}>{isThisWordSpeaking ? '⏹' : '🔊'}</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.exampleBox}>
-        <Text style={styles.exampleEn}>"{word.example}"</Text>
-        <Text style={styles.exampleEs}>{word.exampleEs}</Text>
+      <View style={[styles.exampleBox, { backgroundColor: t.bg, borderLeftColor: '#8E5AF5' }]}>
+        <Text style={[styles.exampleEn, { color: t.text }]}>"{word.example}"</Text>
+        <Text style={[styles.exampleEs, { color: t.muted }]}>{word.exampleEs}</Text>
       </View>
     </View>
   );
@@ -38,6 +40,8 @@ function WordReviewCard({ word }: { word: Word }) {
 
 export default function LevelDetailScreen() {
   const insets = useSafeAreaInsets();
+  const t = useThemeStyles();
+  const scheme = useColorScheme();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const levelNum = parseInt(levelId || '1', 10);
   const { game } = useGame();
@@ -51,20 +55,20 @@ export default function LevelDetailScreen() {
   }, [levelNum]);
 
   const renderItem = useCallback(({ item }: { item: Word }) => (
-    <WordReviewCard word={item} />
-  ), []);
+    <WordReviewCard word={item} t={t} />
+  ), [t]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: t.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
           <Text style={styles.backText}>← Volver</Text>
         </TouchableOpacity>
         <View style={[styles.levelBadge, { backgroundColor: levelData.color + '22', borderColor: levelData.color }]}>
-          <Text style={styles.levelBadgeText}>{icon} Nivel {levelNum}</Text>
+          <Text style={[styles.levelBadgeText, { color: levelData.color }]}>{icon} Nivel {levelNum}</Text>
         </View>
       </View>
 
@@ -72,19 +76,19 @@ export default function LevelDetailScreen() {
       <View style={[styles.levelInfo, { borderBottomColor: levelData.color + '40' }]}>
         <Text style={[styles.levelName, { color: levelData.color }]}>{levelData.name}</Text>
         <View style={styles.levelMeta}>
-          <View style={styles.metaChip}>
-            <Text style={styles.metaText}>📝 {levelData.words.length} palabras</Text>
+          <View style={[styles.metaChip, { backgroundColor: t.surface, borderColor: t.border }]}>
+            <Text style={[styles.metaText, { color: t.muted }]}>📝 {levelData.words.length} palabras</Text>
           </View>
-          <View style={styles.metaChip}>
-            <Text style={styles.metaText}>⭐ {levelData.xp} XP</Text>
+          <View style={[styles.metaChip, { backgroundColor: t.surface, borderColor: t.border }]}>
+            <Text style={[styles.metaText, { color: t.muted }]}>⭐ {levelData.xp} XP</Text>
           </View>
           {isCompleted && (
             <View style={[styles.metaChip, styles.metaCompleted]}>
-              <Text style={styles.metaText}>✅ Completado</Text>
+              <Text style={[styles.metaText, { color: '#58CC02' }]}>✅ Completado</Text>
             </View>
           )}
         </View>
-        <Text style={styles.levelDesc}>
+        <Text style={[styles.levelDesc, { color: t.muted }]}>
           Repasa las palabras de este nivel y practica su pronunciación antes de empezar.
         </Text>
       </View>
@@ -97,12 +101,12 @@ export default function LevelDetailScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <Text style={styles.sectionTitle}>📚 Palabras del nivel</Text>
+          <Text style={[styles.sectionTitle, { color: t.text }]}>📚 Palabras del nivel</Text>
         }
       />
 
       {/* Botón de acción */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: t.border, backgroundColor: t.bg }]}>
         <TouchableOpacity
           style={[styles.startBtn, { backgroundColor: levelData.color }]}
           onPress={handleStartLevel}
@@ -118,10 +122,11 @@ export default function LevelDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1117' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   backBtn: { paddingVertical: 8, paddingRight: 16 },
   backText: { color: '#1CB0F6', fontSize: 15, fontWeight: '600' },
@@ -129,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
     borderWidth: 1,
   },
-  levelBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  levelBadgeText: { fontSize: 13, fontWeight: '700' },
   levelInfo: {
     paddingHorizontal: 16, paddingVertical: 16,
     borderBottomWidth: 1,
@@ -137,22 +142,22 @@ const styles = StyleSheet.create({
   levelName: { fontSize: 26, fontWeight: '800', marginBottom: 10 },
   levelMeta: { flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' },
   metaChip: {
-    backgroundColor: '#1A1D27', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: '#2D3148',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+    borderWidth: 1,
   },
   metaCompleted: { borderColor: '#58CC02', backgroundColor: '#1A3A1A' },
-  metaText: { color: '#9CA3AF', fontSize: 12, fontWeight: '600' },
-  levelDesc: { fontSize: 14, color: '#6B7280', lineHeight: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 12, paddingHorizontal: 16 },
+  metaText: { fontSize: 12, fontWeight: '600' },
+  levelDesc: { fontSize: 14, lineHeight: 20 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12, paddingHorizontal: 16 },
   list: { paddingTop: 16, paddingBottom: 20 },
   wordCard: {
-    backgroundColor: '#1A1D27', borderRadius: 14, padding: 14, marginBottom: 10,
-    marginHorizontal: 16, borderWidth: 1, borderColor: '#2D3148',
+    borderRadius: 14, padding: 14, marginBottom: 10,
+    marginHorizontal: 16, borderWidth: 1,
   },
   wordRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   wordInfo: { flex: 1 },
-  wordEn: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
-  wordPron: { fontSize: 12, color: '#9CA3AF', fontStyle: 'italic', marginTop: 2 },
+  wordEn: { fontSize: 20, fontWeight: '800' },
+  wordPron: { fontSize: 12, fontStyle: 'italic', marginTop: 2 },
   wordEs: { fontSize: 15, fontWeight: '600', color: '#1CB0F6', marginTop: 4 },
   speakBtn: {
     width: 44, height: 44, borderRadius: 22,
@@ -162,14 +167,14 @@ const styles = StyleSheet.create({
   speakBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#1CB0F6' },
   speakBtnText: { fontSize: 20 },
   exampleBox: {
-    backgroundColor: '#0F1117', borderRadius: 8, padding: 10,
-    borderLeftWidth: 3, borderLeftColor: '#8E5AF5',
+    borderRadius: 8, padding: 10,
+    borderLeftWidth: 3,
   },
-  exampleEn: { fontSize: 13, color: '#FFFFFF', fontStyle: 'italic', marginBottom: 3, lineHeight: 18 },
-  exampleEs: { fontSize: 12, color: '#9CA3AF', lineHeight: 17 },
+  exampleEn: { fontSize: 13, fontStyle: 'italic', marginBottom: 3, lineHeight: 18 },
+  exampleEs: { fontSize: 12, lineHeight: 17 },
   footer: {
     paddingHorizontal: 16, paddingTop: 12,
-    borderTopWidth: 1, borderTopColor: '#2D3148', backgroundColor: '#0F1117',
+    borderTopWidth: 1,
   },
   startBtn: { borderRadius: 14, padding: 16, alignItems: 'center' },
   startBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   StatusBar, FlatList,
@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
 import { useSpeech } from '@/hooks/use-speech';
 import { LESSONS } from '@/data/lessons';
+import { useThemeStyles } from '@/hooks/use-theme-styles';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // Buscar datos de una palabra en las lecciones
 function findWordData(wordEn: string) {
@@ -91,6 +93,8 @@ function WordReviewCard({ wordEn, onMastered }: { wordEn: string; onMastered: ()
 
 export default function ReviewScreen() {
   const insets = useSafeAreaInsets();
+  const t = useThemeStyles();
+  const scheme = useColorScheme();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const { game } = useGame();
   const levelNum = parseInt(levelId || '1', 10);
@@ -117,8 +121,8 @@ export default function ReviewScreen() {
 
   if (errorWords.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🎉</Text>
           <Text style={styles.emptyTitle}>¡Sin errores!</Text>
@@ -133,8 +137,8 @@ export default function ReviewScreen() {
 
   if (finished) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🏆</Text>
           <Text style={styles.emptyTitle}>¡Repaso completado!</Text>
@@ -151,8 +155,8 @@ export default function ReviewScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -204,7 +208,6 @@ export default function ReviewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1117',
   },
   header: {
     flexDirection: 'row',

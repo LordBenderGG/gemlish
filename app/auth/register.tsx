@@ -1,10 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useGame } from '@/context/GameContext';
+
+// ─── Fortaleza de contraseña ──────────────────────────────────────────────────
+
+type PasswordStrength = 'empty' | 'weak' | 'medium' | 'strong';
+
+function getPasswordStrength(pwd: string): PasswordStrength {
+  if (!pwd) return 'empty';
+  const hasLength = pwd.length >= 8;
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+  const score = [pwd.length >= 4, hasLength, hasUpper || hasNumber, hasSpecial].filter(Boolean).length;
+  if (score <= 1) return 'weak';
+  if (score === 2) return 'medium';
+  return 'strong';
+}
+
+const STRENGTH_CONFIG: Record<PasswordStrength, { label: string; color: string; bars: number }> = {
+  empty:  { label: '',        color: '#2D3148', bars: 0 },
+  weak:   { label: 'Débil',   color: '#FF4B4B', bars: 1 },
+  medium: { label: 'Media',   color: '#FF9600', bars: 2 },
+  strong: { label: 'Fuerte',  color: '#58CC02', bars: 3 },
+};
+
+function PasswordStrengthBar({ password }: { password: string }) {
+  const strength = useMemo(() => getPasswordStrength(password), [password]);
+  const config = STRENGTH_CONFIG[strength];
+
+  if (!password) return null;
+
+  return (
+    <View style={strengthStyles.container}>
+      <View style={strengthStyles.bars}>
+        {[1, 2, 3].map(i => (
+          <View
+            key={i}
+            style={[
+              strengthStyles.bar,
+              { backgroundColor: i <= config.bars ? config.color : '#2D3148' },
+            ]}
+          />
+        ))}
+      </View>
+      {config.label ? (
+        <Text style={[strengthStyles.label, { color: config.color }]}>{config.label}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+const strengthStyles = StyleSheet.create({
+  container: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  bars: { flexDirection: 'row', gap: 4, flex: 1 },
+  bar: { flex: 1, height: 4, borderRadius: 2 },
+  label: { fontSize: 11, fontWeight: '700', width: 48, textAlign: 'right' },
+});
+
+// ─── Pantalla de Registro ─────────────────────────────────────────────────────
 
 export default function RegisterScreen() {
   const { register } = useGame();
@@ -86,6 +144,11 @@ export default function RegisterScreen() {
                 <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</Text>
               </TouchableOpacity>
             </View>
+            {/* Indicador de fortaleza */}
+            <PasswordStrengthBar password={password} />
+            {password.length > 0 && password.length < 4 && (
+              <Text style={styles.hintText}>Usa al menos 4 caracteres. Para mayor seguridad, agrega números o mayúsculas.</Text>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -109,6 +172,12 @@ export default function RegisterScreen() {
                 <Text style={styles.eyeIcon}>{showPassword2 ? '🙈' : '👁'}</Text>
               </TouchableOpacity>
             </View>
+            {/* Indicador de coincidencia */}
+            {password2.length > 0 && (
+              <Text style={[styles.matchText, { color: password === password2 ? '#58CC02' : '#FF4B4B' }]}>
+                {password === password2 ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden'}
+              </Text>
+            )}
           </View>
 
           <TouchableOpacity
@@ -173,7 +242,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
   },
-  // Campo de contraseña con botón ojo
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,6 +263,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eyeIcon: { fontSize: 18 },
+  hintText: { fontSize: 11, color: '#9CA3AF', marginTop: 6, lineHeight: 16 },
+  matchText: { fontSize: 12, fontWeight: '600', marginTop: 6 },
   btnPrimary: {
     backgroundColor: '#58CC02',
     borderRadius: 12,

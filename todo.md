@@ -121,3 +121,14 @@
 - [x] Bug: Agregar botón ojo 👁 para ver/ocultar contraseña en login y registro
 - [x] Bug: Modo oscuro/claro no funciona — siempre aparece oscuro (corregir ThemeProvider)
 - [x] Bug: Agregar botón "Abrir Configuración del sistema" cuando se deniegan permisos de notificaciones
+
+## v1.13 — Mejoras aprobadas
+- [x] Modo claro en exercise/[levelId].tsx (useThemeStyles)
+- [x] Modo claro en level/[levelId].tsx (useThemeStyles)
+- [x] Modo claro en review/[levelId].tsx (useThemeStyles)
+- [x] Modo claro en practice/hard-words.tsx (useThemeStyles)
+- [x] Modo claro en practice/quick-review.tsx (useThemeStyles)
+- [x] Indicador de fortaleza de contraseña en registro (débil/media/fuerte)
+- [x] Indicador de coincidencia de contraseñas en registro
+- [x] Pantalla /auth/forgot-password con explicación de progreso local
+- [x] Enlace "¿Olvidaste tu contraseña?" en el login
