@@ -109,11 +109,10 @@ function TimePickerModal({
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const { colorScheme, setColorScheme, isManual, resetToSystem } = useThemeContext();
-  const { settings, loading, enableNotifications, disableNotifications, updateTime, scheduleWeeklySummary } = useNotifications();
+  const { settings, loading, permissionGranted, enableNotifications, disableNotifications, updateTime, scheduleWeeklySummary } = useNotifications();
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
   const { game } = useGame();
-  const isDark = colorScheme === 'dark';
+  const isDark = true; // Modo oscuro permanente
 
   const openSystemSettings = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -184,33 +183,6 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
-        {/* ── Apariencia ─────────────────────────────────────────────── */}
-        <Text style={styles.sectionTitle}>🎨 Apariencia</Text>
-        <View style={styles.card}>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingEmoji}>{isDark ? '🌙' : '☀️'}</Text>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</Text>
-              <Text style={styles.settingSub}>
-                {isManual ? 'Configurado manualmente' : 'Siguiendo el sistema'}
-              </Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={val => setColorScheme(val ? 'dark' : 'light')}
-              trackColor={{ false: '#FFD70040', true: '#8E5AF540' }}
-              thumbColor={isDark ? '#8E5AF5' : '#FFD700'}
-            />
-          </View>
-          {isManual && (
-            <TouchableOpacity style={styles.resetBtn} onPress={resetToSystem} activeOpacity={0.8}>
-              <Text style={styles.resetBtnText}>↩ Usar tema del sistema</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* ── Sonidos ────────────────────────────────────────────────── */}
         <Text style={styles.sectionTitle}>🔊 Sonidos</Text>
         <View style={styles.card}>
           <View style={styles.settingRow}>

@@ -1,11 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
+import { Appearance, View } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
-const THEME_STORAGE_KEY = '@gemlish_theme_preference';
+// Modo oscuro forzado permanentemente
+const FORCED_SCHEME: ColorScheme = "dark";
 
 type ThemeContextValue = {
   colorScheme: ColorScheme;
@@ -17,20 +17,6 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useSystemColorScheme() ?? "light";
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
-  const [isManual, setIsManual] = useState(false);
-
-  // Cargar preferencia guardada al iniciar
-  useEffect(() => {
-    AsyncStorage.getItem(THEME_STORAGE_KEY).then(saved => {
-      if (saved === 'dark' || saved === 'light') {
-        setColorSchemeState(saved);
-        setIsManual(true);
-      }
-    }).catch(() => {});
-  }, []);
-
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
     Appearance.setColorScheme?.(scheme);
@@ -45,48 +31,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    setIsManual(true);
-    applyScheme(scheme);
-    AsyncStorage.setItem(THEME_STORAGE_KEY, scheme).catch(() => {});
-  }, [applyScheme]);
-
-  const resetToSystem = useCallback(() => {
-    setColorSchemeState(systemScheme);
-    setIsManual(false);
-    applyScheme(systemScheme);
-    AsyncStorage.removeItem(THEME_STORAGE_KEY).catch(() => {});
-  }, [systemScheme, applyScheme]);
-
+  // Aplicar modo oscuro al montar y mantenerlo siempre
   useEffect(() => {
-    applyScheme(colorScheme);
-  }, [applyScheme, colorScheme]);
+    applyScheme(FORCED_SCHEME);
+  }, [applyScheme]);
 
   const themeVariables = useMemo(
     () =>
       vars({
-        "color-primary": SchemeColors[colorScheme].primary,
-        "color-background": SchemeColors[colorScheme].background,
-        "color-surface": SchemeColors[colorScheme].surface,
-        "color-foreground": SchemeColors[colorScheme].foreground,
-        "color-muted": SchemeColors[colorScheme].muted,
-        "color-border": SchemeColors[colorScheme].border,
-        "color-success": SchemeColors[colorScheme].success,
-        "color-warning": SchemeColors[colorScheme].warning,
-        "color-error": SchemeColors[colorScheme].error,
+        "color-primary": SchemeColors[FORCED_SCHEME].primary,
+        "color-background": SchemeColors[FORCED_SCHEME].background,
+        "color-surface": SchemeColors[FORCED_SCHEME].surface,
+        "color-foreground": SchemeColors[FORCED_SCHEME].foreground,
+        "color-muted": SchemeColors[FORCED_SCHEME].muted,
+        "color-border": SchemeColors[FORCED_SCHEME].border,
+        "color-success": SchemeColors[FORCED_SCHEME].success,
+        "color-warning": SchemeColors[FORCED_SCHEME].warning,
+        "color-error": SchemeColors[FORCED_SCHEME].error,
       }),
-    [colorScheme],
+    [],
   );
 
   const value = useMemo(
     () => ({
-      colorScheme,
-      setColorScheme,
-      isManual,
-      resetToSystem,
+      colorScheme: FORCED_SCHEME,
+      // Los siguientes son no-ops: el modo oscuro es permanente
+      setColorScheme: (_scheme: ColorScheme) => {},
+      isManual: true,
+      resetToSystem: () => {},
     }),
-    [colorScheme, setColorScheme, isManual, resetToSystem],
+    [],
   );
 
   return (

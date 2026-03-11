@@ -465,24 +465,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   categoryChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: '#1A1D27',
+    backgroundColor: '#252836',
     borderWidth: 1.5,
-    borderColor: '#2D3148',
+    borderColor: '#3D4266',
   },
   categoryChipActive: {
-    backgroundColor: '#8E5AF520',
+    backgroundColor: '#8E5AF540',
     borderColor: '#8E5AF5',
   },
   categoryChipText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: '#C4C9D4',
   },
   categoryChipTextActive: {
-    color: '#8E5AF5',
+    color: '#C4A8FF',
     fontWeight: '700',
   },
 });

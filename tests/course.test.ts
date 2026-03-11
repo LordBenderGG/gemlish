@@ -57,7 +57,6 @@ describe('Generador de Ejercicios', () => {
     expect(types).toContain('translate');
     expect(types).toContain('match-pairs');
     expect(types).toContain('listen-write');
-    expect(types).toContain('pronunciation');
     expect(types).toContain('sentence-order');
     expect(types).toContain('fill-blank');
   });
@@ -77,13 +76,12 @@ describe('Generador de Ejercicios', () => {
     });
   });
 
-  it('los ejercicios de pronunciación deben tener wordToSpeak y pronunciation', () => {
+  it('los ejercicios de escucha deben tener wordToSpeak', () => {
     const level = generateLevel(1);
-    const pron = level!.exercises.filter(e => e.type === 'pronunciation');
-    expect(pron.length).toBe(4);
-    pron.forEach(ex => {
+    const lw = level!.exercises.filter(e => e.type === 'listen-write');
+    expect(lw.length).toBeGreaterThanOrEqual(2);
+    lw.forEach(ex => {
       expect((ex as any).wordToSpeak).toBeTruthy();
-      expect((ex as any).pronunciation).toBeTruthy();
     });
   });
 

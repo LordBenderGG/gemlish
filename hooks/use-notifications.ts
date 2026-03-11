@@ -51,15 +51,26 @@ export function useNotifications() {
         AsyncStorage.getItem(NOTIFICATION_HOUR_KEY),
         AsyncStorage.getItem(NOTIFICATION_MINUTE_KEY),
       ]);
+
+      // Verificar permisos actuales del sistema (fuente de verdad)
+      const { status } = await Notifications.getPermissionsAsync();
+      const isGranted = status === 'granted';
+      setPermissionGranted(isGranted);
+
+      // Si el permiso fue revocado por el usuario, sincronizar enabled a false
+      const wasEnabled = enabled === 'true';
+      const effectiveEnabled = wasEnabled && isGranted;
+
+      if (wasEnabled && !isGranted) {
+        // El usuario revoció el permiso desde Configuración del sistema
+        await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
+      }
+
       setSettings({
-        enabled: enabled === 'true',
+        enabled: effectiveEnabled,
         hour: hour ? parseInt(hour, 10) : 20,
         minute: minute ? parseInt(minute, 10) : 0,
       });
-
-      // Verificar permisos actuales
-      const { status } = await Notifications.getPermissionsAsync();
-      setPermissionGranted(status === 'granted');
     } catch (err) {
       console.warn('[useNotifications] Error loading settings:', err);
     } finally {

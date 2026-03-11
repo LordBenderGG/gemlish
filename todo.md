@@ -180,3 +180,11 @@
 - [x] Subir minSdkVersion de 22 a 24 para compatibilidad con react-native-worklets, expo-modules-core y react-native-screens
 - [x] Actualizar buildArchs a arm64-v8a + x86_64 (eliminar armeabi-v7a de 32 bits)
 - [x] Añadir compileSdkVersion 35 y targetSdkVersion 35 para Android moderno
+
+## v1.23 — Cambios solicitados
+- [x] Forzar modo oscuro permanente (eliminar toggle de tema claro)
+- [x] Arreglar visibilidad de chips de filtro de temas en el mapa de niveles
+- [x] Corregir validación de permisos de notificaciones (detectar si ya están habilitados)
+- [x] Eliminar ejercicios de pronunciación del generador y la pantalla de ejercicios
+- [x] Mejorar fill-blank: dificultad progresiva según el nivel (frases simples en niveles bajos)
+- [x] Añadir traducción al español de la frase en ejercicios fill-blank

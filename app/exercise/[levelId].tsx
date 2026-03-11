@@ -26,18 +26,10 @@ import {
   TranslateExercise,
   MatchPairsExercise,
   ListenWriteExercise,
-  PronunciationExercise,
   SentenceOrderExercise,
   FillBlankExercise,
 } from '@/data/exerciseGenerator';
-import {
-  useAudioRecorder,
-  useAudioRecorderState,
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  createAudioPlayer,
-} from 'expo-audio';
+// expo-audio no se usa en esta versión (pronunciación removida)
 
 const TOTAL_EXERCISES = 20;
 const HINT_COST = 10;
@@ -410,302 +402,6 @@ function ListenWriteView({
   );
 }
 
-// ─── Pronunciación ───────────────────────────────────────────────────────────
-
-// ─── Animación de pulso para el botón de grabar ─────────────────────────────
-
-function RecordPulseButton({
-  recordingState,
-  onPress,
-  disabled,
-}: {
-  recordingState: 'idle' | 'recording' | 'recorded';
-  onPress: () => void;
-  disabled?: boolean;
-}) {
-  const pulse1 = useSharedValue(1);
-  const pulse2 = useSharedValue(1);
-  const opacity1 = useSharedValue(0.6);
-  const opacity2 = useSharedValue(0.4);
-
-  useEffect(() => {
-    if (recordingState === 'recording') {
-      // Onda 1: más rápida
-      pulse1.value = withRepeat(
-        withSequence(
-          withTiming(1.6, { duration: 700, easing: Easing.out(Easing.ease) }),
-          withTiming(1, { duration: 0 }),
-        ),
-        -1,
-        false,
-      );
-      opacity1.value = withRepeat(
-        withSequence(
-          withTiming(0, { duration: 700, easing: Easing.out(Easing.ease) }),
-          withTiming(0.6, { duration: 0 }),
-        ),
-        -1,
-        false,
-      );
-      // Onda 2: más lenta, desfasada
-      setTimeout(() => {
-        pulse2.value = withRepeat(
-          withSequence(
-            withTiming(2.2, { duration: 1000, easing: Easing.out(Easing.ease) }),
-            withTiming(1, { duration: 0 }),
-          ),
-          -1,
-          false,
-        );
-        opacity2.value = withRepeat(
-          withSequence(
-            withTiming(0, { duration: 1000, easing: Easing.out(Easing.ease) }),
-            withTiming(0.35, { duration: 0 }),
-          ),
-          -1,
-          false,
-        );
-      }, 350);
-    } else {
-      pulse1.value = withTiming(1, { duration: 200 });
-      pulse2.value = withTiming(1, { duration: 200 });
-      opacity1.value = withTiming(0, { duration: 200 });
-      opacity2.value = withTiming(0, { duration: 200 });
-    }
-  }, [recordingState]);
-
-  const ring1Style = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse1.value }],
-    opacity: opacity1.value,
-  }));
-  const ring2Style = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse2.value }],
-    opacity: opacity2.value,
-  }));
-
-  const isRecording = recordingState === 'recording';
-  const isDone = recordingState === 'recorded';
-
-  return (
-    <View style={styles.recordPulseWrapper}>
-      {/* Anillos de pulso */}
-      <Reanimated.View style={[styles.pulseRing, styles.pulseRing1, ring1Style]} />
-      <Reanimated.View style={[styles.pulseRing, styles.pulseRing2, ring2Style]} />
-
-      {/* Botón principal */}
-      <TouchableOpacity
-        style={[
-          styles.recordBtn,
-          isRecording && styles.recordBtnActive,
-          isDone && styles.recordBtnDone,
-        ]}
-        onPress={onPress}
-        activeOpacity={0.8}
-        disabled={disabled}
-      >
-        <Text style={styles.recordBtnEmoji}>
-          {isRecording ? '⏹' : isDone ? '✅' : '🎙'}
-        </Text>
-        <Text style={styles.recordBtnText}>
-          {isRecording
-            ? 'Grabando... (toca para parar)'
-            : isDone
-            ? 'Grabación guardada'
-            : 'Grabar mi pronunciación'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function PronunciationView({
-  exercise,
-  onAnswer,
-}: {
-  exercise: PronunciationExercise;
-  onAnswer: (correct: boolean) => void;
-}) {
-  const { speaking, speak, toggle } = useSpeech();
-  const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'recorded'>('idle');
-  const [recordedUri, setRecordedUri] = useState<string | null>(null);
-  const [isPlayingBack, setIsPlayingBack] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
-  const [completed, setCompleted] = useState(false);
-
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const recorderState = useAudioRecorderState(audioRecorder);
-
-  // Pedir permisos al montar
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS === 'web') {
-        setPermissionGranted(true);
-        return;
-      }
-      try {
-        await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
-        const status = await requestRecordingPermissionsAsync();
-        setPermissionGranted(status.granted);
-      } catch {
-        setPermissionGranted(false);
-      }
-    })();
-  }, []);
-
-  const handleListenModel = useCallback(() => {
-    toggle(exercise.wordToSpeak);
-  }, [exercise.wordToSpeak, toggle]);
-
-  const handleStartRecording = async () => {
-    if (recordingState === 'recording') return;
-    try {
-      await audioRecorder.prepareToRecordAsync();
-      audioRecorder.record();
-      setRecordingState('recording');
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo iniciar la grabación. Verifica los permisos del micrófono.');
-    }
-  };
-
-  const handleStopRecording = async () => {
-    if (recordingState !== 'recording') return;
-    try {
-      await audioRecorder.stop();
-      const uri = audioRecorder.uri;
-      setRecordedUri(uri);
-      setRecordingState('recorded');
-    } catch (e) {
-      setRecordingState('idle');
-    }
-  };
-
-  const handlePlayback = async () => {
-    if (!recordedUri || isPlayingBack) return;
-    try {
-      setIsPlayingBack(true);
-      const player = createAudioPlayer({ uri: recordedUri });
-      player.play();
-      // Estimar duración y limpiar
-      setTimeout(() => {
-        player.remove();
-        setIsPlayingBack(false);
-      }, 5000);
-    } catch {
-      setIsPlayingBack(false);
-    }
-  };
-
-  const handleComplete = () => {
-    setCompleted(true);
-    // La pronunciación siempre cuenta como correcta (autoevaluación)
-    setTimeout(() => onAnswer(true), 600);
-  };
-
-  const handleSkip = () => {
-    // Si no hay micrófono disponible, permitir saltar
-    setTimeout(() => onAnswer(true), 300);
-  };
-
-  if (permissionGranted === false) {
-    return (
-      <View style={styles.exerciseContainer}>
-        <Text style={styles.questionLabel}>🎙 Pronunciación</Text>
-        <Text style={styles.questionText}>{exercise.wordToSpeak}</Text>
-        <Text style={styles.pronunciationPhonetic}>{exercise.pronunciation}</Text>
-        <Text style={styles.pronunciationTranslation}>"{exercise.translation}"</Text>
-
-        <View style={styles.pronunciationExampleBox}>
-          <Text style={styles.pronunciationExampleEn}>{exercise.example}</Text>
-          <Text style={styles.pronunciationExampleEs}>{exercise.exampleEs}</Text>
-        </View>
-
-        <TouchableOpacity style={styles.listenBtn} onPress={handleListenModel} activeOpacity={0.8}>
-          <Text style={styles.listenBtnEmoji}>{speaking ? '⏹' : '🔊'}</Text>
-          <Text style={styles.listenBtnText}>{speaking ? 'Reproduciendo...' : 'Escuchar modelo'}</Text>
-        </TouchableOpacity>
-
-        <View style={styles.noMicBox}>
-          <Text style={styles.noMicText}>⚠️ Sin acceso al micrófono</Text>
-          <Text style={styles.noMicSubtext}>Practica en voz alta y continúa</Text>
-        </View>
-
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSkip}>
-          <Text style={styles.submitBtnText}>Continuar →</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.exerciseContainer}>
-      <Text style={styles.questionLabel}>🎙 Pronunciación</Text>
-
-      {/* Palabra principal */}
-      <Text style={styles.pronunciationWord}>{exercise.wordToSpeak}</Text>
-      <Text style={styles.pronunciationPhonetic}>{exercise.pronunciation}</Text>
-      <Text style={styles.pronunciationTranslation}>"{exercise.translation}"</Text>
-
-      {/* Ejemplo */}
-      <View style={styles.pronunciationExampleBox}>
-        <Text style={styles.pronunciationExampleEn}>{exercise.example}</Text>
-        <Text style={styles.pronunciationExampleEs}>{exercise.exampleEs}</Text>
-      </View>
-
-      {/* Botón escuchar modelo */}
-      <TouchableOpacity
-        style={[styles.listenBtn, speaking && styles.listenBtnActive]}
-        onPress={handleListenModel}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.listenBtnEmoji}>{speaking ? '⏹' : '🔊'}</Text>
-        <Text style={styles.listenBtnText}>
-          {speaking ? 'Reproduciendo modelo...' : '▶ Escuchar modelo'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Botón grabar con animación de pulso */}
-      {!completed && (
-        <RecordPulseButton
-          recordingState={recordingState}
-          onPress={recordingState === 'recording' ? handleStopRecording : handleStartRecording}
-          disabled={permissionGranted === null}
-        />
-      )}
-
-      {/* Botón reproducir grabación */}
-      {recordingState === 'recorded' && !completed && (
-        <TouchableOpacity
-          style={[styles.playbackBtn, isPlayingBack && styles.playbackBtnActive]}
-          onPress={handlePlayback}
-          activeOpacity={0.8}
-          disabled={isPlayingBack}
-        >
-          <Text style={styles.playbackBtnText}>
-            {isPlayingBack ? '🔈 Reproduciendo...' : '▶ Escuchar mi grabación'}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {/* Botón completar */}
-      {(recordingState === 'recorded' || recordingState === 'idle') && !completed && (
-        <TouchableOpacity
-          style={[styles.submitBtn, { marginTop: 16 }]}
-          onPress={handleComplete}
-        >
-          <Text style={styles.submitBtnText}>
-            {recordingState === 'recorded' ? '✅ ¡Lo hice bien! Continuar' : 'Continuar sin grabar →'}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {completed && (
-        <View style={styles.pronunciationDone}>
-          <Text style={styles.pronunciationDoneText}>¡Excelente práctica! 🎉</Text>
-        </View>
-      )}
-    </View>
-  );
-}
 
 // ─── Ordenar Oración ─────────────────────────────────────────────────────────
 
@@ -872,6 +568,10 @@ function FillBlankView({
           </Text>
           {exercise.sentenceAfter}
         </Text>
+        {/* Traducción al español de la frase */}
+        <Text style={styles.fillSentenceTranslation}>
+          🇪🇸 {exercise.sentenceEs}
+        </Text>
       </View>
 
       {/* Opciones */}
@@ -984,7 +684,6 @@ export default function ExerciseScreen() {
     if (!level) return '#58CC02';
     const type = level.exercises[currentIdx]?.type;
     switch (type) {
-      case 'pronunciation': return '#FF4B4B';
       case 'listen-write': return '#1CB0F6';
       case 'fill-blank': return '#58CC02';
       case 'sentence-order': return '#FF9500';
@@ -1196,7 +895,6 @@ export default function ExerciseScreen() {
               : exercise.type === 'translate' ? '🔄'
               : exercise.type === 'match-pairs' ? '🧩'
               : exercise.type === 'listen-write' ? '🎧'
-              : exercise.type === 'pronunciation' ? '🎙'
               : exercise.type === 'sentence-order' ? '📝'
               : '✏️'}
           </Text>
@@ -1205,7 +903,6 @@ export default function ExerciseScreen() {
               : exercise.type === 'translate' ? 'Traducción'
               : exercise.type === 'match-pairs' ? 'Emparejar'
               : exercise.type === 'listen-write' ? 'Escucha'
-              : exercise.type === 'pronunciation' ? 'Pronunciación'
               : exercise.type === 'sentence-order' ? 'Ordenar'
               : 'Completar'}
           </Text>
@@ -1255,13 +952,6 @@ export default function ExerciseScreen() {
               exercise={exercise as ListenWriteExercise}
               onAnswer={handleAnswer}
               hintUsed={hintUsed}
-            />
-          )}
-          {exercise.type === 'pronunciation' && (
-            <PronunciationView
-              key={exerciseKey}
-              exercise={exercise as PronunciationExercise}
-              onAnswer={handleAnswer}
             />
           )}
           {exercise.type === 'sentence-order' && (
@@ -1477,6 +1167,10 @@ const styles = StyleSheet.create({
   },
   fillBlank: {
     color: '#1CB0F6', fontWeight: '800', textDecorationLine: 'underline',
+  },
+  fillSentenceTranslation: {
+    fontSize: 13, color: '#9CA3AF', marginTop: 10,
+    fontStyle: 'italic', lineHeight: 18,
   },
   fillOptionsGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 10,
