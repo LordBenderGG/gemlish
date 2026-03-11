@@ -240,3 +240,7 @@
 ## v1.26 — Mejoras aprobadas
 - [x] Sonido de desbloqueo sincronizado con la animación del candado
 - [x] Confeti cayendo sobre el overlay de desbloqueo
+
+## v1.27 — Mejoras aprobadas
+- [x] Pantalla de logros (Achievements) en el perfil con medallas, iconos y fechas
+- [x] Notificación diaria personalizada con el nombre del siguiente nivel pendiente

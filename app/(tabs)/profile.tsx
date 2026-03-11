@@ -714,7 +714,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Logros */}
-        <View style={styles.achieveHeader}>
+               <View style={styles.achieveHeader}>
           <Text style={styles.sectionTitle}>🏆 Logros</Text>
           <Text style={styles.achieveCount}>
             {unlockedAchievements.length}/{ACHIEVEMENTS.length}
@@ -722,22 +722,37 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.achieveProgressBar}>
-          <View style={[
-            styles.achieveProgressFill,
+          <View style={[styles.achieveProgressFill,
             { width: `${Math.round((unlockedAchievements.length / ACHIEVEMENTS.length) * 100)}%` as any },
           ]} />
         </View>
 
+        {/* Preview: primeros 3 logros desbloqueados */}
         <View style={styles.achieveList}>
-          {ACHIEVEMENTS.map(achievement => (
+          {unlockedAchievements.slice(0, 3).map(achievement => (
             <AchievementCard
               key={achievement.id}
               achievement={achievement}
-              unlocked={achievement.check(stats)}
+              unlocked={true}
               username={username ?? ''}
             />
           ))}
+          {unlockedAchievements.length === 0 && (
+            <Text style={{ color: '#9BA1A6', fontSize: 13, textAlign: 'center', paddingVertical: 12 }}>
+              Completa niveles para desbloquear logros 🌟
+            </Text>
+          )}
         </View>
+
+        {/* Botón Ver todos */}
+        <TouchableOpacity
+          style={styles.viewAllBtn}
+          onPress={() => router.push('/achievements' as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.viewAllText}>🏆 Ver todos los logros ({ACHIEVEMENTS.length})</Text>
+          <Text style={styles.viewAllArrow}>›</Text>
+        </TouchableOpacity>
 
         <View style={{ height: 32 }} />
       </ScrollView>
@@ -1076,4 +1091,11 @@ const styles = StyleSheet.create({
   },
   heatmapCellActive: { backgroundColor: '#58CC02' },
   heatmapLegend: { fontSize: 11, color: '#9CA3AF', marginTop: 8, textAlign: 'center' },
+  viewAllBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#1E2022', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+    marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: '#2A2D2E',
+  },
+  viewAllText: { fontSize: 14, fontWeight: '600', color: '#ECEDEE' },
+  viewAllArrow: { fontSize: 20, color: '#7C3AED', fontWeight: '700' },
 });

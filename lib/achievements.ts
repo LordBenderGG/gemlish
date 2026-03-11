@@ -64,6 +64,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 // ─── Persistencia de logros desbloqueados ────────────────────────────────────
 
 const KEY = (username: string) => `gemlish_achievements_${username}`;
+const DATES_KEY = (username: string) => `gemlish_achievement_dates_${username}`;
 
 export async function getUnlockedAchievements(username: string): Promise<Set<string>> {
   const raw = await AsyncStorage.getItem(KEY(username));
@@ -75,6 +76,17 @@ export async function saveUnlockedAchievements(username: string, ids: Set<string
   await AsyncStorage.setItem(KEY(username), JSON.stringify([...ids]));
 }
 
+/** Devuelve un mapa id -> fecha ISO de cuando se desbloquó el logro */
+export async function getAchievementDates(username: string): Promise<Record<string, string>> {
+  const raw = await AsyncStorage.getItem(DATES_KEY(username));
+  if (!raw) return {};
+  return JSON.parse(raw) as Record<string, string>;
+}
+
+async function saveAchievementDates(username: string, dates: Record<string, string>): Promise<void> {
+  await AsyncStorage.setItem(DATES_KEY(username), JSON.stringify(dates));
+}
+
 /**
  * Compara el estado actual con los logros ya desbloqueados.
  * Devuelve los logros que se acaban de desbloquear (nuevos).
@@ -84,17 +96,21 @@ export async function checkNewAchievements(
   stats: AchievementStats,
 ): Promise<Achievement[]> {
   const already = await getUnlockedAchievements(username);
+  const dates = await getAchievementDates(username);
   const newlyUnlocked: Achievement[] = [];
+  const now = new Date().toISOString();
 
   for (const a of ACHIEVEMENTS) {
     if (!already.has(a.id) && a.check(stats)) {
       newlyUnlocked.push(a);
       already.add(a.id);
+      dates[a.id] = now;
     }
   }
 
   if (newlyUnlocked.length > 0) {
     await saveUnlockedAchievements(username, already);
+    await saveAchievementDates(username, dates);
   }
 
   return newlyUnlocked;

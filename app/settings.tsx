@@ -152,8 +152,12 @@ export default function SettingsScreen() {
           return;
         }
       }
-      // Permiso concedido — activar notificaciones directamente
-      const ok = await enableNotifications(settings.hour, settings.minute);
+      // Permiso concedido — activar notificaciones con el nombre del siguiente nivel
+      const nextLevelId = game.maxUnlockedLevel;
+      const { getLevelData } = await import('@/data/lessons');
+      const nextLevelData = getLevelData(nextLevelId);
+      const nextLevelName = nextLevelData ? nextLevelData.name : undefined;
+      const ok = await enableNotifications(settings.hour, settings.minute, nextLevelName);
       if (ok) {
         const totalLevels = Object.values(game.levelProgress).filter(p => p.completed).length;
         const levelsLastWeek = Object.entries(game.levelCompletedDates ?? {}).filter(([date]) => {

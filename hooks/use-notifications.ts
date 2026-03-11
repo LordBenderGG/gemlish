@@ -133,7 +133,7 @@ export function useNotifications() {
     }
   }, []);
 
-  const scheduleDaily = useCallback(async (hour: number, minute: number): Promise<boolean> => {
+  const scheduleDaily = useCallback(async (hour: number, minute: number, nextLevelName?: string): Promise<boolean> => {
     try {
       // Cancelar notificación anterior
       const prevId = await AsyncStorage.getItem(NOTIFICATION_ID_KEY);
@@ -141,14 +141,26 @@ export function useNotifications() {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
       }
 
-      // Programar nueva notificación diaria
-      const messages = [
-        { title: '🔥 ¡No rompas tu racha!', body: 'Completa tu tarea diaria de inglés en Gemlish.' },
-        { title: '💎 ¡Gana diamantes hoy!', body: 'Aprende 30 palabras nuevas y gana recompensas.' },
-        { title: '🚀 ¡Sigue avanzando!', body: 'Tu próximo nivel te espera en Gemlish.' },
-        { title: '📅 Tarea Diaria lista', body: '30 palabras nuevas te esperan hoy en Gemlish.' },
-      ];
-      const msg = messages[Math.floor(Math.random() * messages.length)];
+      // Programar nueva notificación diaria personalizada
+      let msg: { title: string; body: string };
+      if (nextLevelName) {
+        // Notificación personalizada con el nombre del siguiente nivel
+        const personalizedMessages = [
+          { title: '🔥 ¡No rompas tu racha!', body: `Hoy aprende ${nextLevelName} en Gemlish. ¡Sólo 20 ejercicios!` },
+          { title: `🌟 ¡${nextLevelName} te espera!`, body: 'Completa tu tarea diaria y gana XP y gemas.' },
+          { title: '🚀 ¡Sigue avanzando!', body: `Hoy toca ${nextLevelName}. ¡Puedes hacerlo!` },
+          { title: '📅 Tarea Diaria lista', body: `Aprende ${nextLevelName} hoy y mantén tu racha.` },
+        ];
+        msg = personalizedMessages[Math.floor(Math.random() * personalizedMessages.length)];
+      } else {
+        const genericMessages = [
+          { title: '🔥 ¡No rompas tu racha!', body: 'Completa tu tarea diaria de inglés en Gemlish.' },
+          { title: '💎 ¡Gana diamantes hoy!', body: 'Aprende 30 palabras nuevas y gana recompensas.' },
+          { title: '🚀 ¡Sigue avanzando!', body: 'Tu próximo nivel te espera en Gemlish.' },
+          { title: '📅 Tarea Diaria lista', body: '30 palabras nuevas te esperan hoy en Gemlish.' },
+        ];
+        msg = genericMessages[Math.floor(Math.random() * genericMessages.length)];
+      }
 
       const id = await Notifications.scheduleNotificationAsync({
         content: {
@@ -174,11 +186,11 @@ export function useNotifications() {
     }
   }, []);
 
-  const enableNotifications = useCallback(async (hour: number, minute: number): Promise<boolean> => {
+  const enableNotifications = useCallback(async (hour: number, minute: number, nextLevelName?: string): Promise<boolean> => {
     const granted = await requestPermission();
     if (!granted) return false;
 
-    const scheduled = await scheduleDaily(hour, minute);
+    const scheduled = await scheduleDaily(hour, minute, nextLevelName);
     if (!scheduled) return false;
 
     await Promise.all([
