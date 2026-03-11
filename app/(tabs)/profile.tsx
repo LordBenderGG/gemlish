@@ -1,0 +1,290 @@
+import React, { useMemo } from 'react';
+import {
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+  StatusBar, Alert,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useGame } from '@/context/GameContext';
+
+// ─── Definición de Logros ─────────────────────────────────────────────────────
+
+interface Achievement {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+  check: (stats: UserStats) => boolean;
+  category: 'levels' | 'streak' | 'words' | 'gems' | 'game';
+}
+
+interface UserStats {
+  levelsCompleted: number;
+  streak: number;
+  totalWordsLearned: number;
+  gems: number;
+  xp: number;
+  totalDaysCompleted: number;
+}
+
+const ACHIEVEMENTS: Achievement[] = [
+  // Niveles
+  { id: 'first_level', emoji: '🎯', title: 'Primer Paso', description: 'Completa tu primer nivel', check: s => s.levelsCompleted >= 1, category: 'levels' },
+  { id: 'levels_10', emoji: '🔟', title: 'Diez Niveles', description: 'Completa 10 niveles', check: s => s.levelsCompleted >= 10, category: 'levels' },
+  { id: 'levels_25', emoji: '🌟', title: 'Cuarto de Siglo', description: 'Completa 25 niveles', check: s => s.levelsCompleted >= 25, category: 'levels' },
+  { id: 'levels_50', emoji: '🏅', title: 'Medio Camino', description: 'Completa 50 niveles', check: s => s.levelsCompleted >= 50, category: 'levels' },
+  { id: 'levels_100', emoji: '💯', title: 'Centurión', description: 'Completa 100 niveles', check: s => s.levelsCompleted >= 100, category: 'levels' },
+  { id: 'levels_250', emoji: '🥇', title: 'Experto', description: 'Completa 250 niveles', check: s => s.levelsCompleted >= 250, category: 'levels' },
+  { id: 'levels_500', emoji: '👑', title: 'Maestro del Inglés', description: '¡Completa los 500 niveles!', check: s => s.levelsCompleted >= 500, category: 'levels' },
+  // Racha
+  { id: 'streak_3', emoji: '🔥', title: 'En Racha', description: '3 días seguidos estudiando', check: s => s.streak >= 3, category: 'streak' },
+  { id: 'streak_7', emoji: '🔥🔥', title: 'Semana Perfecta', description: '7 días de racha', check: s => s.streak >= 7, category: 'streak' },
+  { id: 'streak_30', emoji: '🌙', title: 'Mes de Estudio', description: '30 días de racha', check: s => s.streak >= 30, category: 'streak' },
+  { id: 'streak_100', emoji: '⚡', title: 'Imparable', description: '100 días de racha', check: s => s.streak >= 100, category: 'streak' },
+  // Palabras
+  { id: 'words_10', emoji: '📖', title: 'Primeras Palabras', description: 'Aprende 10 palabras en tarea diaria', check: s => s.totalWordsLearned >= 10, category: 'words' },
+  { id: 'words_50', emoji: '📚', title: 'Vocabulario Básico', description: 'Aprende 50 palabras', check: s => s.totalWordsLearned >= 50, category: 'words' },
+  { id: 'words_100', emoji: '🧠', title: 'Mente Brillante', description: 'Aprende 100 palabras', check: s => s.totalWordsLearned >= 100, category: 'words' },
+  { id: 'words_300', emoji: '📜', title: 'Políglota', description: 'Aprende 300 palabras', check: s => s.totalWordsLearned >= 300, category: 'words' },
+  // Gemas
+  { id: 'gems_50', emoji: '💎', title: 'Coleccionista', description: 'Acumula 50 💎', check: s => s.gems >= 50, category: 'gems' },
+  { id: 'gems_100', emoji: '💎💎', title: 'Tesoro', description: 'Acumula 100 💎', check: s => s.gems >= 100, category: 'gems' },
+  { id: 'gems_500', emoji: '💰', title: 'Rico en Conocimiento', description: 'Acumula 500 💎', check: s => s.gems >= 500, category: 'gems' },
+  // XP
+  { id: 'xp_100', emoji: '⭐', title: 'Primer XP', description: 'Gana 100 XP', check: s => s.xp >= 100, category: 'game' },
+  { id: 'xp_500', emoji: '🌠', title: 'Estrella en Ascenso', description: 'Gana 500 XP', check: s => s.xp >= 500, category: 'game' },
+  { id: 'xp_1000', emoji: '🚀', title: 'Despegue', description: 'Gana 1,000 XP', check: s => s.xp >= 1000, category: 'game' },
+  { id: 'xp_5000', emoji: '🌌', title: 'Leyenda', description: 'Gana 5,000 XP', check: s => s.xp >= 5000, category: 'game' },
+  // Tarea Diaria
+  { id: 'daily_1', emoji: '✅', title: 'Primer Día', description: 'Completa la tarea diaria 1 vez', check: s => s.totalDaysCompleted >= 1, category: 'words' },
+  { id: 'daily_7', emoji: '🗓️', title: 'Semana Completa', description: 'Completa la tarea diaria 7 veces', check: s => s.totalDaysCompleted >= 7, category: 'words' },
+  { id: 'daily_30', emoji: '📅', title: 'Mes de Palabras', description: 'Completa la tarea diaria 30 veces', check: s => s.totalDaysCompleted >= 30, category: 'words' },
+];
+
+// ─── Componente de Logro ──────────────────────────────────────────────────────
+
+function AchievementCard({ achievement, unlocked }: { achievement: Achievement; unlocked: boolean }) {
+  return (
+    <View style={[styles.achieveCard, !unlocked && styles.achieveCardLocked]}>
+      <Text style={[styles.achieveEmoji, !unlocked && styles.achieveEmojiLocked]}>
+        {unlocked ? achievement.emoji : '🔒'}
+      </Text>
+      <View style={styles.achieveInfo}>
+        <Text style={[styles.achieveTitle, !unlocked && styles.achieveTitleLocked]}>
+          {achievement.title}
+        </Text>
+        <Text style={[styles.achieveDesc, !unlocked && styles.achieveDescLocked]}>
+          {achievement.description}
+        </Text>
+      </View>
+      {unlocked && <Text style={styles.achieveCheck}>✅</Text>}
+    </View>
+  );
+}
+
+// ─── Pantalla de Perfil ───────────────────────────────────────────────────────
+
+export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
+  const { username, game, daily, logout } = useGame();
+
+  const stats: UserStats = useMemo(() => {
+    const levelsCompleted = Object.values(game.levelProgress).filter(p => p.completed).length;
+    const totalWordsLearned = Object.values(daily.learnedWords).filter(Boolean).length;
+    return {
+      levelsCompleted,
+      streak: game.streak,
+      totalWordsLearned,
+      gems: game.gems,
+      xp: game.xp,
+      totalDaysCompleted: daily.totalDaysCompleted,
+    };
+  }, [game, daily]);
+
+  const unlockedAchievements = useMemo(
+    () => ACHIEVEMENTS.filter(a => a.check(stats)),
+    [stats],
+  );
+
+  const levelTitle = useMemo(() => {
+    if (stats.levelsCompleted >= 500) return { title: '👑 Maestro', color: '#FFD700' };
+    if (stats.levelsCompleted >= 250) return { title: '💎 Experto', color: '#00D4FF' };
+    if (stats.levelsCompleted >= 100) return { title: '🥇 Avanzado', color: '#8E5AF5' };
+    if (stats.levelsCompleted >= 50) return { title: '🌟 Intermedio', color: '#58CC02' };
+    if (stats.levelsCompleted >= 10) return { title: '📖 Aprendiz', color: '#1CB0F6' };
+    return { title: '🌱 Principiante', color: '#9CA3AF' };
+  }, [stats.levelsCompleted]);
+
+  const progressPct = Math.min(100, Math.round((stats.levelsCompleted / 500) * 100));
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar Sesión',
+      '¿Estás seguro? Tu progreso está guardado en este dispositivo.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
+      ],
+    );
+  };
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="light-content" />
+
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>👤 Perfil</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutBtnText}>Salir</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* Tarjeta de usuario */}
+        <View style={styles.userCard}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {username ? username.charAt(0).toUpperCase() : '?'}
+            </Text>
+          </View>
+          <Text style={styles.userName}>{username}</Text>
+          <View style={[styles.levelBadge, { borderColor: levelTitle.color }]}>
+            <Text style={[styles.levelBadgeText, { color: levelTitle.color }]}>{levelTitle.title}</Text>
+          </View>
+
+          {/* Barra de progreso del curso */}
+          <View style={styles.courseProgress}>
+            <View style={styles.courseProgressRow}>
+              <Text style={styles.courseProgressLabel}>Progreso del Curso</Text>
+              <Text style={styles.courseProgressPct}>{progressPct}%</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
+            </View>
+            <Text style={styles.courseProgressSub}>{stats.levelsCompleted} / 500 niveles completados</Text>
+          </View>
+        </View>
+
+        {/* Estadísticas */}
+        <Text style={styles.sectionTitle}>📊 Estadísticas</Text>
+        <View style={styles.statsGrid}>
+          {[
+            { label: 'Niveles', value: stats.levelsCompleted, emoji: '🎯', color: '#1CB0F6' },
+            { label: 'Racha', value: `${stats.streak} días`, emoji: '🔥', color: '#FF9600' },
+            { label: 'Palabras', value: stats.totalWordsLearned, emoji: '📖', color: '#58CC02' },
+            { label: 'Diamantes', value: stats.gems, emoji: '💎', color: '#00D4FF' },
+            { label: 'XP Total', value: stats.xp.toLocaleString(), emoji: '⭐', color: '#8E5AF5' },
+            { label: 'Días Tarea', value: stats.totalDaysCompleted, emoji: '📅', color: '#FF4B4B' },
+          ].map(stat => (
+            <View key={stat.label} style={styles.statCard}>
+              <Text style={styles.statEmoji}>{stat.emoji}</Text>
+              <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Logros */}
+        <View style={styles.achieveHeader}>
+          <Text style={styles.sectionTitle}>🏆 Logros</Text>
+          <Text style={styles.achieveCount}>
+            {unlockedAchievements.length}/{ACHIEVEMENTS.length}
+          </Text>
+        </View>
+
+        {/* Barra de progreso de logros */}
+        <View style={styles.achieveProgressBar}>
+          <View style={[
+            styles.achieveProgressFill,
+            { width: `${Math.round((unlockedAchievements.length / ACHIEVEMENTS.length) * 100)}%` as any },
+          ]} />
+        </View>
+
+        {/* Lista de logros */}
+        <View style={styles.achieveList}>
+          {ACHIEVEMENTS.map(achievement => (
+            <AchievementCard
+              key={achievement.id}
+              achievement={achievement}
+              unlocked={achievement.check(stats)}
+            />
+          ))}
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0F1117' },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: '#2D3148',
+  },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
+  logoutBtn: {
+    backgroundColor: '#FF4B4B20', borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: '#FF4B4B40',
+  },
+  logoutBtnText: { color: '#FF4B4B', fontSize: 13, fontWeight: '700' },
+  scroll: { padding: 16, gap: 16 },
+  userCard: {
+    backgroundColor: '#1A1D27', borderRadius: 20, padding: 20,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#2D3148',
+  },
+  avatarCircle: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: '#8E5AF5', justifyContent: 'center', alignItems: 'center',
+    marginBottom: 12, borderWidth: 3, borderColor: '#8E5AF540',
+  },
+  avatarText: { fontSize: 36, fontWeight: '800', color: '#FFFFFF' },
+  userName: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },
+  levelBadge: {
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6,
+    borderWidth: 2, marginBottom: 16,
+  },
+  levelBadgeText: { fontSize: 14, fontWeight: '700' },
+  courseProgress: { width: '100%' },
+  courseProgressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  courseProgressLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600' },
+  courseProgressPct: { fontSize: 13, color: '#58CC02', fontWeight: '700' },
+  progressBarBg: { height: 10, backgroundColor: '#2D3148', borderRadius: 5, overflow: 'hidden', marginBottom: 6 },
+  progressBarFill: { height: 10, backgroundColor: '#58CC02', borderRadius: 5 },
+  courseProgressSub: { fontSize: 12, color: '#6B7280', textAlign: 'center' },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  statCard: {
+    width: '30%', flex: 1, minWidth: 90,
+    backgroundColor: '#1A1D27', borderRadius: 14, padding: 14,
+    alignItems: 'center', borderWidth: 1, borderColor: '#2D3148',
+  },
+  statEmoji: { fontSize: 24, marginBottom: 6 },
+  statValue: { fontSize: 18, fontWeight: '800', marginBottom: 2 },
+  statLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center' },
+  achieveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  achieveCount: { fontSize: 14, color: '#FFD700', fontWeight: '700' },
+  achieveProgressBar: {
+    height: 6, backgroundColor: '#2D3148', borderRadius: 3, overflow: 'hidden',
+    marginTop: -8,
+  },
+  achieveProgressFill: { height: 6, backgroundColor: '#FFD700', borderRadius: 3 },
+  achieveList: { gap: 8 },
+  achieveCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#1A1D27', borderRadius: 14, padding: 14,
+    borderWidth: 1.5, borderColor: '#FFD70030',
+  },
+  achieveCardLocked: { borderColor: '#2D3148', opacity: 0.6 },
+  achieveEmoji: { fontSize: 28, width: 36, textAlign: 'center' },
+  achieveEmojiLocked: { opacity: 0.5 },
+  achieveInfo: { flex: 1 },
+  achieveTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
+  achieveTitleLocked: { color: '#6B7280' },
+  achieveDesc: { fontSize: 12, color: '#9CA3AF', lineHeight: 16 },
+  achieveDescLocked: { color: '#4B5563' },
+  achieveCheck: { fontSize: 18 },
+});

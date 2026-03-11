@@ -25,6 +25,10 @@ const MAPPING = {
   "lightbulb.fill": "lightbulb",
   "arrow.right": "arrow-forward",
   "arrow.left": "arrow-back",
+  "person.crop.circle.fill": "account-circle",
+  "trophy.fill": "emoji-events",
+  "chart.bar.fill": "bar-chart",
+  "headphones": "headphones",
 } as IconMapping;
 
 export function IconSymbol({

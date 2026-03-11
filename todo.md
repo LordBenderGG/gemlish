@@ -67,3 +67,11 @@
 ## Mejoras v1.1
 - [x] Ampliar vocabulario del minijuego: colores, números, animales, saludos, casa, cocina, útiles escolares
 - [x] Pantalla de selección de juegos con imagen descriptiva y descripción en inglés/español
+
+## v1.2 — Mejoras aprobadas
+- [x] Bug: TTS no suena en Tarea Diaria (corregido: expo-speech v14.0.8 instalada)
+- [x] Tablero de memoria expandido a 6×4 (12 pares, 24 cartas)
+- [x] Límite diario de juego subido a 30 minutos
+- [x] Pantalla de Perfil con estadísticas y 24 logros desbloqueables
+- [x] Ejercicio de escucha: TTS pronuncia, usuario escribe sin ver la palabra
+- [x] Sistema de logros y medallas (10 niveles, 7 días racha, 100 palabras, etc.)

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, StatusBar, Alert,
-  ScrollView, Animated,
+  ScrollView, Animated, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
@@ -9,9 +9,14 @@ import {
   GAME_CATEGORIES, getGameWordsByCategory, getRandomGameWords, GameWord,
 } from '@/data/gameWords';
 
-const MAX_DAILY_MS = 10 * 60 * 1000;
-const PAIRS_COUNT = 6;
+const MAX_DAILY_MS = 30 * 60 * 1000; // 30 minutos
+const PAIRS_COUNT = 12; // 12 pares = 24 cartas = tablero 6×4
 const GEMS_REWARD = 10;
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// 6 columnas con padding 10 a cada lado y gap 6 entre cartas
+const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 20 - 5 * 6) / 6);
+const CARD_HEIGHT = Math.floor(CARD_WIDTH * 1.25);
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +67,7 @@ function MemCard({ card, isFlipped, isMatched, onPress }: MemCardProps) {
   useEffect(() => {
     Animated.timing(anim, {
       toValue: isFlipped || isMatched ? 1 : 0,
-      duration: 220,
+      duration: 200,
       useNativeDriver: true,
     }).start();
   }, [isFlipped, isMatched]);
@@ -72,24 +77,28 @@ function MemCard({ card, isFlipped, isMatched, onPress }: MemCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.cardWrapper}
+      style={[styles.cardWrapper, { width: CARD_WIDTH, height: CARD_HEIGHT }]}
       onPress={onPress}
       disabled={isFlipped || isMatched}
       activeOpacity={0.85}
     >
-      {/* Cara trasera */}
-      <Animated.View style={[styles.card, styles.cardBack, { transform: [{ rotateY: frontRot }] }, isMatched && styles.cardMatchedBack]}>
-        <Text style={styles.cardGem}>💎</Text>
-      </Animated.View>
-      {/* Cara frontal */}
       <Animated.View style={[
-        styles.card, styles.cardFront,
+        styles.card, styles.cardBack,
+        { transform: [{ rotateY: frontRot }] },
+        isMatched && styles.cardMatchedBack,
+      ]}>
+        <Text style={{ fontSize: CARD_WIDTH * 0.35 }}>💎</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.card,
         { transform: [{ rotateY: backRot }] },
         card.isEnglish ? styles.cardEn : styles.cardEs,
         isMatched && styles.cardMatchedFront,
       ]}>
         <Text style={styles.cardLangFlag}>{card.isEnglish ? '🇺🇸' : '🇪🇸'}</Text>
-        <Text style={styles.cardWord} numberOfLines={2}>{card.text}</Text>
+        <Text style={[styles.cardWord, { fontSize: CARD_WIDTH > 55 ? 11 : 9 }]} numberOfLines={2}>
+          {card.text}
+        </Text>
       </Animated.View>
     </TouchableOpacity>
   );
@@ -107,7 +116,14 @@ interface GameBoardProps {
 function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps) {
   const words = useMemo(() => {
     if (categoryKey === 'random') return getRandomGameWords(PAIRS_COUNT);
-    return getGameWordsByCategory(categoryKey, PAIRS_COUNT);
+    // Si la categoría tiene menos de 12 palabras, completar con aleatorias de otras
+    const catWords = getGameWordsByCategory(categoryKey, PAIRS_COUNT);
+    if (catWords.length < PAIRS_COUNT) {
+      const extra = getRandomGameWords(PAIRS_COUNT - catWords.length);
+      const combined = [...catWords, ...extra.filter(w => w.category !== categoryKey)];
+      return combined.slice(0, PAIRS_COUNT);
+    }
+    return catWords;
   }, [categoryKey]);
 
   const [cards, setCards] = useState<CardData[]>(() => buildCards(words));
@@ -119,7 +135,6 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isProcessing = useRef(false);
 
-  // Timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
       if (startMs !== null) setElapsed(Date.now() - startMs);
@@ -127,7 +142,6 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [startMs]);
 
-  // Detectar tiempo agotado
   useEffect(() => {
     if (remainingMs <= 0) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -153,7 +167,6 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
       const c2 = cards.find(c => c.id === id2)!;
 
       if (c1.pairId === c2.pairId && c1.isEnglish !== c2.isEnglish) {
-        // Par correcto
         const newMatched = [...matched, id1, id2];
         setTimeout(() => {
           setMatched(newMatched);
@@ -164,13 +177,12 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
             const totalMs = startMs ? Date.now() - startMs : elapsed;
             onWin(moves + 1, totalMs);
           }
-        }, 400);
+        }, 350);
       } else {
-        // Par incorrecto
         setTimeout(() => {
           setFlipped([]);
           isProcessing.current = false;
-        }, 900);
+        }, 800);
       }
     }
   }, [flipped, matched, cards, startMs, elapsed, moves, onWin]);
@@ -179,7 +191,6 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
 
   return (
     <View style={styles.boardContainer}>
-      {/* Stats del juego */}
       <View style={styles.boardStats}>
         <View style={styles.boardStat}>
           <Text style={styles.boardStatLabel}>Pares</Text>
@@ -201,7 +212,7 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
         </View>
       </View>
 
-      {/* Tablero 4×3 */}
+      {/* Tablero 6 columnas × 4 filas */}
       <View style={styles.board}>
         {cards.map(card => (
           <MemCard
@@ -223,7 +234,6 @@ export default function GameScreen() {
   const insets = useSafeAreaInsets();
   const { game, miniGame, addMiniGameTime, winMiniGame } = useGame();
 
-  // null = selector, string = jugando, 'won' = ganó
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [gameWon, setGameWon] = useState(false);
   const [wonStats, setWonStats] = useState({ moves: 0, ms: 0 });
@@ -235,7 +245,7 @@ export default function GameScreen() {
 
   const handleStartGame = useCallback((categoryKey: string) => {
     if (remainingMs <= 0) {
-      Alert.alert('⏰ Tiempo agotado', 'Has usado tus 10 minutos diarios de juego. Vuelve mañana.');
+      Alert.alert('⏰ Tiempo agotado', 'Has usado tus 30 minutos diarios de juego. Vuelve mañana.');
       return;
     }
     setSelectedCategory(categoryKey);
@@ -269,7 +279,7 @@ export default function GameScreen() {
     setRewardClaimed(false);
   }, []);
 
-  // ─── Pantalla de Victoria ───────────────────────────────────────────────
+  // ─── Victoria ───────────────────────────────────────────────────────────
 
   if (activeGame && gameWon) {
     return (
@@ -297,7 +307,7 @@ export default function GameScreen() {
     );
   }
 
-  // ─── Pantalla de Tiempo Agotado ─────────────────────────────────────────
+  // ─── Tiempo Agotado ─────────────────────────────────────────────────────
 
   if (activeGame && timeUp) {
     return (
@@ -306,7 +316,7 @@ export default function GameScreen() {
         <View style={styles.wonScreen}>
           <Text style={styles.wonEmoji}>⏰</Text>
           <Text style={[styles.wonTitle, { color: '#FF4B4B' }]}>Tiempo Agotado</Text>
-          <Text style={styles.wonSub}>Has usado tus 10 minutos diarios.</Text>
+          <Text style={styles.wonSub}>Has usado tus 30 minutos diarios.</Text>
           <Text style={[styles.wonSub, { marginTop: 4 }]}>Vuelve mañana para seguir jugando.</Text>
           <TouchableOpacity style={styles.backMenuBtn} onPress={handleBackToMenu}>
             <Text style={styles.backMenuBtnText}>← Volver a Juegos</Text>
@@ -365,7 +375,6 @@ export default function GameScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>🎮 Juegos</Text>
@@ -376,32 +385,28 @@ export default function GameScreen() {
         </View>
       </View>
 
-      {/* Tiempo disponible */}
       <View style={styles.timeBar}>
-        <Text style={styles.timeBarLabel}>⏱ Tiempo diario disponible:</Text>
+        <Text style={styles.timeBarLabel}>⏱ Tiempo diario (30 min):</Text>
         <Text style={[styles.timeBarValue, remainingMs < 60000 && { color: '#FF4B4B' }]}>
           {remainingMs <= 0 ? 'Agotado (vuelve mañana)' : formatTime(remainingMs)}
         </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.gameList} showsVerticalScrollIndicator={false}>
-
-        {/* Tarjeta principal del juego */}
         <View style={styles.gameCard}>
           <View style={styles.gameCardHeader}>
             <Text style={styles.gameCardBigEmoji}>🃏</Text>
             <View style={styles.gameCardInfo}>
               <Text style={styles.gameCardTitle}>Memory Pairs</Text>
-              <Text style={styles.gameCardDescEn}>Match English words with their Spanish translations before time runs out!</Text>
-              <Text style={styles.gameCardDescEs}>¡Empareja palabras en inglés con sus traducciones antes de que se acabe el tiempo!</Text>
+              <Text style={styles.gameCardDescEn}>Match 12 English words with their Spanish translations before time runs out!</Text>
+              <Text style={styles.gameCardDescEs}>¡Empareja 12 palabras en inglés con sus traducciones antes de que se acabe el tiempo!</Text>
             </View>
           </View>
           <View style={styles.gameCardReward}>
-            <Text style={styles.gameCardRewardText}>🏆 Recompensa: +{GEMS_REWARD} 💎 por partida ganada</Text>
+            <Text style={styles.gameCardRewardText}>🏆 Recompensa: +{GEMS_REWARD} 💎 por partida ganada · 30 min diarios</Text>
           </View>
         </View>
 
-        {/* Selector de categoría */}
         <Text style={styles.sectionTitle}>Elige una categoría:</Text>
         <View style={styles.categoryGrid}>
           {categories.map(cat => (
@@ -421,18 +426,13 @@ export default function GameScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
       </ScrollView>
     </View>
   );
 }
 
-const CARD_SIZE = 90;
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F1117' },
-
-  // Header selector
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 14,
@@ -446,8 +446,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#00D4FF40',
   },
   gemsText: { color: '#00D4FF', fontSize: 15, fontWeight: '800' },
-
-  // Barra de tiempo
   timeBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 8,
@@ -455,11 +453,7 @@ const styles = StyleSheet.create({
   },
   timeBarLabel: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
   timeBarValue: { fontSize: 13, color: '#58CC02', fontWeight: '700' },
-
-  // Lista de juegos
   gameList: { padding: 16, paddingBottom: 32, gap: 16 },
-
-  // Tarjeta principal del juego
   gameCard: {
     backgroundColor: '#1A1D27', borderRadius: 18, padding: 16,
     borderWidth: 1.5, borderColor: '#8E5AF540',
@@ -475,14 +469,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#FFD70030',
   },
   gameCardRewardText: { color: '#FFD700', fontSize: 13, fontWeight: '700', textAlign: 'center' },
-
-  // Selector de categorías
   sectionTitle: { fontSize: 15, fontWeight: '700', color: '#9CA3AF', marginBottom: 4 },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   catCard: {
     width: '47%', backgroundColor: '#1A1D27', borderRadius: 14,
-    padding: 12, borderWidth: 1.5, borderColor: '#2D3148',
-    alignItems: 'center',
+    padding: 12, borderWidth: 1.5, borderColor: '#2D3148', alignItems: 'center',
   },
   catCardDisabled: { opacity: 0.5 },
   catEmoji: { fontSize: 32, marginBottom: 6 },
@@ -494,11 +485,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 6,
   },
   catPlayBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-
-  // Header del juego activo
   gameHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 14, paddingVertical: 12,
+    paddingHorizontal: 14, paddingVertical: 10,
     borderBottomWidth: 1, borderBottomColor: '#2D3148',
   },
   gameBackBtn: {
@@ -507,70 +496,60 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#2D3148',
   },
   gameBackBtnText: { color: '#9CA3AF', fontSize: 13, fontWeight: '600' },
-  gameHeaderTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+  gameHeaderTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
   gemsSmall: {
     backgroundColor: '#00D4FF18', borderRadius: 16,
     paddingHorizontal: 10, paddingVertical: 5,
     borderWidth: 1, borderColor: '#00D4FF30',
   },
   gemsSmallText: { color: '#00D4FF', fontSize: 13, fontWeight: '700' },
-
-  // Tablero
   boardContainer: { flex: 1 },
   boardStats: {
-    flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: '#2D3148', gap: 6,
+    flexDirection: 'row', paddingHorizontal: 10, paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: '#2D3148', gap: 4,
   },
   boardStat: { flex: 1, alignItems: 'center' },
-  boardStatLabel: { fontSize: 10, color: '#9CA3AF', fontWeight: '600', textTransform: 'uppercase' },
-  boardStatValue: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginTop: 2 },
+  boardStatLabel: { fontSize: 9, color: '#9CA3AF', fontWeight: '600', textTransform: 'uppercase' },
+  boardStatValue: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', marginTop: 1 },
   board: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 10,
-    gap: 8,
+    gap: 6,
     justifyContent: 'center',
     alignContent: 'center',
   },
   cardWrapper: {
-    width: CARD_SIZE,
-    height: CARD_SIZE * 1.3,
     position: 'relative',
   },
   card: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     backfaceVisibility: 'hidden',
-    padding: 6,
+    padding: 4,
   },
   cardBack: {
     backgroundColor: '#1A1D27',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#2D3148',
   },
   cardMatchedBack: { borderColor: '#58CC02' },
-  cardFront: { borderWidth: 2 },
   cardMatchedFront: { borderColor: '#58CC02', backgroundColor: '#0D2010' },
-  cardEn: { backgroundColor: '#0D1F2D', borderColor: '#1CB0F6' },
-  cardEs: { backgroundColor: '#1A0D2D', borderColor: '#8E5AF5' },
-  cardGem: { fontSize: 32 },
-  cardLangFlag: { fontSize: 16, marginBottom: 4 },
-  cardWord: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', textAlign: 'center', lineHeight: 17 },
-
-  // Pista de recompensa
+  cardEn: { backgroundColor: '#0D1F2D', borderWidth: 1.5, borderColor: '#1CB0F6' },
+  cardEs: { backgroundColor: '#1A0D2D', borderWidth: 1.5, borderColor: '#8E5AF5' },
+  cardLangFlag: { fontSize: 10, marginBottom: 2 },
+  cardWord: { fontWeight: '700', color: '#FFFFFF', textAlign: 'center', lineHeight: 14 },
   rewardHint: {
-    marginHorizontal: 14, marginBottom: 14,
-    backgroundColor: '#00D4FF10', borderRadius: 10, padding: 10,
+    marginHorizontal: 14, marginBottom: 10,
+    backgroundColor: '#00D4FF10', borderRadius: 10, padding: 8,
     borderWidth: 1, borderColor: '#00D4FF20', alignItems: 'center',
   },
-  rewardHintText: { color: '#9CA3AF', fontSize: 13 },
-
-  // Pantalla de victoria
+  rewardHintText: { color: '#9CA3AF', fontSize: 12 },
   wonScreen: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   wonEmoji: { fontSize: 80, marginBottom: 16 },
   wonTitle: { fontSize: 34, fontWeight: '800', color: '#FFD700', marginBottom: 8 },

@@ -1,6 +1,6 @@
 import { getLevelData, getAllWords, getLevelIcon, Word } from './lessons';
 
-export type ExerciseType = 'multiple-choice' | 'translate' | 'match-pairs';
+export type ExerciseType = 'multiple-choice' | 'translate' | 'match-pairs' | 'listen-write';
 
 export interface MultipleChoiceExercise {
   type: 'multiple-choice';
@@ -28,7 +28,18 @@ export interface MatchPairsExercise {
   pairs: { left: string; right: string }[];
 }
 
-export type Exercise = MultipleChoiceExercise | TranslateExercise | MatchPairsExercise;
+export interface ListenWriteExercise {
+  type: 'listen-write';
+  question: string;
+  questionEs: string;
+  wordToSpeak: string;   // palabra en inglés que el TTS pronuncia
+  answer: string;        // respuesta esperada (lowercase)
+  answerAlt: string;     // sin acentos
+  correctAnswer: string; // para mostrar al usuario
+  hint: string;
+}
+
+export type Exercise = MultipleChoiceExercise | TranslateExercise | MatchPairsExercise | ListenWriteExercise;
 
 export interface Level {
   id: number;
@@ -172,16 +183,17 @@ export function generateLevel(levelNum: number): Level | null {
     hint: w9.word,
   });
 
-  // Ejercicio 10: Opción múltiple — repaso final
-  const w10 = shuffled[8];
-  const opts10 = shuffleArray([w10.translation, ...shuffledWrong.slice(3, 6).map(w => w.translation)]);
+  // Ejercicio 10: Escucha y escribe (listen-write)
+  const w10 = shuffled[9] || shuffled[0];
   exercises.push({
-    type: 'multiple-choice',
-    question: `Final: Select meaning of "${w10.word}"`,
-    questionEs: `Final: Selecciona el significado de "${w10.word}"`,
-    options: opts10,
-    correct: opts10.indexOf(w10.translation),
-    correctAnswer: w10.translation,
+    type: 'listen-write',
+    question: 'Listen and write the word you hear',
+    questionEs: 'Escucha y escribe la palabra que oyes',
+    wordToSpeak: w10.word,
+    answer: w10.word.toLowerCase(),
+    answerAlt: removeAccents(w10.word.toLowerCase()),
+    correctAnswer: w10.word,
+    hint: w10.word,
   });
 
   return {

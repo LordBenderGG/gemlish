@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  StatusBar, Alert, Platform,
+  StatusBar, Alert,
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,37 +16,49 @@ interface WordCardProps {
 
 function WordCard({ word, isLearned, onLearn }: WordCardProps) {
   const [speaking, setSpeaking] = useState(false);
+  const speakingRef = useRef(false);
 
-  const handleSpeak = useCallback(async () => {
-    try {
-      // Detener cualquier audio previo
-      await Speech.stop();
-
-      if (speaking) {
-        setSpeaking(false);
-        return;
-      }
-
-      setSpeaking(true);
-      Speech.speak(word.word, {
-        language: 'en-US',
-        rate: Platform.OS === 'android' ? 0.8 : 0.85,
-        pitch: 1.0,
-        volume: 1.0,
-        onStart: () => setSpeaking(true),
-        onDone: () => setSpeaking(false),
-        onStopped: () => setSpeaking(false),
-        onError: (_err) => setSpeaking(false),
-      });
-    } catch (e) {
+  const handleSpeak = useCallback(() => {
+    // Si ya está hablando, detener
+    if (speakingRef.current) {
+      Speech.stop();
+      speakingRef.current = false;
       setSpeaking(false);
+      return;
     }
-  }, [speaking, word.word]);
 
-  // Limpiar al desmontar
+    speakingRef.current = true;
+    setSpeaking(true);
+
+    Speech.speak(word.word, {
+      language: 'en-US',
+      rate: 0.85,
+      pitch: 1.0,
+      onStart: () => {
+        speakingRef.current = true;
+        setSpeaking(true);
+      },
+      onDone: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+      },
+      onStopped: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+      },
+      onError: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+      },
+    });
+  }, [word.word]);
+
   useEffect(() => {
     return () => {
-      setSpeaking(false);
+      if (speakingRef.current) {
+        Speech.stop();
+        speakingRef.current = false;
+      }
     };
   }, []);
 
@@ -94,8 +106,9 @@ export default function DailyScreen() {
 
   useEffect(() => {
     resetDailyIfNeeded();
-    // Detener audio al entrar a la pantalla
-    Speech.stop().catch(() => {});
+    return () => {
+      Speech.stop();
+    };
   }, []);
 
   const learnedCount = Object.values(daily.learnedWords).filter(Boolean).length;

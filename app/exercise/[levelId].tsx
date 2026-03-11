@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, TextInput,
   ScrollView, Alert, Animated, StatusBar,
@@ -6,11 +6,13 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
+import * as Speech from 'expo-speech';
 import {
   generateLevel,
   MultipleChoiceExercise,
   TranslateExercise,
   MatchPairsExercise,
+  ListenWriteExercise,
 } from '@/data/exerciseGenerator';
 
 const TOTAL_EXERCISES = 10;
@@ -297,6 +299,124 @@ function MatchPairsView({
   );
 }
 
+// ─── Escucha y Escribe ───────────────────────────────────────────────────────
+
+function ListenWriteView({
+  exercise,
+  onAnswer,
+  hintUsed,
+}: {
+  exercise: ListenWriteExercise;
+  onAnswer: (correct: boolean) => void;
+  hintUsed: boolean;
+}) {
+  const [input, setInput] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+
+  const handleSpeak = useCallback(() => {
+    if (speaking) {
+      Speech.stop();
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    Speech.speak(exercise.wordToSpeak, {
+      language: 'en-US',
+      rate: 0.8,
+      pitch: 1.0,
+      onDone: () => setSpeaking(false),
+      onStopped: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+  }, [speaking, exercise.wordToSpeak]);
+
+  // Pronunciar automáticamente al montar
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSpeaking(true);
+      Speech.speak(exercise.wordToSpeak, {
+        language: 'en-US',
+        rate: 0.8,
+        onDone: () => setSpeaking(false),
+        onStopped: () => setSpeaking(false),
+        onError: () => setSpeaking(false),
+      });
+    }, 400);
+    return () => {
+      clearTimeout(timer);
+      Speech.stop();
+    };
+  }, []);
+
+  const handleSubmit = () => {
+    if (!input.trim() || submitted) return;
+    const userAnswer = normalizeAnswer(input);
+    const correctNorm = normalizeAnswer(exercise.answer);
+    const altNorm = exercise.answerAlt ? normalizeAnswer(exercise.answerAlt) : '';
+    const correct = userAnswer === correctNorm || (altNorm !== '' && userAnswer === altNorm);
+    setIsCorrect(correct);
+    setSubmitted(true);
+    setTimeout(() => onAnswer(correct), 1000);
+  };
+
+  return (
+    <View style={styles.exerciseContainer}>
+      <Text style={styles.questionLabel}>🎧 Escucha y escribe:</Text>
+      <Text style={styles.questionText}>{exercise.questionEs}</Text>
+
+      <TouchableOpacity
+        style={[styles.listenBtn, speaking && styles.listenBtnActive]}
+        onPress={handleSpeak}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.listenBtnEmoji}>{speaking ? '⏹' : '🔊'}</Text>
+        <Text style={styles.listenBtnText}>
+          {speaking ? 'Reproduciendo...' : 'Escuchar palabra'}
+        </Text>
+      </TouchableOpacity>
+
+      {hintUsed && (
+        <View style={styles.hintBox}>
+          <Text style={styles.hintText}>💡 Pista: <Text style={styles.hintAnswer}>{exercise.hint}</Text></Text>
+        </View>
+      )}
+
+      <TextInput
+        style={[
+          styles.translateInput,
+          submitted && (isCorrect ? styles.inputCorrect : styles.inputWrong),
+        ]}
+        placeholder="Escribe la palabra que escuchaste..."
+        placeholderTextColor="#6B7280"
+        value={input}
+        onChangeText={setInput}
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
+        editable={!submitted}
+        returnKeyType="done"
+        onSubmitEditing={handleSubmit}
+      />
+      {submitted && (
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#58CC02' : '#FF4B4B' }]}>
+          {isCorrect ? '¡Correcto! ✅' : `La palabra era: "${exercise.correctAnswer}" ❌`}
+        </Text>
+      )}
+      {!submitted && (
+        <TouchableOpacity
+          style={[styles.submitBtn, !input.trim() && styles.submitBtnDisabled]}
+          onPress={handleSubmit}
+          disabled={!input.trim()}
+        >
+          <Text style={styles.submitBtnText}>Verificar</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 // ─── Pantalla Principal ───────────────────────────────────────────────────────
 
 export default function ExerciseScreen() {
@@ -477,6 +597,14 @@ export default function ExerciseScreen() {
             onAnswer={handleAnswer}
           />
         )}
+        {exercise.type === 'listen-write' && (
+          <ListenWriteView
+            key={exerciseKey}
+            exercise={exercise as ListenWriteExercise}
+            onAnswer={handleAnswer}
+            hintUsed={hintUsed}
+          />
+        )}
       </ScrollView>
     </View>
   );
@@ -562,6 +690,15 @@ const styles = StyleSheet.create({
   matchCardText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600', textAlign: 'center', flex: 1 },
   matchCheck: { fontSize: 14, color: '#58CC02' },
   matchProgress: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', fontWeight: '600' },
+  // Listen & Write
+  listenBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    backgroundColor: '#1CB0F620', borderRadius: 16, padding: 20, marginBottom: 24,
+    borderWidth: 2, borderColor: '#1CB0F640',
+  },
+  listenBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#1CB0F6' },
+  listenBtnEmoji: { fontSize: 32 },
+  listenBtnText: { fontSize: 16, fontWeight: '700', color: '#1CB0F6' },
   // Resultado
   resultContainer: { justifyContent: 'center', alignItems: 'center', padding: 32 },
   resultEmoji: { fontSize: 80, marginBottom: 16 },
