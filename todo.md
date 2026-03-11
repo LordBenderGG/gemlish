@@ -248,3 +248,8 @@
 ## v1.28 — Mejoras aprobadas
 - [x] Logros de racha extendida: medallas para 30, 60 y 100 días consecutivos
 - [x] Pantalla especial "¡Perfecto!" al completar nivel con 100% de aciertos (tiempo récord, racha máxima, XP ganados)
+
+## v1.29 — Mejoras aprobadas
+- [x] Desafío del día: nivel aleatorio desbloqueado diario con recompensa doble de XP y diamantes
+- [x] Desafío del día visible en la pantalla principal (tarjeta destacada)
+- [x] Recordatorio de racha en riesgo: notificación a las 20:00 si no se completó ningún nivel y racha >= 3

@@ -1,5 +1,6 @@
 'use client';
 import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
+import { getOrCreateDailyChallenge, completeDailyChallenge, type DailyChallenge } from '@/lib/daily-challenge';
 import { useFocusEffect } from 'expo-router';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
@@ -7,7 +8,7 @@ import {
 } from 'react-native';
 import Reanimated, {
   useSharedValue, useAnimatedStyle, withRepeat, withSequence,
-  withTiming, withSpring, Easing,
+  withTiming, withSpring, withDelay, Easing,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -300,6 +301,52 @@ export default function LevelsScreen() {
   const unlockOpacity = useSharedValue(0);
   const { playUnlock } = useFeedbackSounds();
 
+  // ─── Desafío del día ─────────────────────────────────────────────────────
+  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [challengeReward, setChallengeReward] = useState<{ xp: number; gems: number } | null>(null);
+  const challengeShineAnim = useSharedValue(0);
+
+  const loadDailyChallenge = useCallback(async () => {
+    if (!username) return;
+    const levelData = getLevelData(maxUnlockedLevel > 0 ? maxUnlockedLevel : 1);
+    const challenge = await getOrCreateDailyChallenge(
+      username,
+      maxUnlockedLevel,
+      levelData.xp,
+      5, // gemas base (igual que nivel perfecto)
+    );
+    setDailyChallenge(challenge);
+    // Animación de brillo si no está completado
+    if (!challenge.completed) {
+      challengeShineAnim.value = withDelay(600, withRepeat(
+        withSequence(
+          withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+        ),
+        -1, false,
+      ));
+    }
+  }, [username, maxUnlockedLevel, challengeShineAnim]);
+
+  useEffect(() => {
+    loadDailyChallenge();
+  }, [loadDailyChallenge]);
+
+  const handleChallengePress = useCallback(async () => {
+    if (!dailyChallenge || !username) return;
+    if (dailyChallenge.completed) {
+      // Si ya está completado, ir al detalle del nivel
+      router.push(`/level/${dailyChallenge.levelId}` as any);
+      return;
+    }
+    // Ir al ejercicio del nivel del desafío
+    router.push(`/exercise/${dailyChallenge.levelId}` as any);
+  }, [dailyChallenge, username]);
+
+  const challengeShineStyle = useAnimatedStyle(() => ({
+    opacity: 0.15 + challengeShineAnim.value * 0.25,
+  }));
+
   const showUnlockAnimation = useCallback((levelNum: number) => {
     const levelData = getLevelData(levelNum);
     setUnlockAnim({ levelNum, levelData });
@@ -318,7 +365,7 @@ export default function LevelsScreen() {
     }, 2200);
   }, [unlockScale, unlockOpacity, playUnlock]);
 
-  // Detectar nuevo nivel desbloqueado al volver al mapa
+  // Detectar nuevo nivel desbloqueado al volver al mapa + recargar desafío del día
   const prevMaxUnlockedRef = useRef(maxUnlockedLevel);
   useFocusEffect(
     useCallback(() => {
@@ -327,7 +374,9 @@ export default function LevelsScreen() {
         showUnlockAnimation(maxUnlockedLevel);
       }
       prevMaxUnlockedRef.current = maxUnlockedLevel;
-    }, [maxUnlockedLevel, showUnlockAnimation])
+      // Recargar desafío del día al volver al mapa
+      loadDailyChallenge();
+    }, [maxUnlockedLevel, showUnlockAnimation, loadDailyChallenge])
   );
 
   const unlockAnimStyle = useAnimatedStyle(() => ({
@@ -401,6 +450,55 @@ export default function LevelsScreen() {
         xp={xp}
         streak={streak}
       />
+
+      {/* ─── Desafío del día ─── */}
+      {dailyChallenge && (() => {
+        const challengeLevelData = getLevelData(dailyChallenge.levelId);
+        const isCompleted = dailyChallenge.completed;
+        return (
+          <TouchableOpacity
+            style={[styles.challengeCard, isCompleted && styles.challengeCardDone]}
+            onPress={handleChallengePress}
+            activeOpacity={0.88}
+          >
+            {/* Fondo de brillo animado */}
+            {!isCompleted && (
+              <Reanimated.View
+                style={[StyleSheet.absoluteFill, styles.challengeShine, challengeShineStyle]}
+                pointerEvents="none"
+              />
+            )}
+            <View style={styles.challengeLeft}>
+              <View style={[styles.challengeIconBg, { backgroundColor: challengeLevelData.color + '33' }]}>
+                <Text style={styles.challengeIcon}>
+                  {isCompleted ? '✅' : '🎯'}
+                </Text>
+              </View>
+              <View style={styles.challengeInfo}>
+                <View style={styles.challengeTitleRow}>
+                  <Text style={styles.challengeLabel}>Desafío del día</Text>
+                  {!isCompleted && (
+                    <View style={styles.challengeX2Badge}>
+                      <Text style={styles.challengeX2Text}>×2 XP</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.challengeLevelName, { color: challengeLevelData.color }]} numberOfLines={1}>
+                  Nivel {dailyChallenge.levelId}: {challengeLevelData.name}
+                </Text>
+                {isCompleted ? (
+                  <Text style={styles.challengeCompletedText}>✨ ¡Completado! +{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎</Text>
+                ) : (
+                  <Text style={styles.challengeRewardText}>+{dailyChallenge.xpEarned} XP · +{dailyChallenge.gemsEarned} 💎 al completar</Text>
+                )}
+              </View>
+            </View>
+            <Text style={[styles.challengeArrow, { color: isCompleted ? '#58CC02' : challengeLevelData.color }]}>
+              {isCompleted ? '✓' : '›'}
+            </Text>
+          </TouchableOpacity>
+        );
+      })()}
 
       {/* Filtro de categorías */}
       <ScrollView
@@ -806,5 +904,90 @@ const styles = StyleSheet.create({
   unlockTitle: { fontSize: 22, fontWeight: '900', color: '#58CC02', marginBottom: 6 },
   unlockSubtitle: { fontSize: 15, color: '#FFFFFF', fontWeight: '600', marginBottom: 4 },
   unlockDesc: { fontSize: 13, color: '#9CA3AF', textAlign: 'center' },
+  // ─── Desafío del día ─────────────────────────────────────────────────────
+  challengeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 4,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#FFD70050',
+    backgroundColor: '#FFD70010',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    overflow: 'hidden',
+  },
+  challengeCardDone: {
+    borderColor: '#58CC0250',
+    backgroundColor: '#58CC0210',
+  },
+  challengeShine: {
+    backgroundColor: '#FFD700',
+    borderRadius: 16,
+  },
+  challengeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  challengeIconBg: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  challengeIcon: { fontSize: 24 },
+  challengeInfo: { flex: 1 },
+  challengeTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  challengeLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFD700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  challengeX2Badge: {
+    backgroundColor: '#FFD70025',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#FFD70060',
+  },
+  challengeX2Text: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFD700',
+  },
+  challengeLevelName: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  challengeRewardText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  challengeCompletedText: {
+    fontSize: 11,
+    color: '#58CC02',
+    fontWeight: '600',
+  },
+  challengeArrow: {
+    fontSize: 26,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
 });
 

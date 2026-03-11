@@ -233,6 +233,88 @@ export function useNotifications() {
    * Programa una notificación de resumen semanal los lunes a las 9:00 AM.
    * Incluye niveles completados la semana pasada, racha actual y palabras aprendidas.
    */
+  /**
+   * Programa (o cancela) el recordatorio de racha en riesgo a las 20:00.
+   * Se activa solo si el usuario tiene racha >= 3 y no ha completado ningún nivel hoy.
+   * Debe llamarse cada vez que el usuario abre la app o completa un nivel.
+   *
+   * @param streak - Racha actual del usuario en días
+   * @param completedTodayCount - Número de niveles completados hoy (0 = en riesgo)
+   */
+  const scheduleStreakRiskReminder = useCallback(async (params: {
+    streak: number;
+    completedTodayCount: number;
+  }): Promise<void> => {
+    const RISK_NOTIF_KEY = '@gemlish_streak_risk_id';
+    const RISK_NOTIF_DATE_KEY = '@gemlish_streak_risk_date';
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+      const granted = await requestPermission();
+      if (!granted) return;
+
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('gemlish-streak-risk', {
+          name: 'Racha en riesgo',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 300, 200, 300],
+          lightColor: '#FF6B00',
+          sound: 'default',
+        });
+      }
+
+      // Cancelar recordatorio anterior del día si existe
+      const prevId = await AsyncStorage.getItem(RISK_NOTIF_KEY);
+      const prevDate = await AsyncStorage.getItem(RISK_NOTIF_DATE_KEY);
+      if (prevId) {
+        await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
+        await AsyncStorage.removeItem(RISK_NOTIF_KEY);
+      }
+
+      const { streak, completedTodayCount } = params;
+
+      // Solo programar si: racha >= 3 y no ha completado ningún nivel hoy
+      if (streak < 3 || completedTodayCount > 0) return;
+
+      // Verificar si ya se programó hoy (evitar duplicados)
+      if (prevDate === today) return;
+
+      // Verificar que las 20:00 no hayan pasado ya
+      const now = new Date();
+      const targetToday = new Date();
+      targetToday.setHours(20, 0, 0, 0);
+      if (now >= targetToday) return; // Ya pasaron las 20:00, no programar
+
+      const messages = [
+        { title: `🔥 ¡Tu racha de ${streak} días está en riesgo!`, body: 'Completa un nivel hoy para mantenerla. ¡Solo te quedan unas horas!' },
+        { title: `⚠️ ¡No pierdas tu racha de ${streak} días!`, body: 'Aún puedes salvarla. Entra a Gemlish y completa un nivel ahora.' },
+        { title: `💔 ¡Racha de ${streak} días en peligro!`, body: 'Tienes hasta medianoche. ¡Entra y completa un nivel!' },
+      ];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: msg.title,
+          body: msg.body,
+          sound: 'default',
+          data: { screen: 'home' },
+          ...(Platform.OS === 'android' && { channelId: 'gemlish-streak-risk' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          hour: 20,
+          minute: 0,
+          repeats: false, // Solo una vez, no repetir
+        } as Notifications.CalendarTriggerInput,
+      });
+
+      await AsyncStorage.setItem(RISK_NOTIF_KEY, id);
+      await AsyncStorage.setItem(RISK_NOTIF_DATE_KEY, today);
+    } catch (err) {
+      console.warn('[useNotifications] Error scheduling streak risk reminder:', err);
+    }
+  }, [requestPermission]);
+
   const scheduleWeeklySummary = useCallback(async (params: {
     levelsLastWeek: number;
     streak: number;
@@ -297,5 +379,6 @@ export function useNotifications() {
     updateTime,
     requestPermission,
     scheduleWeeklySummary,
+    scheduleStreakRiskReminder,
   };
 }

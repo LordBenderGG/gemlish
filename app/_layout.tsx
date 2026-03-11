@@ -7,6 +7,7 @@ import { GameProvider, useGame } from '@/context/GameContext';
 import { AchievementsProvider } from '@/context/AchievementsContext';
 import { hasSeenOnboarding } from '@/lib/onboarding';
 import { usePendingAchievements } from '@/hooks/use-pending-achievements';
+import { useNotifications } from '@/hooks/use-notifications';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform } from "react-native";
@@ -31,10 +32,22 @@ export const unstable_settings = {
 };
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { username, isLoading } = useGame();
+  const { username, isLoading, game } = useGame();
   const segments = useSegments();
   // Verificar logros pendientes al abrir la app (logros desbloqueados mientras estaba cerrada)
   usePendingAchievements();
+
+  // Programar recordatorio de racha en riesgo al abrir la app
+  const { scheduleStreakRiskReminder } = useNotifications();
+  useEffect(() => {
+    if (!username || isLoading) return;
+    const today = new Date().toISOString().split('T')[0];
+    const completedTodayCount = game.levelCompletedDates?.[today] ?? 0;
+    scheduleStreakRiskReminder({
+      streak: game.streak,
+      completedTodayCount,
+    });
+  }, [username, isLoading, game.streak, game.levelCompletedDates, scheduleStreakRiskReminder]);
 
   useEffect(() => {
     if (isLoading) return;
