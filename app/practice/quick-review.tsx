@@ -14,6 +14,7 @@ import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -189,6 +190,7 @@ export default function QuickReviewScreen() {
   const scheme = useColorScheme();
   const { username, game } = useGame();
   const { checkAchievements } = useAchievements();
+  const { playCorrect, playWrong } = useFeedbackSounds();
 
   const words = useMemo(
     () => selectMixedWords(game.levelErrors, game.maxUnlockedLevel),
@@ -231,7 +233,12 @@ export default function QuickReviewScreen() {
   }, [timeLeft]);
 
   const handleAnswer = useCallback((isCorrect: boolean) => {
-    if (isCorrect) setCorrect(c => c + 1);
+    if (isCorrect) {
+      setCorrect(c => c + 1);
+      playCorrect();
+    } else {
+      playWrong();
+    }
     const next = currentIdx + 1;
     if (next >= words.length) {
       Animated.timing(progressAnim, { toValue: 1, duration: 400, useNativeDriver: false }).start();

@@ -126,6 +126,7 @@ export default function RootLayout() {
             <Stack.Screen name="review" />
             <Stack.Screen name="practice" />
             <Stack.Screen name="settings" />
+            <Stack.Screen name="stats" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />

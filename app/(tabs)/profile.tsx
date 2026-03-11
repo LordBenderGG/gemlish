@@ -427,6 +427,9 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>👤 Perfil</Text>
         <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/stats' as any)} activeOpacity={0.7}>
+            <Text style={styles.settingsBtnText}>📊</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/settings' as any)} activeOpacity={0.7}>
             <Text style={styles.settingsBtnText}>⚙️</Text>
           </TouchableOpacity>

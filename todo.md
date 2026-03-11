@@ -132,3 +132,8 @@
 - [x] Indicador de coincidencia de contraseñas en registro
 - [x] Pantalla /auth/forgot-password con explicación de progreso local
 - [x] Enlace "¿Olvidaste tu contraseña?" en el login
+
+## v1.14 — Mejoras aprobadas
+- [x] Integrar useFeedbackSounds en practice/quick-review.tsx
+- [x] Crear pantalla /stats con gráficas de progreso semanal
+- [x] Agregar botón 📊 en el header del Perfil para navegar a /stats
