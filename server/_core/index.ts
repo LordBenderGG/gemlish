@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -58,6 +59,11 @@ async function startServer() {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  // Política de privacidad — requerida por Google Play Store
+  app.get("/privacy-policy", (_req, res) => {
+    res.sendFile(path.join(process.cwd(), "public", "privacy-policy.html"));
   });
 
   app.use(
