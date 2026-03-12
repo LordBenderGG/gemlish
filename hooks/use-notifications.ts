@@ -180,11 +180,10 @@ export function useNotifications() {
           ...(Platform.OS === 'android' && { channelId: 'gemlish-daily' }),
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour,
           minute,
-          repeats: true,
-        } as Notifications.CalendarTriggerInput,
+        } as Notifications.DailyTriggerInput,
       });
 
       await AsyncStorage.setItem(NOTIFICATION_ID_KEY, id);

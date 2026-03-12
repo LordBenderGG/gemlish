@@ -646,15 +646,15 @@ export default function LevelsScreen() {
         )}
       </View>
 
-      {/* Modos de práctica — 2 filas de 2 tarjetas compactas */}
+      {/* Modos de práctica — fila horizontal compacta */}
       <View style={styles.practiceSection}>
         <Text style={styles.practiceSectionLabel}>MODOS DE PRÁCTICA</Text>
-        <View style={styles.practiceRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.practiceRow}>
           {[
-            { emoji: '⚡', title: 'Repaso Rápido', sub: '10 palabras', bg: '#0F2A4A', accent: '#38BDF8', route: '/practice/quick-review' },
-            { emoji: '🎧', title: 'Solo Escucha', sub: '10 ejercicios', bg: '#0A2A1A', accent: '#4ADE80', route: '/practice/listen-mode' },
-            { emoji: '📝', title: 'Solo Ordenar', sub: '10 ejercicios', bg: '#2A1F0A', accent: '#FBBF24', route: '/practice/order-mode' },
-            { emoji: '🔥', title: 'Palabras Difíciles', sub: 'Repaso errores', bg: '#2A0A0A', accent: '#F87171', route: '/practice/hard-words' },
+            { emoji: '⚡', title: 'Repaso', bg: '#0F2A4A', accent: '#38BDF8', route: '/practice/quick-review' },
+            { emoji: '🎧', title: 'Escucha', bg: '#0A2A1A', accent: '#4ADE80', route: '/practice/listen-mode' },
+            { emoji: '📝', title: 'Ordenar', bg: '#2A1F0A', accent: '#FBBF24', route: '/practice/order-mode' },
+            { emoji: '🔥', title: 'Difíciles', bg: '#2A0A0A', accent: '#F87171', route: '/practice/hard-words' },
           ].map((mode) => (
             <TouchableOpacity
               key={mode.title}
@@ -664,10 +664,9 @@ export default function LevelsScreen() {
             >
               <Text style={styles.practiceTileEmojiNew}>{mode.emoji}</Text>
               <Text style={[styles.practiceTileTitleNew, { color: mode.accent }]}>{mode.title}</Text>
-              <Text style={styles.practiceTileSubNew}>{mode.sub}</Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       {/* Barra de progreso global */}
@@ -903,35 +902,37 @@ const styles = StyleSheet.create({
   offlineText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
   // Sección de modos de práctica
   practiceSection: {
+    flexShrink: 0,
     paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 6,
+    paddingTop: 8,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#1E1E3A',
   },
   practiceSectionLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#475569',
     letterSpacing: 1.2,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   practiceRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
+    paddingVertical: 2,
   },
   practiceTileNew: {
-    width: '47.5%',
-    borderRadius: 14,
+    width: 80,
+    borderRadius: 12,
     borderWidth: 1,
-    padding: 12,
-    minHeight: 72,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  practiceTileEmojiNew: { fontSize: 22, marginBottom: 4 },
-  practiceTileTitleNew: { fontSize: 13, fontWeight: '800', letterSpacing: -0.2 },
-  practiceTileSubNew: { fontSize: 11, color: '#64748B', marginTop: 2, fontWeight: '500' },
+  practiceTileEmojiNew: { fontSize: 18, marginBottom: 4 },
+  practiceTileTitleNew: { fontSize: 11, fontWeight: '800', letterSpacing: -0.2, textAlign: 'center' },
+  practiceTileSubNew: { fontSize: 10, color: '#64748B', marginTop: 2, fontWeight: '500' },
   practiceRowContent: {
     paddingHorizontal: 14,
     paddingVertical: 8,
