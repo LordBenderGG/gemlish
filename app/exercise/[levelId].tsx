@@ -84,9 +84,9 @@ function MultipleChoiceView({
 
   return (
     <View style={styles.exerciseContainer}>
-      <Text style={styles.questionLabel}>{listenOnly ? '🎧 Escucha y elige:' : '¿Cuál es la respuesta?'}</Text>
+      <Text style={styles.questionLabel}>{listenOnly ? '🎧 Escucha y elige:' : hideTranslation ? '🔥 Modo difícil:' : '¿Cuál es la respuesta?'}</Text>
       {!hideTranslation && <Text style={styles.questionText}>{exercise.questionEs}</Text>}
-      {hideTranslation && <Text style={[styles.questionText, { opacity: 0.4 }]}>🔥 Modo difícil: sin traducción</Text>}
+      {hideTranslation && <Text style={styles.questionText}>{exercise.question}</Text>}
       <View style={styles.optionsGrid}>
         {exercise.options.map((opt, idx) => {
           let bg = '#111122';
