@@ -743,20 +743,18 @@ export default function ProfileScreen() {
           return (
             <View style={styles.heatmapContainer}>
               <Text style={styles.sectionTitle}>🗓 Actividad (90 días)</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.heatmapGrid}>
-                  {weeks.map((week, wi) => (
-                    <View key={wi} style={styles.heatmapWeek}>
-                      {week.map((day, di) => (
-                        <View
-                          key={di}
-                          style={[styles.heatmapCell, day.active && styles.heatmapCellActive]}
-                        />
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
+              <View style={styles.heatmapGrid}>
+                {weeks.map((week, wi) => (
+                  <View key={wi} style={styles.heatmapWeek}>
+                    {week.map((day, di) => (
+                      <View
+                        key={di}
+                        style={[styles.heatmapCell, day.active && styles.heatmapCellActive]}
+                      />
+                    ))}
+                  </View>
+                ))}
+              </View>
               <Text style={styles.heatmapLegend}>
                 {days.filter(d => d.active).length} días activos de los últimos 90
               </Text>
@@ -1201,10 +1199,10 @@ const styles = StyleSheet.create({
   englishLevelScaleLabel: { fontSize: 11, color: '#4B5563', fontWeight: '600' },
   // Mapa de calor
   heatmapContainer: { marginVertical: 8 },
-  heatmapGrid: { flexDirection: 'row', gap: 3 },
-  heatmapWeek: { flexDirection: 'column', gap: 3 },
+  heatmapGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 2 },
+  heatmapWeek: { flexDirection: 'column', gap: 3, flex: 1 },
   heatmapCell: {
-    width: 12, height: 12, borderRadius: 2,
+    aspectRatio: 1, borderRadius: 2, marginHorizontal: 1.5,
     backgroundColor: '#2D3148',
   },
   heatmapCellActive: { backgroundColor: '#58CC02' },

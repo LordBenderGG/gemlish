@@ -3,7 +3,7 @@ import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 import { useFocusEffect } from 'expo-router';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  StatusBar, Animated, ScrollView, TextInput, Modal,
+  StatusBar, Animated, ScrollView, TextInput, Modal, Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Reanimated, {
@@ -72,17 +72,22 @@ function OfflineBadge() {
   }, []);
 
   return (
-    <View style={[
-      styles.offlineBadge,
-      isOnline ? styles.offlineBadgeOk : styles.offlineBadgeNoConn,
-    ]}>
-      <Text style={styles.offlineDot}>{isOnline ? '🟢' : '🔴'}</Text>
-      <Text style={[
-        styles.offlineText,
-        { color: isOnline ? '#58CC02' : '#FF9600' },
-      ]}>
-        {isOnline ? '100% Offline — Sin internet requerido' : 'Sin internet · Modo offline activo'}
-      </Text>
+    <View style={styles.offlineBadge}>
+      <Image
+        source={require('@/assets/images/icon.png')}
+        style={styles.offlineLogo}
+        resizeMode="contain"
+      />
+      <View style={styles.offlineBrandCol}>
+        <Text style={styles.offlineBrandName}>Gemlish</Text>
+        <Text style={styles.offlineBrandTagline}>Aprende Inglés Jugando</Text>
+      </View>
+      <View style={styles.offlineStatusPill}>
+        <Text style={styles.offlineDot}>{isOnline ? '🟢' : '🔴'}</Text>
+        <Text style={[styles.offlineStatusText, { color: isOnline ? '#58CC02' : '#FF9600' }]}>
+          {isOnline ? 'Online' : 'Offline'}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -836,16 +841,23 @@ const styles = StyleSheet.create({
   offlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    backgroundColor: '#0C1A2E',
     gap: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#2D3148',
   },
-  offlineBadgeOk: { backgroundColor: '#58CC0210' },
-  offlineBadgeNoConn: { backgroundColor: '#FF960015' },
-  offlineDot: { fontSize: 9 },
+  offlineBadgeOk: {},
+  offlineBadgeNoConn: {},
+  offlineLogo: { width: 28, height: 28, borderRadius: 6 },
+  offlineBrandCol: { flex: 1, marginLeft: 8 },
+  offlineBrandName: { fontSize: 14, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.2 },
+  offlineBrandTagline: { fontSize: 10, color: '#8899AA', fontWeight: '500', marginTop: 1 },
+  offlineStatusPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#1A2840', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  offlineDot: { fontSize: 8 },
+  offlineStatusText: { fontSize: 10, fontWeight: '700' },
   offlineText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
   // Sección de modos de práctica
   practiceSection: {
