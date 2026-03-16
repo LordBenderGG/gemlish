@@ -785,7 +785,7 @@ function PerfectScreen({
 const perfectStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#F8FAFF',
   },
   scroll: {
     alignItems: 'center',
@@ -882,7 +882,7 @@ const perfectStyles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1E293B',
     marginBottom: 2,
   },
   statLabel: {
@@ -903,7 +903,7 @@ const perfectStyles = StyleSheet.create({
     alignItems: 'center',
   },
   continueBtnText: {
-    color: '#0D1117',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '800',
   },
@@ -1269,7 +1269,7 @@ export default function ExerciseScreen() {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
         <StatusBar barStyle="dark-content" />
         <LinearGradient
-          colors={['#0C1A2E', '#F8FAFF', '#F8FAFF']}
+          colors={['#EEF2FF', '#F8FAFF', '#F8FAFF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 220 }}
@@ -1535,7 +1535,7 @@ export default function ExerciseScreen() {
             alignItems: 'center', width: '100%', borderWidth: 1, borderColor: '#1E2A3A',
           }}>
             <Text style={{ fontSize: 48, marginBottom: 12 }}>💔</Text>
-            <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Sin vidas</Text>
+            <Text style={{ color: '#1E293B', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Sin vidas</Text>
             <Text style={{ color: '#9BA1A6', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
               Ver un anuncio corto para recuperar 3 vidas y continuar
             </Text>
@@ -1828,7 +1828,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 8,
   },
   breakdownLabel: {
-    fontSize: 12, color: '#FFFFFF', width: 100,
+    fontSize: 12, color: '#1E293B', width: 100,
   },
   breakdownBarBg: {
     flex: 1, height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden',
@@ -1851,21 +1851,18 @@ const styles = StyleSheet.create({
   resultContainer: { justifyContent: 'center', alignItems: 'center', padding: 32 },
   resultEmoji: { fontSize: 90, marginBottom: 16 },
   resultTitle: {
-    fontSize: 34, fontWeight: '900', color: '#FFFFFF', marginBottom: 8,
-    textShadowColor: 'rgba(124,58,237,0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 12,
+    fontSize: 34, fontWeight: '900', color: '#1E293B', marginBottom: 8,
   },
-  resultSubtitle: { fontSize: 16, color: '#38BDF8', marginBottom: 32, fontWeight: '600' },
+  resultSubtitle: { fontSize: 16, color: '#4F46E5', marginBottom: 32, fontWeight: '600' },
   rewardsRow: { flexDirection: 'row', gap: 10, marginBottom: 32, flexWrap: 'wrap', justifyContent: 'center' },
   rewardBadge: {
-    backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 18, padding: 18,
-    alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.12)', minWidth: 80,
-    shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 12, elevation: 4,
+    backgroundColor: '#FFFFFF', borderRadius: 18, padding: 18,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0', minWidth: 80,
+    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
   },
   rewardEmoji: { fontSize: 30, marginBottom: 6 },
-  rewardValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  rewardValue: { color: '#1E293B', fontSize: 14, fontWeight: '800' },
   continueBtn: {
     backgroundColor: '#38BDF8', borderRadius: 18, paddingHorizontal: 48, paddingVertical: 18,
     shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 6 },

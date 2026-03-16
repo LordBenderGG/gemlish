@@ -416,3 +416,9 @@
 ## v1.29 — Correcciones de build Android
 - [x] minSdkVersion ya estaba en 24 en app.config.ts (confirmado)
 - [x] NODE_ENV agregado explícitamente en todos los perfiles de eas.json (development, preview, production)
+
+## v1.30 — Logo en onboarding
+- [x] Verificado: icon.png ya es el logo del cristal arcoíris y el onboarding lo usa correctamente en slide 1
+
+## v1.31 — Pantalla de resultado del ejercicio
+- [x] Corregido contraste en pantalla ¡Perfecto! (fondo blanco, textos oscuros), resultado normal (gradiente claro, títulos oscuros, rewardBadge claro), breakdown (breakdownLabel oscuro), modal Sin vidas (texto oscuro)
