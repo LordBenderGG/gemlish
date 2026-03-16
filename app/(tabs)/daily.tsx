@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   StatusBar, Alert, ScrollView, Platform,
@@ -152,6 +152,12 @@ function MiniQuiz({ words, onComplete }: MiniQuizProps) {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timer on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
 
   const q = questions[idx];
 
@@ -161,7 +167,7 @@ function MiniQuiz({ words, onComplete }: MiniQuizProps) {
     const correct = option === q.correct;
     if (correct) { playCorrect(); setScore(s => s + 1); }
     else playWrong();
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       const next = idx + 1;
       if (next >= questions.length) {
         onComplete(correct ? score + 1 : score);

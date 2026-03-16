@@ -92,8 +92,8 @@ export const LESSONS: Lesson[] = [
   {
     id: 6, name: "Mi Cuerpo", color: "#58CC02",
     words: [
-      { word: "Eye", translation: "Ojo", pronunciation: "AI", example: "She has brown eyes.", exampleEs: "Ella tiene ojos cafés." },
-      { word: "Ear", translation: "Oreja", pronunciation: "IR", example: "I can hear with my ear.", exampleEs: "Puedo escuchar con mi oreja." },
+      { word: "Eye", translation: "Ojo", pronunciation: "AI", example: "She has brown eyes.", exampleEs: "Ella tiene ojos marrones." },
+      { word: "Ear", translation: "Oreja", pronunciation: "IR", example: "I can hear with my ears.", exampleEs: "Puedo escuchar con mis orejas." },
       { word: "Nose", translation: "Nariz", pronunciation: "NOUS", example: "My nose is cold.", exampleEs: "Mi nariz está fría." },
       { word: "Mouth", translation: "Boca", pronunciation: "MAUZ", example: "Open your mouth.", exampleEs: "Abre tu boca." },
       { word: "Hand", translation: "Mano", pronunciation: "YAND", example: "Wash your hands.", exampleEs: "Lávate las manos." },
@@ -184,7 +184,7 @@ export const LESSONS: Lesson[] = [
     words: [
       { word: "Doctor", translation: "Médico", pronunciation: "DOK-tor", example: "The doctor helps sick people.", exampleEs: "El médico ayuda a los enfermos." },
       { word: "Teacher", translation: "Maestro/a", pronunciation: "TII-cher", example: "My teacher is very kind.", exampleEs: "Mi maestra es muy amable." },
-      { word: "Police", translation: "Policía", pronunciation: "po-LIIS", example: "The police protect us.", exampleEs: "La policía nos protege." },
+      { word: "Police", translation: "Policía", pronunciation: "po-LIIS", example: "The police officer protects us.", exampleEs: "El oficial de policía nos protege." },
       { word: "Chef", translation: "Chef/Cocinero", pronunciation: "SHEF", example: "The chef cooks delicious food.", exampleEs: "El chef cocina comida deliciosa." },
       { word: "Engineer", translation: "Ingeniero", pronunciation: "en-YI-NIIR", example: "She is a software engineer.", exampleEs: "Ella es ingeniera de software." },
       { word: "Nurse", translation: "Enfermero/a", pronunciation: "NURS", example: "The nurse takes care of patients.", exampleEs: "La enfermera cuida a los pacientes." },
@@ -442,7 +442,7 @@ export const LESSONS: Lesson[] = [
       { word: "Meeting", translation: "Reunión", pronunciation: "MEET-ing", example: "We have a meeting at 10.", exampleEs: "Tenemos una reunión a las 10." },
       { word: "Boss", translation: "Jefe", pronunciation: "BOS", example: "My boss is very strict.", exampleEs: "Mi jefe es muy estricto." },
       { word: "Colleague", translation: "Colega", pronunciation: "KO-liig", example: "My colleague helped me a lot.", exampleEs: "Mi colega me ayudó mucho." },
-      { word: "Salary", translation: "Salario", pronunciation: "SA-la-ri", example: "I got a raise at work.", exampleEs: "Recibí un aumento en el trabajo." },
+      { word: "Salary", translation: "Salario", pronunciation: "SA-la-ri", example: "My salary increased this year.", exampleEs: "Mi salario aumentó este año." },
       { word: "Contract", translation: "Contrato", pronunciation: "KON-tract", example: "Sign the contract here.", exampleEs: "Firma el contrato aquí." },
       { word: "Resume", translation: "Currículum", pronunciation: "RE-su-MEI", example: "Send your resume by email.", exampleEs: "Envía tu currículum por correo." },
       { word: "Interview", translation: "Entrevista", pronunciation: "IN-ter-VIIU", example: "I have a job interview tomorrow.", exampleEs: "Tengo una entrevista de trabajo mañana." },
@@ -668,10 +668,10 @@ export const LESSONS: Lesson[] = [
       { word: "Under the weather", translation: "Sentirse mal", pronunciation: "AN-der de UE-der", example: "I'm feeling under the weather.", exampleEs: "Me estoy sintiendo mal." },
       { word: "Bite the bullet", translation: "Aguantar el dolor", pronunciation: "bait de BU-let", example: "Just bite the bullet and do it.", exampleEs: "Solo aguanta y hazlo." },
       { word: "Cost an arm and a leg", translation: "Costar un ojo de la cara", pronunciation: "kost an ARM and a LEG", example: "That car costs an arm and a leg.", exampleEs: "Ese carro cuesta un ojo de la cara." },
-      { word: "Spill the beans", translation: "Soltar la sopa", pronunciation: "spil de BIINS", example: "Don't spill the beans!", exampleEs: "¡No reveles el secreto!" },
+      { word: "Spill the beans", translation: "Revelar el secreto", pronunciation: "spil de BIINS", example: "Don't spill the beans!", exampleEs: "¡No reveles el secreto!" },
       { word: "Hit the sack", translation: "Irse a dormir", pronunciation: "jit de SAK", example: "I'm going to hit the sack.", exampleEs: "Me voy a dormir." },
       { word: "Once in a blue moon", translation: "Muy de vez en cuando", pronunciation: "uans in a BLUU muun", example: "He visits once in a blue moon.", exampleEs: "Él visita muy de vez en cuando." },
-      { word: "Let the cat out of the bag", translation: "Sacar el gato de la bolsa", pronunciation: "let de kat aut of de BAG", example: "She let the cat out of the bag.", exampleEs: "Ella reveló el secreto." },
+      { word: "Let the cat out of the bag", translation: "Revelar un secreto sin querer", pronunciation: "let de kat aut of de BAG", example: "She let the cat out of the bag.", exampleEs: "Ella reveló el secreto." },
     ],
   },
   {
@@ -1097,7 +1097,7 @@ export const LESSONS: Lesson[] = [
   {
     id: 73, name: "Psicología", color: "#8E5AF5",
     words: [
-      { word: "therapy", translation: "terapia", pronunciation: "ZE-ra-pi", example: "Cognitive therapy helps patients change negative thought patterns.", exampleEs: "La terapia cognitiva ayuda a los pacientes a cambiar patrones de pensamiento negativos." },
+      { word: "counseling", translation: "asesoramiento psicológico", pronunciation: "KAUN-se-ling", example: "Counseling helps people work through emotional difficulties.", exampleEs: "El asesoramiento psicológico ayuda a las personas a superar dificultades emocionales." },
       { word: "anxiety", translation: "ansiedad", pronunciation: "an-ZEI-e-ti", example: "Anxiety often manifests as physical symptoms like a racing heart.", exampleEs: "La ansiedad a menudo se manifiesta como síntomas físicos como un corazón acelerado." },
       { word: "depression", translation: "depresión", pronunciation: "de-PRESH-on", example: "Depression can be treated with a combination of medication and therapy.", exampleEs: "La depresión puede tratarse con una combinación de medicamentos y terapia." },
       { word: "cognition", translation: "cognición", pronunciation: "cog-NI-shon", example: "Cognition involves processes like memory and problem-solving.", exampleEs: "La cognición involucra procesos como la memoria y la resolución de problemas." },
@@ -1382,7 +1382,7 @@ export const LESSONS: Lesson[] = [
   {
     id: 92, name: "Inglés Científico", color: "#FF6D6D",
     words: [
-      { word: "Hypothesis", translation: "Hipótesis", pronunciation: "jai-PO-ze-sis", example: "Scientists test a hypothesis to validate their research findings.", exampleEs: "Los científicos prueban una hipótesis para validar sus hallazgos de investigación." },
+      { word: "Theorem", translation: "Teorema", pronunciation: "ZI-o-rem", example: "The mathematician proved the theorem in three steps.", exampleEs: "El matemático demostró el teorema en tres pasos." },
       { word: "Molecule", translation: "Molécula", pronunciation: "MO-le-kiuul", example: "A water molecule consists of two hydrogen atoms and one oxygen atom.", exampleEs: "Una molécula de agua consiste en dos átomos de hidrógeno y un átomo de oxígeno." },
       { word: "Ecosystem", translation: "Ecosistema", pronunciation: "II-ko-SIS-tem", example: "The Amazon rainforest is a complex ecosystem that supports diverse species.", exampleEs: "La selva amazónica es un ecosistema complejo que soporta especies diversas." },
       { word: "Neuron", translation: "Neurona", pronunciation: "NIU-ron", example: "Neurons transmit signals throughout the nervous system to coordinate body functions.", exampleEs: "Las neuronas transmiten señales a lo largo del sistema nervioso para coordinar las funciones corporales." },
@@ -4266,7 +4266,7 @@ export const LESSONS: Lesson[] = [
       { word: "A piece of cake", translation: "Pan comido", pronunciation: "e PIS ov KEYK", example: "Learning to bake is a piece of cake for her.", exampleEs: "Aprender a hornear es pan comido para ella." },
       { word: "Too many cooks spoil the broth", translation: "Demasiados cocineros estropean el caldo", pronunciation: "Tu meni kuks spoyl ze bróth", example: "In the kitchen, too many cooks spoil the broth.", exampleEs: "En la cocina, demasiados cocineros estropean el caldo." },
       { word: "Out of the frying pan and into the fire", translation: "De la sartén al fuego", pronunciation: "AUT ov ze FRY-ing PAN and IN-tu ze FAYR", example: "He left his old job only to jump out of the frying pan and into the fire.", exampleEs: "Dejó su antiguo trabajo solo para saltar de la sartén al fuego." },
-      { word: "Spill the beans", translation: "Soltar la sopa", pronunciation: "SPIL ze BINS", example: "She accidentally spilled the beans about the secret recipe.", exampleEs: "Ella accidentalmente soltó la sopa sobre la receta secreta." },
+      { word: "Spill the beans", translation: "Revelar el secreto", pronunciation: "SPIL ze BINS", example: "She accidentally spilled the beans about the secret recipe.", exampleEs: "Ella accidentalmente soltó la sopa sobre la receta secreta." },
       { word: "The proof is in the pudding", translation: "La prueba está en el flan", pronunciation: "Ze pruf is in ze puding", example: "Don't judge the dish until the proof is in the pudding.", exampleEs: "No juzgues el plato hasta que la prueba esté en el flan." },
       { word: "Full of beans", translation: "Lleno de energía", pronunciation: "FUL ov BINS", example: "After eating, the kids were full of beans and ready to play.", exampleEs: "Después de comer, los niños estaban llenos de energía y listos para jugar." },
       { word: "Bring home the bacon", translation: "Traer el bacon a casa", pronunciation: "BRING JOM ze BEI-kon", example: "He works hard in the kitchen to bring home the bacon.", exampleEs: "Él trabaja duro en la cocina para traer el bacon a casa." },
@@ -5232,7 +5232,7 @@ export const LESSONS: Lesson[] = [
       { word: "Automation", translation: "automación", pronunciation: "o-to-MEI-shon", example: "Home automation makes daily tasks easier.", exampleEs: "La automación del hogar facilita las tareas diarias." },
       { word: "Remote", translation: "control remoto", pronunciation: "ri-MOHT", example: "I use the remote to adjust the smart TV settings.", exampleEs: "Uso el control remoto para ajustar la configuración del televisor inteligente." },
       { word: "Control", translation: "control", pronunciation: "kon-TROL", example: "Voice control allows me to manage the lights easily.", exampleEs: "El control por voz me permite manejar las luces con facilidad." },
-      { word: "Device", translation: "dispositivo", pronunciation: "di-VAIS", example: "Each smart device connects to the internet.", exampleEs: "Cada dispositivo inteligente se conecta a internet." },
+      { word: "Gadget", translation: "artilugio", pronunciation: "GA-dyet", example: "This smart gadget makes daily life more convenient.", exampleEs: "Este artilugio inteligente hace la vida diaria más cómoda." },
       { word: "Security", translation: "seguridad", pronunciation: "si-KIU-ri-ti", example: "The smart security camera monitors the front door.", exampleEs: "La cámara de seguridad inteligente vigila la puerta principal." },
     ],
   },

@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Reanimated, {
-  useSharedValue, useAnimatedStyle, withRepeat, withSequence,
+  useSharedValue, useAnimatedStyle, withRepeat, withSequence, cancelAnimation,
   withTiming, withSpring, withDelay, Easing,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
@@ -131,6 +131,12 @@ function FireAnimation({ streak }: { streak: number }) {
         -1, true
       );
     }
+    // Cleanup: cancel animations on unmount
+    return () => {
+      cancelAnimation(scale);
+      cancelAnimation(rotate);
+      cancelAnimation(opacity);
+    };
   }, [streak]);
 
   const animStyle = useAnimatedStyle(() => ({
