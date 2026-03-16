@@ -12,19 +12,19 @@ import { hasExistingUsers } from '@/lib/storage';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-// ─── Paleta v2.0 ─────────────────────────────────────────────────────────────
+// ─── Paleta v3.0 CLARA y vibrante ───────────────────────────────────────────
 const C = {
-  bg: '#0E1117',
-  surface: '#161B27',
-  surface2: '#1E2535',
-  text: '#F0F4FF',
-  muted: '#8B9CC8',
-  border: '#2A3450',
-  green: '#4ADE80',
-  blue: '#38BDF8',
-  violet: '#A78BFA',
-  gold: '#FBBF24',
-  coral: '#F87171',
+  bg: '#F8FAFF',
+  surface: '#FFFFFF',
+  surface2: '#EFF6FF',
+  text: '#1E293B',
+  muted: '#64748B',
+  border: '#E2E8F0',
+  green: '#10B981',
+  blue: '#4F46E5',
+  violet: '#8B5CF6',
+  gold: '#F59E0B',
+  coral: '#EF4444',
 };
 
 // ─── Datos de las slides ─────────────────────────────────────────────────────
@@ -258,7 +258,7 @@ export default function OnboardingScreen() {
   if (showWelcomeBack) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+        <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
         <View style={styles.welcomeBackWrapper}>
           <WelcomeBackScreen onContinue={handleWelcomeBackContinue} />
         </View>
@@ -271,7 +271,7 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
 
       {/* Botón Saltar */}
       {!isLast && (
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   slideDescription: {
     fontSize: 14,
-    color: '#C4CEEA',
+    color: '#475569',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -405,8 +405,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    borderWidth: 1,
+    borderWidth: 1.5,
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   itemIconWrap: {
     width: 40,
@@ -446,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#0E1117',
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '800',
     letterSpacing: 0.2,
@@ -518,7 +523,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   welcomeBackBtnText: {
-    color: '#0E1117',
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '800',
     letterSpacing: 0.2,

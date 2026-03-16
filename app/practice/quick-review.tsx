@@ -164,7 +164,7 @@ function QuestionCard({
       />
 
       {submitted && (
-        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#FF4B4B' }]}>
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#EF4444' }]}>
           {isCorrect ? '✅ ¡Correcto!' : `❌ Era: ${word.word}`}
         </Text>
       )}
@@ -273,18 +273,18 @@ export default function QuickReviewScreen() {
     router.back();
   }, [username, game, words, correct, currentIdx, showResult, timedOut, checkAchievements]);
 
-  const timerColor = timeLeft > 60000 ? '#4ADE80' : timeLeft > 30000 ? '#FF9600' : '#FF4B4B';
+  const timerColor = timeLeft > 60000 ? '#4ADE80' : timeLeft > 30000 ? '#FF9600' : '#EF4444';
 
   // ─── Resultado ───────────────────────────────────────────────────────────
 
   if (showResult) {
     const accuracy = words.length > 0 ? Math.round((correct / words.length) * 100) : 0;
-    const accuracyColor = accuracy >= 80 ? '#4ADE80' : accuracy >= 60 ? '#FF9600' : '#FF4B4B';
+    const accuracyColor = accuracy >= 80 ? '#4ADE80' : accuracy >= 60 ? '#FF9600' : '#EF4444';
     const elapsed = Date.now() - sessionStartRef.current;
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
         <View style={styles.resultContainer}>
           <Text style={styles.resultEmoji}>
             {timedOut ? '⏰' : accuracy >= 80 ? '🏆' : accuracy >= 60 ? '💪' : '📚'}
@@ -304,7 +304,7 @@ export default function QuickReviewScreen() {
               <Text style={styles.resultStatLabel}>Correctas</Text>
             </View>
             <View style={styles.resultStat}>
-              <Text style={[styles.resultStatNum, { color: '#1CB0F6' }]}>
+              <Text style={[styles.resultStatNum, { color: '#4F46E5' }]}>
                 {Math.floor(elapsed / 60000)}:{String(Math.floor((elapsed % 60000) / 1000)).padStart(2, '0')}
               </Text>
               <Text style={styles.resultStatLabel}>Tiempo</Text>
@@ -325,8 +325,8 @@ export default function QuickReviewScreen() {
 
   if (words.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📚</Text>
           <Text style={styles.emptyTitle}>Sin palabras disponibles</Text>
@@ -340,8 +340,8 @@ export default function QuickReviewScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -402,59 +402,59 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#2A3450',
+    borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
   backBtn: {
-    backgroundColor: '#161B27', borderRadius: 10,
+    backgroundColor: '#FFFFFF', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
-    borderWidth: 1, borderColor: '#2A3450',
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
-  backBtnText: { color: '#8B9CC8', fontSize: 14, fontWeight: '700' },
+  backBtnText: { color: '#64748B', fontSize: 14, fontWeight: '700' },
   headerCenter: { alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '800', color: '#FFFFFF' },
-  headerSub: { fontSize: 11, color: '#8B9CC8', marginTop: 1 },
+  headerSub: { fontSize: 11, color: '#64748B', marginTop: 1 },
   timerBadge: {
-    backgroundColor: '#161B27', borderRadius: 10,
+    backgroundColor: '#FFFFFF', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
     borderWidth: 1.5,
   },
   timerText: { fontSize: 16, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  timerBarBg: { height: 4, backgroundColor: '#2A3450' },
+  timerBarBg: { height: 4, backgroundColor: '#E2E8F0' },
   timerBarFill: { height: 4, borderRadius: 2 },
-  progressBarBg: { height: 3, backgroundColor: '#2A3450' },
+  progressBarBg: { height: 3, backgroundColor: '#E2E8F0' },
   progressBarFill: { height: 3, backgroundColor: '#38BDF8', borderRadius: 2 },
   content: { flex: 1, padding: 20, justifyContent: 'center' },
   // Tarjeta de pregunta
   questionCard: {
-    backgroundColor: '#161B27', borderRadius: 20, padding: 24,
-    borderWidth: 1.5, borderColor: '#2A3450', gap: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24,
+    borderWidth: 1.5, borderColor: '#E2E8F0', gap: 14,
   },
-  questionCounter: { fontSize: 12, color: '#8B9CC8', fontWeight: '700', textAlign: 'center' },
+  questionCounter: { fontSize: 12, color: '#64748B', fontWeight: '700', textAlign: 'center' },
   speakBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: '#1CB0F620', borderRadius: 14, paddingVertical: 12,
     borderWidth: 1.5, borderColor: '#1CB0F640',
   },
-  speakBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#1CB0F6' },
+  speakBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#4F46E5' },
   speakBtnEmoji: { fontSize: 18 },
-  speakBtnText: { fontSize: 14, fontWeight: '700', color: '#1CB0F6' },
-  questionLabel: { fontSize: 12, color: '#8B9CC8', fontWeight: '600', textAlign: 'center' },
+  speakBtnText: { fontSize: 14, fontWeight: '700', color: '#4F46E5' },
+  questionLabel: { fontSize: 12, color: '#64748B', fontWeight: '600', textAlign: 'center' },
   questionWord: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', lineHeight: 34 },
-  questionPhonetic: { fontSize: 13, color: '#8B9CC8', textAlign: 'center', fontStyle: 'italic' },
+  questionPhonetic: { fontSize: 13, color: '#64748B', textAlign: 'center', fontStyle: 'italic' },
   input: {
-    backgroundColor: '#0F1117', borderRadius: 14, borderWidth: 1.5, borderColor: '#2A3450',
+    backgroundColor: '#0F1117', borderRadius: 14, borderWidth: 1.5, borderColor: '#E2E8F0',
     color: '#FFFFFF', fontSize: 16, fontWeight: '600',
     paddingHorizontal: 16, paddingVertical: 14,
     textAlign: 'center',
   },
   inputCorrect: { borderColor: '#4ADE80', backgroundColor: '#58CC0210' },
-  inputWrong: { borderColor: '#FF4B4B', backgroundColor: '#FF4B4B10' },
+  inputWrong: { borderColor: '#EF4444', backgroundColor: '#FF4B4B10' },
   feedbackText: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
   submitBtn: {
     backgroundColor: '#38BDF8', borderRadius: 14, paddingVertical: 14,
     alignItems: 'center',
   },
-  submitBtnDisabled: { backgroundColor: '#2A3450' },
+  submitBtnDisabled: { backgroundColor: '#E2E8F0' },
   submitBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   // Resultado
   resultContainer: {
@@ -463,17 +463,17 @@ const styles = StyleSheet.create({
   },
   resultEmoji: { fontSize: 64 },
   resultTitle: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' },
-  resultSubtitle: { fontSize: 14, color: '#8B9CC8', textAlign: 'center' },
+  resultSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center' },
   resultStats: {
     flexDirection: 'row', gap: 16, marginVertical: 8,
   },
   resultStat: {
-    alignItems: 'center', backgroundColor: '#161B27',
+    alignItems: 'center', backgroundColor: '#FFFFFF',
     borderRadius: 16, paddingHorizontal: 20, paddingVertical: 14,
-    borderWidth: 1, borderColor: '#2A3450', minWidth: 80,
+    borderWidth: 1, borderColor: '#E2E8F0', minWidth: 80,
   },
   resultStatNum: { fontSize: 22, fontWeight: '800' },
-  resultStatLabel: { fontSize: 11, color: '#8B9CC8', fontWeight: '600', marginTop: 2 },
+  resultStatLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 2 },
   finishBtn: {
     backgroundColor: '#38BDF8', borderRadius: 16, paddingVertical: 16,
     paddingHorizontal: 40, alignItems: 'center', marginTop: 8,
@@ -486,5 +486,5 @@ const styles = StyleSheet.create({
   },
   emptyEmoji: { fontSize: 56 },
   emptyTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' },
-  emptySubtitle: { fontSize: 14, color: '#8B9CC8', textAlign: 'center', lineHeight: 22 },
+  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22 },
 });

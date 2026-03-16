@@ -9,16 +9,16 @@ import { router } from 'expo-router';
 import { useGame } from '@/context/GameContext';
 
 const C = {
-  bg: '#0E1117',
-  surface: '#161B27',
-  surface2: '#1E2535',
-  text: '#F0F4FF',
-  muted: '#8B9CC8',
-  mutedLight: '#C4CEEA',
-  border: '#2A3450',
-  green: '#4ADE80',
-  blue: '#38BDF8',
-  error: '#F87171',
+  bg: '#F8FAFF',
+  surface: '#FFFFFF',
+  surface2: '#EFF6FF',
+  text: '#1E293B',
+  muted: '#64748B',
+  mutedLight: '#475569',
+  border: '#E2E8F0',
+  green: '#4F46E5',
+  blue: '#4F46E5',
+  error: '#EF4444',
 };
 
 export default function LoginScreen() {
@@ -48,14 +48,14 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
           {/* Logo */}
           <View style={styles.logoContainer}>
             <LinearGradient
-              colors={['#4ADE80', '#22D3EE']}
+              colors={['#4F46E5', '#8B5CF6']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               style={styles.logoCircle}
             >
@@ -124,12 +124,12 @@ export default function LoginScreen() {
               activeOpacity={0.85}
             >
               <LinearGradient
-                colors={['#4ADE80', '#22D3EE']}
+                colors={['#4F46E5', '#7C3AED']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={styles.btnPrimary}
               >
                 {loading
-                  ? <ActivityIndicator color="#0E1117" />
+                  ? <ActivityIndicator color="#FFFFFF" />
                   : <Text style={styles.btnPrimaryText}>Entrar</Text>
                 }
               </LinearGradient>
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
   },
-  btnPrimaryText: { color: '#0E1117', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
+  btnPrimaryText: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
 
   forgotBtn: { marginTop: 16, alignItems: 'center', paddingVertical: 4 },
   forgotText: { color: C.muted, fontSize: 13 },

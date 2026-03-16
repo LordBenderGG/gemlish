@@ -229,8 +229,8 @@ function NotificationsSection() {
           <Switch
             value={settings.enabled}
             onValueChange={handleToggle}
-            trackColor={{ false: '#2A3450', true: '#FF960040' }}
-            thumbColor={settings.enabled ? '#FBBF24' : '#8B9CC8'}
+            trackColor={{ false: '#E2E8F0', true: '#FDE68A' }}
+            thumbColor={settings.enabled ? '#FBBF24' : '#64748B'}
             disabled={saving}
           />
         </View>
@@ -382,7 +382,7 @@ const LEADERBOARD_KEY = '@gemlish_all_users';
 function LeaderboardSection() {
   const { game, username } = useGame();
   const t = useThemeStyles();
-  const isDark = t.bg === '#151718';
+  const isDark = t.bg === '#F8FAFF';
   const [entries, setEntries] = React.useState<Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>>([]);
 
   React.useEffect(() => {
@@ -422,15 +422,15 @@ function LeaderboardSection() {
         return (
           <View key={entry.username} style={[
             { flexDirection: 'row', alignItems: 'center', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 },
-            { backgroundColor: isMe ? (isDark ? '#0D2A1A' : '#e8f5e9') : (isDark ? '#161B27' : '#F5F5F5') },
+            { backgroundColor: isMe ? (isDark ? '#0D2A1A' : '#e8f5e9') : (isDark ? '#FFFFFF' : '#F5F5F5') },
             isMe && { borderWidth: 1.5, borderColor: '#4ADE80' },
           ]}>
             <Text style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{medals[i] ?? `${i + 1}`}</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: isMe ? '#4ADE80' : (isDark ? '#ECEDEE' : '#11181C'), fontWeight: isMe ? '800' : '600', fontSize: 14 }}>
+              <Text style={{ color: isMe ? '#4ADE80' : (isDark ? '#1E293B' : '#1E293B'), fontWeight: isMe ? '800' : '600', fontSize: 14 }}>
                 {isMe ? `${entry.username} (Tú)` : entry.username}
               </Text>
-              <Text style={{ color: '#8B9CC8', fontSize: 11, marginTop: 2 }}>{entry.levelsCompleted} niveles · 🔥 {entry.streak} días</Text>
+              <Text style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>{entry.levelsCompleted} niveles · 🔥 {entry.streak} días</Text>
             </View>
             <Text style={{ color: '#38BDF8', fontWeight: '800', fontSize: 14 }}>{entry.xp.toLocaleString()} XP</Text>
           </View>
@@ -539,12 +539,12 @@ export default function ProfileScreen() {
   );
 
   const levelTitle = useMemo(() => {
-    if (stats.levelsCompleted >= 500) return { title: '👑 Maestro', color: '#FFD700' };
+    if (stats.levelsCompleted >= 500) return { title: '👑 Maestro', color: '#F59E0B' };
     if (stats.levelsCompleted >= 250) return { title: '💎 Experto', color: '#38BDF8' };
     if (stats.levelsCompleted >= 100) return { title: '🥇 Avanzado', color: '#38BDF8' };
     if (stats.levelsCompleted >= 50) return { title: '🌟 Intermedio', color: '#4ADE80' };
     if (stats.levelsCompleted >= 10) return { title: '📖 Aprendiz', color: '#38BDF8' };
-    return { title: '🌱 Principiante', color: '#8B9CC8' };
+    return { title: '🌱 Principiante', color: '#64748B' };
   }, [stats.levelsCompleted]);
 
   const progressPct = Math.min(100, Math.round((stats.levelsCompleted / 500) * 100));
@@ -561,11 +561,11 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle="dark-content" />
 
       <LinearGradient
-        colors={['#1A2744', '#0E1A2E', '#0E1117']}
+        colors={['#1A2744', '#0E1A2E', '#F8FAFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.header}
@@ -596,7 +596,7 @@ export default function ProfileScreen() {
 
         {/* Tarjeta de usuario — Hero con gradiente */}
         <LinearGradient
-          colors={['#0A2540', '#0D3060', '#0A1E40']}
+          colors={['#EFF6FF', '#DBEAFE', '#BFDBFE']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.userCard}
@@ -675,8 +675,8 @@ export default function ProfileScreen() {
             { label: 'Palabras', value: stats.totalWordsLearned, emoji: '📖', color: '#4ADE80' },
             { label: 'Diamantes', value: stats.gems, emoji: '💎', color: '#38BDF8' },
             { label: 'XP Total', value: stats.xp.toLocaleString(), emoji: '⭐', color: '#38BDF8' },
-            { label: 'Días Tarea', value: stats.totalDaysCompleted, emoji: '📅', color: '#FF4B4B' },
-            { label: 'Desafíos', value: game.dailyChallengesCompleted ?? 0, emoji: '🏆', color: '#FFD700' },
+            { label: 'Días Tarea', value: stats.totalDaysCompleted, emoji: '📅', color: '#EF4444' },
+            { label: 'Desafíos', value: game.dailyChallengesCompleted ?? 0, emoji: '🏆', color: '#F59E0B' },
           ].map(stat => (
             <View key={stat.label} style={styles.statCard}>
               <Text style={styles.statEmoji}>{stat.emoji}</Text>
@@ -691,7 +691,7 @@ export default function ProfileScreen() {
           <Text style={styles.englishLevelTitle}>Nivel de Inglés Estimado</Text>
           {(() => {
             const lvls = stats.levelsCompleted;
-            let cefr = 'A1', cefrColor = '#8B9CC8', cefrDesc = 'Principiante absoluto', cefrPct = 0;
+            let cefr = 'A1', cefrColor = '#64748B', cefrDesc = 'Principiante absoluto', cefrPct = 0;
             if (lvls >= 400) { cefr = 'B2'; cefrColor = '#38BDF8'; cefrDesc = 'Independiente avanzado'; cefrPct = 95; }
             else if (lvls >= 250) { cefr = 'B1'; cefrColor = '#38BDF8'; cefrDesc = 'Independiente intermedio'; cefrPct = 70; }
             else if (lvls >= 100) { cefr = 'A2'; cefrColor = '#4ADE80'; cefrDesc = 'Usuario básico'; cefrPct = 40; }
@@ -781,7 +781,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>📊 Últimas Sesiones de Práctica</Text>
             {practiceHistory.slice(0, 5).map(session => {
               const accuracy = Math.round((session.correct / session.total) * 100);
-              const accuracyColor = accuracy >= 80 ? '#4ADE80' : accuracy >= 60 ? '#FBBF24' : '#FF4B4B';
+              const accuracyColor = accuracy >= 80 ? '#4ADE80' : accuracy >= 60 ? '#FBBF24' : '#EF4444';
               return (
                 <View key={session.id} style={styles.practiceHistoryCard}>
                   <View style={styles.practiceHistoryLeft}>
@@ -804,20 +804,20 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={styles.sectionTitle}>🏆 Últimos Desafíos</Text>
               {(game.challengeStreak ?? 0) > 0 && (
-                <View style={{ backgroundColor: '#FFD70020', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: '#FFD700' }}>
-                  <Text style={{ color: '#FFD700', fontSize: 12, fontWeight: '700' }}>🔥 Racha: {game.challengeStreak}</Text>
+                <View style={{ backgroundColor: '#FEF3C7', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: '#F59E0B' }}>
+                  <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '700' }}>🔥 Racha: {game.challengeStreak}</Text>
                 </View>
               )}
             </View>
             {(game.challengeHistory ?? []).map((entry, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#161B27' : '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 }}>
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#FFFFFF' : '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 }}>
                 <Text style={{ fontSize: 22 }}>🏆</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: isDark ? '#ECEDEE' : '#11181C', fontWeight: '700', fontSize: 13 }}>Nivel {entry.levelId}: {entry.levelName}</Text>
-                  <Text style={{ color: '#8B9CC8', fontSize: 11, marginTop: 2 }}>{entry.date}</Text>
+                  <Text style={{ color: isDark ? '#1E293B' : '#1E293B', fontWeight: '700', fontSize: 13 }}>Nivel {entry.levelId}: {entry.levelName}</Text>
+                  <Text style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>{entry.date}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                  <Text style={{ color: '#FFD700', fontSize: 12, fontWeight: '700' }}>+{entry.xpEarned} XP</Text>
+                  <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '700' }}>+{entry.xpEarned} XP</Text>
                   <Text style={{ color: '#38BDF8', fontSize: 12 }}>+{entry.gemsEarned} 💎</Text>
                 </View>
               </View>
@@ -853,7 +853,7 @@ export default function ProfileScreen() {
             />
           ))}
           {unlockedAchievements.length === 0 && (
-            <Text style={{ color: '#8B9CC8', fontSize: 13, textAlign: 'center', paddingVertical: 12 }}>
+            <Text style={{ color: '#64748B', fontSize: 13, textAlign: 'center', paddingVertical: 12 }}>
               Completa niveles para desbloquear logros 🌟
             </Text>
           )}
@@ -880,36 +880,36 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#2A3450',
+    borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#F0F4FF' },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   settingsBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: '#161B27', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
   settingsBtnText: { fontSize: 18 },
   logoutBtn: {
-    backgroundColor: '#FF4B4B20', borderRadius: 10,
+    backgroundColor: '#FEE2E2', borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 7,
-    borderWidth: 1, borderColor: '#FF4B4B40',
+    borderWidth: 1, borderColor: '#FECACA',
   },
-  logoutBtnText: { color: '#FF4B4B', fontSize: 13, fontWeight: '700' },
+  logoutBtnText: { color: '#EF4444', fontSize: 13, fontWeight: '700' },
   settingsLink: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161B27', borderRadius: 14, padding: 16,
-    borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16,
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
   settingsLinkEmoji: { fontSize: 22 },
   settingsLinkInfo: { flex: 1 },
-  settingsLinkTitle: { fontSize: 15, fontWeight: '700', color: '#F0F4FF', marginBottom: 2 },
-  settingsLinkSub: { fontSize: 12, color: '#8B9CC8' },
-  settingsLinkArrow: { fontSize: 22, color: '#8B9CC8' },
+  settingsLinkTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  settingsLinkSub: { fontSize: 12, color: '#64748B' },
+  settingsLinkArrow: { fontSize: 22, color: '#64748B' },
   scroll: { padding: 16, gap: 16 },
   userCard: {
     borderRadius: 24, padding: 24,
-    alignItems: 'center', borderWidth: 2, borderColor: '#1E3A5F',
+    alignItems: 'center', borderWidth: 2, borderColor: '#DBEAFE',
     overflow: 'hidden',
     shadowColor: '#38BDF8',
     shadowOffset: { width: 0, height: 4 },
@@ -922,8 +922,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     marginBottom: 12,
   },
-  avatarText: { fontSize: 36, fontWeight: '800', color: '#F0F4FF' },
-  userName: { fontSize: 22, fontWeight: '800', color: '#F0F4FF', marginBottom: 8 },
+  avatarText: { fontSize: 36, fontWeight: '800', color: '#1E293B' },
+  userName: { fontSize: 22, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
   levelBadge: {
     borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6,
     borderWidth: 2, marginBottom: 16,
@@ -931,116 +931,116 @@ const styles = StyleSheet.create({
   levelBadgeText: { fontSize: 14, fontWeight: '700' },
   courseProgress: { width: '100%' },
   courseProgressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  courseProgressLabel: { fontSize: 13, color: '#8B9CC8', fontWeight: '600' },
+  courseProgressLabel: { fontSize: 13, color: '#64748B', fontWeight: '600' },
   courseProgressPct: { fontSize: 13, color: '#4ADE80', fontWeight: '700' },
-  progressBarBg: { height: 10, backgroundColor: '#2A3450', borderRadius: 5, overflow: 'hidden', marginBottom: 6 },
+  progressBarBg: { height: 10, backgroundColor: '#E2E8F0', borderRadius: 5, overflow: 'hidden', marginBottom: 6 },
   progressBarFill: { height: 10, backgroundColor: '#4ADE80', borderRadius: 5 },
-  courseProgressSub: { fontSize: 12, color: '#8B9CC8', textAlign: 'center' },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#F0F4FF' },
+  courseProgressSub: { fontSize: 12, color: '#64748B', textAlign: 'center' },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: {
     width: '30%', flex: 1, minWidth: 90,
-    backgroundColor: '#0E1A30', borderRadius: 14, padding: 14,
-    alignItems: 'center', borderWidth: 1.5, borderColor: '#1E3A5F',
+    backgroundColor: '#EFF6FF', borderRadius: 14, padding: 14,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#DBEAFE',
   },
   statEmoji: { fontSize: 24, marginBottom: 6 },
   statValue: { fontSize: 18, fontWeight: '800', marginBottom: 2 },
-  statLabel: { fontSize: 11, color: '#8B9CC8', fontWeight: '600', textAlign: 'center' },
+  statLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', textAlign: 'center' },
   // Notificaciones
   notifSection: { gap: 10 },
   notifBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161B27', borderRadius: 14, padding: 14,
-    borderWidth: 1.5, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 14,
+    borderWidth: 1.5, borderColor: '#E2E8F0',
   },
-  notifBannerActive: { borderColor: '#FF960040', backgroundColor: '#FF960010' },
+  notifBannerActive: { borderColor: '#FDE68A', backgroundColor: '#FEF3C7' },
   notifBannerEmoji: { fontSize: 28 },
   notifBannerText: { flex: 1 },
-  notifBannerTitle: { fontSize: 14, fontWeight: '700', color: '#F0F4FF', marginBottom: 3 },
-  notifBannerSub: { fontSize: 12, color: '#8B9CC8', lineHeight: 17 },
+  notifBannerTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 3 },
+  notifBannerSub: { fontSize: 12, color: '#64748B', lineHeight: 17 },
   notifCard: {
-    backgroundColor: '#161B27', borderRadius: 16,
-    borderWidth: 1, borderColor: '#2A3450', overflow: 'hidden',
+    backgroundColor: '#FFFFFF', borderRadius: 16,
+    borderWidth: 1, borderColor: '#E2E8F0', overflow: 'hidden',
   },
   notifRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16,
   },
   notifRowLeft: { flex: 1, marginRight: 12 },
-  notifRowTitle: { fontSize: 15, fontWeight: '700', color: '#F0F4FF', marginBottom: 3 },
-  notifRowSub: { fontSize: 12, color: '#8B9CC8' },
+  notifRowTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 3 },
+  notifRowSub: { fontSize: 12, color: '#64748B' },
   timeRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14,
-    borderTopWidth: 1, borderTopColor: '#2A3450',
+    borderTopWidth: 1, borderTopColor: '#E2E8F0',
   },
   timeRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   timeRowEmoji: { fontSize: 22 },
-  timeRowTitle: { fontSize: 13, color: '#8B9CC8', fontWeight: '600', marginBottom: 2 },
+  timeRowTitle: { fontSize: 13, color: '#64748B', fontWeight: '600', marginBottom: 2 },
   timeRowValue: { fontSize: 18, fontWeight: '800', color: '#38BDF8' },
-  timeRowArrow: { fontSize: 24, color: '#8B9CC8', fontWeight: '300' },
+  timeRowArrow: { fontSize: 24, color: '#64748B', fontWeight: '300' },
   timeRowDisabled: { opacity: 0.5 },
   // Modal picker
   modalOverlay: {
-    flex: 1, backgroundColor: '#00000088',
+    flex: 1, backgroundColor: '#00000044',
     justifyContent: 'flex-end',
   },
   modalBox: {
-    backgroundColor: '#161B27', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
     padding: 24, paddingBottom: 40,
   },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#F0F4FF', textAlign: 'center', marginBottom: 4 },
-  modalSubtitle: { fontSize: 13, color: '#8B9CC8', textAlign: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', textAlign: 'center', marginBottom: 4 },
+  modalSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 20 },
   pickerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   pickerCol: { alignItems: 'center', width: 80 },
-  pickerLabel: { fontSize: 12, color: '#8B9CC8', fontWeight: '600', marginBottom: 8 },
+  pickerLabel: { fontSize: 12, color: '#64748B', fontWeight: '600', marginBottom: 8 },
   pickerList: { height: 180, width: 80 },
   pickerItem: {
     height: 44, justifyContent: 'center', alignItems: 'center',
     borderRadius: 10, marginVertical: 2,
   },
   pickerItemSelected: { backgroundColor: '#38BDF820', borderWidth: 1.5, borderColor: '#38BDF8' },
-  pickerItemText: { fontSize: 20, fontWeight: '600', color: '#8B9CC8' },
+  pickerItemText: { fontSize: 20, fontWeight: '600', color: '#64748B' },
   pickerItemTextSelected: { color: '#38BDF8', fontWeight: '800' },
-  pickerColon: { fontSize: 28, fontWeight: '800', color: '#F0F4FF', marginTop: 20 },
+  pickerColon: { fontSize: 28, fontWeight: '800', color: '#1E293B', marginTop: 20 },
   timePreview: {
     alignItems: 'center', marginVertical: 16,
-    backgroundColor: '#0F1117', borderRadius: 14, paddingVertical: 12,
+    backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 12,
   },
   timePreviewText: { fontSize: 32, fontWeight: '800', color: '#38BDF8', letterSpacing: 2 },
   modalBtns: { flexDirection: 'row', gap: 12, marginTop: 8 },
   modalBtnCancel: {
     flex: 1, paddingVertical: 14, borderRadius: 14,
-    backgroundColor: '#2A3450', alignItems: 'center',
+    backgroundColor: '#E2E8F0', alignItems: 'center',
   },
-  modalBtnCancelText: { color: '#8B9CC8', fontWeight: '700', fontSize: 15 },
+  modalBtnCancelText: { color: '#64748B', fontWeight: '700', fontSize: 15 },
   modalBtnConfirm: {
     flex: 1, paddingVertical: 14, borderRadius: 14,
     backgroundColor: '#38BDF8', alignItems: 'center',
   },
-  modalBtnConfirmText: { color: '#F0F4FF', fontWeight: '800', fontSize: 15 },
+  modalBtnConfirmText: { color: '#1E293B', fontWeight: '800', fontSize: 15 },
   // Logros
   achieveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  achieveCount: { fontSize: 14, color: '#FFD700', fontWeight: '700' },
+  achieveCount: { fontSize: 14, color: '#F59E0B', fontWeight: '700' },
   achieveProgressBar: {
-    height: 6, backgroundColor: '#2A3450', borderRadius: 3, overflow: 'hidden',
+    height: 6, backgroundColor: '#E2E8F0', borderRadius: 3, overflow: 'hidden',
     marginTop: -8,
   },
-  achieveProgressFill: { height: 6, backgroundColor: '#FFD700', borderRadius: 3 },
+  achieveProgressFill: { height: 6, backgroundColor: '#F59E0B', borderRadius: 3 },
   achieveList: { gap: 8 },
   achieveCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161B27', borderRadius: 14, padding: 14,
-    borderWidth: 1.5, borderColor: '#FFD70030',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 14,
+    borderWidth: 1.5, borderColor: '#FDE68A',
   },
-  achieveCardLocked: { borderColor: '#2A3450', opacity: 0.6 },
+  achieveCardLocked: { borderColor: '#E2E8F0', opacity: 0.6 },
   achieveEmoji: { fontSize: 28, width: 36, textAlign: 'center' },
   achieveEmojiLocked: { opacity: 0.5 },
   achieveInfo: { flex: 1 },
-  achieveTitle: { fontSize: 14, fontWeight: '700', color: '#F0F4FF', marginBottom: 2 },
-  achieveTitleLocked: { color: '#8B9CC8' },
-  achieveDesc: { fontSize: 12, color: '#8B9CC8', lineHeight: 16 },
-  achieveDescLocked: { color: '#3D4F6E' },
+  achieveTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  achieveTitleLocked: { color: '#64748B' },
+  achieveDesc: { fontSize: 12, color: '#64748B', lineHeight: 16 },
+  achieveDescLocked: { color: '#94A3B8' },
   achieveCheck: { fontSize: 18 },
   achieveShareBtn: {
     width: 36, height: 36, borderRadius: 18,
@@ -1050,114 +1050,114 @@ const styles = StyleSheet.create({
   achieveShareIcon: { fontSize: 16 },
   // Apariencia / Tema
   appearanceCard: {
-    backgroundColor: '#161B27', borderRadius: 16,
-    borderWidth: 1, borderColor: '#2A3450', overflow: 'hidden',
+    backgroundColor: '#FFFFFF', borderRadius: 16,
+    borderWidth: 1, borderColor: '#E2E8F0', overflow: 'hidden',
   },
   themeRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
   },
   themeEmoji: { fontSize: 26, width: 32, textAlign: 'center' },
   themeInfo: { flex: 1 },
-  themeTitle: { fontSize: 15, fontWeight: '700', color: '#F0F4FF', marginBottom: 2 },
-  themeSub: { fontSize: 12, color: '#8B9CC8' },
+  themeTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  themeSub: { fontSize: 12, color: '#64748B' },
   resetThemeBtn: {
-    borderTopWidth: 1, borderTopColor: '#2A3450',
+    borderTopWidth: 1, borderTopColor: '#E2E8F0',
     paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center',
   },
   resetThemeBtnText: { fontSize: 13, color: '#38BDF8', fontWeight: '600' },
   // Palabras Difíciles
   hardWordsSection: { gap: 10 },
   hardWordsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  hardWordsSubtitle: { fontSize: 12, color: '#FF4B4B', fontWeight: '700' },
+  hardWordsSubtitle: { fontSize: 12, color: '#EF4444', fontWeight: '700' },
   hardWordsList: { gap: 8 },
   hardWordRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161B27', borderRadius: 14, padding: 12,
-    borderWidth: 1, borderColor: '#FF4B4B20',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12,
+    borderWidth: 1, borderColor: '#FEE2E2',
   },
   hardWordRank: {
     width: 32, height: 32, borderRadius: 16,
-    backgroundColor: '#2A3450', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#3D4F6E',
+    backgroundColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#94A3B8',
   },
-  hardWordRank1: { backgroundColor: '#FFD70020', borderColor: '#FFD700' },
-  hardWordRank2: { backgroundColor: '#C0C0C020', borderColor: '#C0C0C0' },
-  hardWordRank3: { backgroundColor: '#CD7F3220', borderColor: '#CD7F32' },
-  hardWordRankText: { fontSize: 14, fontWeight: '800', color: '#F0F4FF' },
+  hardWordRank1: { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' },
+  hardWordRank2: { backgroundColor: '#F1F5F9', borderColor: '#94A3B8' },
+  hardWordRank3: { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' },
+  hardWordRankText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
   hardWordInfo: { flex: 1 },
   hardWordNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  hardWordEn: { fontSize: 16, fontWeight: '800', color: '#F0F4FF' },
-  hardWordPhonetic: { fontSize: 11, color: '#8B9CC8', fontStyle: 'italic' },
-  hardWordEs: { fontSize: 12, color: '#8B9CC8', marginTop: 2 },
+  hardWordEn: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
+  hardWordPhonetic: { fontSize: 11, color: '#64748B', fontStyle: 'italic' },
+  hardWordEs: { fontSize: 12, color: '#64748B', marginTop: 2 },
   hardWordFails: { alignItems: 'center' },
-  hardWordFailCount: { fontSize: 20, fontWeight: '800', color: '#FF4B4B' },
-  hardWordFailLabel: { fontSize: 10, color: '#8B9CC8', fontWeight: '600' },
+  hardWordFailCount: { fontSize: 20, fontWeight: '800', color: '#EF4444' },
+  hardWordFailLabel: { fontSize: 10, color: '#64748B', fontWeight: '600' },
   hardWordsEmpty: {
-    backgroundColor: '#161B27', borderRadius: 14, padding: 20,
-    alignItems: 'center', borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 20,
+    alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0',
   },
   hardWordsEmptyEmoji: { fontSize: 36, marginBottom: 8 },
-  hardWordsEmptyText: { fontSize: 15, fontWeight: '700', color: '#F0F4FF', marginBottom: 4 },
-  hardWordsEmptySubtext: { fontSize: 12, color: '#8B9CC8', textAlign: 'center', lineHeight: 18 },
+  hardWordsEmptyText: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 4 },
+  hardWordsEmptySubtext: { fontSize: 12, color: '#64748B', textAlign: 'center', lineHeight: 18 },
   practiceBtn: {
-    backgroundColor: '#FF4B4B20', borderRadius: 14, paddingVertical: 14,
+    backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 14,
     alignItems: 'center', borderWidth: 1.5, borderColor: '#FF4B4B60',
   },
-  practiceBtnText: { color: '#FF4B4B', fontSize: 14, fontWeight: '800' },
+  practiceBtnText: { color: '#EF4444', fontSize: 14, fontWeight: '800' },
   // Historial de sesiones de práctica
   practiceHistorySection: { gap: 8 },
   practiceHistoryCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#161B27', borderRadius: 14, padding: 14,
-    borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
   practiceHistoryLeft: { flex: 1, gap: 3 },
-  practiceHistoryDate: { fontSize: 14, fontWeight: '700', color: '#F0F4FF' },
-  practiceHistoryWords: { fontSize: 12, color: '#8B9CC8' },
+  practiceHistoryDate: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  practiceHistoryWords: { fontSize: 12, color: '#64748B' },
   practiceHistoryAccuracy: {
-    alignItems: 'center', backgroundColor: '#0F1117',
+    alignItems: 'center', backgroundColor: '#FFFFFF',
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
     borderWidth: 1.5, minWidth: 64,
   },
   practiceHistoryAccuracyNum: { fontSize: 18, fontWeight: '800' },
-  practiceHistoryAccuracyLabel: { fontSize: 10, color: '#8B9CC8', fontWeight: '600' },
+  practiceHistoryAccuracyLabel: { fontSize: 10, color: '#64748B', fontWeight: '600' },
   // Avatar picker
   avatarModalOverlay: {
-    flex: 1, backgroundColor: '#00000088',
+    flex: 1, backgroundColor: '#00000044',
     justifyContent: 'center', alignItems: 'center', padding: 24,
   },
   avatarModalBox: {
-    backgroundColor: '#161B27', borderRadius: 24, padding: 24,
+    backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24,
     width: '100%', maxWidth: 360,
-    borderWidth: 1, borderColor: '#2A3450',
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
-  avatarModalTitle: { fontSize: 20, fontWeight: '800', color: '#F0F4FF', textAlign: 'center', marginBottom: 4 },
-  avatarModalSub: { fontSize: 13, color: '#8B9CC8', textAlign: 'center', marginBottom: 20 },
+  avatarModalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', textAlign: 'center', marginBottom: 4 },
+  avatarModalSub: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 20 },
   avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 20 },
   avatarOption: {
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#0F1117', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#E2E8F0',
   },
   avatarOptionSelected: { borderColor: '#38BDF8', backgroundColor: '#38BDF820' },
   avatarOptionEmoji: { fontSize: 26 },
   avatarModalClose: {
-    backgroundColor: '#2A3450', borderRadius: 14,
+    backgroundColor: '#E2E8F0', borderRadius: 14,
     paddingVertical: 14, alignItems: 'center',
   },
-  avatarModalCloseText: { color: '#8B9CC8', fontWeight: '700', fontSize: 15 },
+  avatarModalCloseText: { color: '#64748B', fontWeight: '700', fontSize: 15 },
   // Avatar edit button
   avatarEditBtn: {
     position: 'absolute', bottom: -4, right: -4,
     backgroundColor: '#38BDF8', borderRadius: 12,
     width: 24, height: 24, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: '#161B27',
+    borderWidth: 2, borderColor: '#FFFFFF',
   },
   avatarEditIcon: { fontSize: 12 },
   // Edición de nombre
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   nameEditBtn: {
-    backgroundColor: '#2A3450', borderRadius: 12,
+    backgroundColor: '#E2E8F0', borderRadius: 12,
     width: 26, height: 26, justifyContent: 'center', alignItems: 'center',
   },
   nameEditBtnIcon: { fontSize: 12 },
@@ -1166,9 +1166,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   nameEditInput: {
-    flex: 1, backgroundColor: '#0F1117', borderRadius: 10,
+    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
-    fontSize: 15, fontWeight: '700', color: '#F0F4FF',
+    fontSize: 15, fontWeight: '700', color: '#1E293B',
     borderWidth: 1.5, borderColor: '#38BDF8',
     textAlign: 'center',
   },
@@ -1176,19 +1176,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#38BDF8', borderRadius: 10,
     width: 34, height: 34, justifyContent: 'center', alignItems: 'center',
   },
-  nameEditSaveText: { color: '#F0F4FF', fontSize: 18, fontWeight: '800' },
+  nameEditSaveText: { color: '#1E293B', fontSize: 18, fontWeight: '800' },
   nameEditCancel: {
-    backgroundColor: '#2A3450', borderRadius: 10,
+    backgroundColor: '#E2E8F0', borderRadius: 10,
     width: 34, height: 34, justifyContent: 'center', alignItems: 'center',
   },
-  nameEditCancelText: { color: '#8B9CC8', fontSize: 16, fontWeight: '700' },
-  nameError: { fontSize: 12, color: '#FF4B4B', marginTop: 4, textAlign: 'center' },
+  nameEditCancelText: { color: '#64748B', fontSize: 16, fontWeight: '700' },
+  nameError: { fontSize: 12, color: '#EF4444', marginTop: 4, textAlign: 'center' },
   // Nivel de inglés A1-B2
   englishLevelCard: {
-    backgroundColor: '#161B27', borderRadius: 16, padding: 16,
-    marginVertical: 8, borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16,
+    marginVertical: 8, borderWidth: 1, borderColor: '#E2E8F0',
   },
-  englishLevelTitle: { fontSize: 13, color: '#8B9CC8', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase' },
+  englishLevelTitle: { fontSize: 13, color: '#64748B', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase' },
   englishLevelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   englishLevelBadge: {
     width: 56, height: 56, borderRadius: 12, borderWidth: 2,
@@ -1196,27 +1196,27 @@ const styles = StyleSheet.create({
   },
   englishLevelBadgeText: { fontSize: 20, fontWeight: '900' },
   englishLevelInfo: { flex: 1 },
-  englishLevelName: { fontSize: 16, fontWeight: '700', color: '#F0F4FF', marginBottom: 2 },
-  englishLevelSub: { fontSize: 12, color: '#8B9CC8' },
-  englishLevelBarBg: { height: 8, backgroundColor: '#2A3450', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
+  englishLevelName: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  englishLevelSub: { fontSize: 12, color: '#64748B' },
+  englishLevelBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
   englishLevelBarFill: { height: 8, borderRadius: 4 },
   englishLevelScale: { flexDirection: 'row', justifyContent: 'space-between' },
-  englishLevelScaleLabel: { fontSize: 11, color: '#3D4F6E', fontWeight: '600' },
+  englishLevelScaleLabel: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
   // Mapa de calor
   heatmapContainer: { marginVertical: 8 },
   heatmapGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 2 },
   heatmapWeek: { flexDirection: 'column', gap: 3, flex: 1 },
   heatmapCell: {
     aspectRatio: 1, borderRadius: 2, marginHorizontal: 1.5,
-    backgroundColor: '#2A3450',
+    backgroundColor: '#E2E8F0',
   },
   heatmapCellActive: { backgroundColor: '#4ADE80' },
-  heatmapLegend: { fontSize: 11, color: '#8B9CC8', marginTop: 8, textAlign: 'center' },
+  heatmapLegend: { fontSize: 11, color: '#64748B', marginTop: 8, textAlign: 'center' },
   viewAllBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#161B27', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
     marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: '#2A2D2E',
   },
-  viewAllText: { fontSize: 14, fontWeight: '600', color: '#ECEDEE' },
+  viewAllText: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
   viewAllArrow: { fontSize: 20, color: '#38BDF8', fontWeight: '700' },
 });

@@ -1,22 +1,16 @@
 /** @type {const} */
 const themeColors = {
-  // Fondos
-  primary:    { light: '#4ADE80', dark: '#4ADE80' },   // Verde lima vibrante
-  background: { light: '#0E1117', dark: '#0E1117' },   // Azul-gris oscuro suave
-  surface:    { light: '#161B27', dark: '#161B27' },   // Cards y contenedores
-  surface2:   { light: '#1E2535', dark: '#1E2535' },   // Inputs y secundarios
-  foreground: { light: '#F0F4FF', dark: '#F0F4FF' },   // Texto principal
-  muted:      { light: '#8B9CC8', dark: '#8B9CC8' },   // Texto secundario
-  border:     { light: '#2A3450', dark: '#2A3450' },   // Bordes sutiles
-  // Estados
-  success:    { light: '#4ADE80', dark: '#4ADE80' },
-  warning:    { light: '#FBBF24', dark: '#FBBF24' },
-  error:      { light: '#F87171', dark: '#F87171' },
-  // Acentos extra (usados como clases Tailwind)
-  secondary:  { light: '#38BDF8', dark: '#38BDF8' },   // Azul cielo
-  gold:       { light: '#FBBF24', dark: '#FBBF24' },   // Dorado gemas
-  streak:     { light: '#A78BFA', dark: '#A78BFA' },   // Violeta racha
-  danger:     { light: '#F87171', dark: '#F87171' },   // Coral vidas
+  // Modo CLARO por defecto — fondo blanco, colores vibrantes
+  primary:    { light: '#4F46E5', dark: '#818CF8' },   // índigo vibrante
+  background: { light: '#F8FAFF', dark: '#0F172A' },   // blanco azulado / azul marino profundo
+  surface:    { light: '#FFFFFF', dark: '#1E293B' },   // blanco puro / azul oscuro
+  foreground: { light: '#1E293B', dark: '#F1F5F9' },   // casi negro / casi blanco
+  muted:      { light: '#64748B', dark: '#94A3B8' },   // gris azulado
+  border:     { light: '#E2E8F0', dark: '#334155' },   // gris claro / gris oscuro
+  success:    { light: '#10B981', dark: '#34D399' },   // verde esmeralda
+  warning:    { light: '#F59E0B', dark: '#FBBF24' },   // ámbar
+  error:      { light: '#EF4444', dark: '#F87171' },   // rojo
+  tint:       { light: '#4F46E5', dark: '#818CF8' },   // alias de primary para tabs
 };
 
 module.exports = { themeColors };

@@ -113,7 +113,8 @@ export default function SettingsScreen() {
   const t = useThemeStyles();
   const { settings, loading, permissionGranted, enableNotifications, disableNotifications, updateTime } = useNotifications();
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
-  const isDark = true; // Modo oscuro permanente
+  const { colorScheme, setColorScheme } = useThemeContext();
+  const isDark = colorScheme === 'dark';
 
   const openSystemSettings = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -163,8 +164,8 @@ export default function SettingsScreen() {
   }, [updateTime]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle={isDark ? 'dark-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -191,16 +192,34 @@ export default function SettingsScreen() {
             <Switch
               value={soundEnabled}
               onValueChange={setSoundEnabled}
-              trackColor={{ false: '#2A3450', true: '#58CC0240' }}
-              thumbColor={soundEnabled ? '#4ADE80' : '#8B9CC8'}
+              trackColor={{ false: '#E2E8F0', true: '#58CC0240' }}
+              thumbColor={soundEnabled ? '#4ADE80' : '#64748B'}
             />
           </View>
         </View>
 
-        {/* ── Notificaciones ─────────────────────────────────────────── */}
-        <Text style={styles.sectionTitle}>🔔 Recordatorio de Racha</Text>
+        {/* ── Modo Nocturno ─────────────────────────────────────────────────────────────────── */}
+        <Text style={styles.sectionTitle}>🌙 Apariencia</Text>
+        <View style={styles.card}>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingEmoji}>{isDark ? '🌙' : '☀️'}</Text>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>Modo Nocturno</Text>
+              <Text style={styles.settingSub}>
+                {isDark ? 'Fondo oscuro activo' : 'Fondo claro activo'}
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={(val) => setColorScheme(val ? 'dark' : 'light')}
+              trackColor={{ false: '#E2E8F0', true: '#6366F1' }}
+              thumbColor={isDark ? '#4F46E5' : '#94A3B8'}
+            />
+          </View>
+        </View>
 
-        {/* Banner informativo */}
+        {/* ── Notificaciones ─────────────────────────────────────────────────────────────────── */}
+        <Text style={styles.sectionTitle}>🔔 Recordatorio de Racha</Text>  {/* Banner informativo */}
         <View style={[styles.notifBanner, settings.enabled && styles.notifBannerActive]}>
           <Text style={styles.notifBannerEmoji}>{settings.enabled ? '🔥' : '💤'}</Text>
           <View style={styles.notifBannerText}>
@@ -231,8 +250,8 @@ export default function SettingsScreen() {
             <Switch
               value={settings.enabled}
               onValueChange={handleNotifToggle}
-              trackColor={{ false: '#2A3450', true: '#FF960040' }}
-              thumbColor={settings.enabled ? '#FBBF24' : '#8B9CC8'}
+              trackColor={{ false: '#E2E8F0', true: '#FF960040' }}
+              thumbColor={settings.enabled ? '#FBBF24' : '#64748B'}
               disabled={saving || loading}
             />
           </View>
@@ -278,21 +297,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#1E2A3A',
+    borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
   backBtn: {
     width: 40, height: 40, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: '#161B27', borderRadius: 12,
-    borderWidth: 1, borderColor: '#1E2A3A',
+    backgroundColor: '#FFFFFF', borderRadius: 12,
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
-  backBtnText: { fontSize: 28, color: '#F0F4FF', lineHeight: 34, marginTop: -2 },
-  headerTitle: { flex: 1, fontSize: 20, fontWeight: '800', color: '#F0F4FF', textAlign: 'center' },
+  backBtnText: { fontSize: 28, color: '#1E293B', lineHeight: 34, marginTop: -2 },
+  headerTitle: { flex: 1, fontSize: 20, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
   headerSpacer: { width: 40 },
   scroll: { padding: 16, gap: 12 },
-  sectionTitle: { fontSize: 13, fontWeight: '800', color: '#8B9CC8', letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 },
+  sectionTitle: { fontSize: 13, fontWeight: '800', color: '#64748B', letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 },
   card: {
-    backgroundColor: '#161B27', borderRadius: 16,
-    borderWidth: 1, borderColor: '#1E2A3A', overflow: 'hidden',
+    backgroundColor: '#FFFFFF', borderRadius: 16,
+    borderWidth: 1, borderColor: '#E2E8F0', overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
   settingRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -300,72 +321,72 @@ const styles = StyleSheet.create({
   },
   settingEmoji: { fontSize: 24, width: 32, textAlign: 'center' },
   settingInfo: { flex: 1 },
-  settingTitle: { fontSize: 15, fontWeight: '700', color: '#F0F4FF', marginBottom: 2 },
-  settingSub: { fontSize: 12, color: '#8B9CC8' },
+  settingTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+  settingSub: { fontSize: 12, color: '#64748B' },
   resetBtn: {
-    borderTopWidth: 1, borderTopColor: '#2A3450',
+    borderTopWidth: 1, borderTopColor: '#E2E8F0',
     paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center',
   },
   resetBtnText: { fontSize: 13, color: '#38BDF8', fontWeight: '600' },
   // Notificaciones
   notifBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161B27', borderRadius: 14, padding: 14,
-    borderWidth: 1.5, borderColor: '#1E2A3A',
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 14,
+    borderWidth: 1.5, borderColor: '#E2E8F0',
   },
-  notifBannerActive: { borderColor: '#FF960040', backgroundColor: '#FF960010' },
+  notifBannerActive: { borderColor: '#FDE68A', backgroundColor: '#FFFBEB' },
   notifBannerEmoji: { fontSize: 28 },
   notifBannerText: { flex: 1 },
-  notifBannerTitle: { fontSize: 14, fontWeight: '700', color: '#F0F4FF', marginBottom: 3 },
-  notifBannerSub: { fontSize: 12, color: '#8B9CC8', lineHeight: 17 },
+  notifBannerTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 3 },
+  notifBannerSub: { fontSize: 12, color: '#64748B', lineHeight: 17 },
   timeRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14,
-    borderTopWidth: 1, borderTopColor: '#2A3450',
+    borderTopWidth: 1, borderTopColor: '#E2E8F0',
   },
   timeRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   timeRowDisabled: { opacity: 0.5 },
-  timeValue: { fontSize: 18, fontWeight: '800', color: '#38BDF8', marginTop: 2 },
-  timeArrow: { fontSize: 24, color: '#8B9CC8' },
+  timeValue: { fontSize: 18, fontWeight: '800', color: '#4F46E5', marginTop: 2 },
+  timeArrow: { fontSize: 24, color: '#64748B' },
   // Modal
   modalOverlay: {
     flex: 1, backgroundColor: '#00000088',
     justifyContent: 'flex-end',
   },
   modalBox: {
-    backgroundColor: '#161B27', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
     padding: 24, paddingBottom: 40,
-    borderTopWidth: 1, borderTopColor: '#1E2A3A',
+    borderTopWidth: 1, borderTopColor: '#E2E8F0',
   },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#F0F4FF', textAlign: 'center', marginBottom: 4 },
-  modalSubtitle: { fontSize: 13, color: '#8B9CC8', textAlign: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', textAlign: 'center', marginBottom: 4 },
+  modalSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 20 },
   pickerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16 },
   pickerCol: { alignItems: 'center', width: 80 },
-  pickerLabel: { fontSize: 12, color: '#8B9CC8', fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
+  pickerLabel: { fontSize: 12, color: '#64748B', fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
   pickerList: { height: 180 },
   pickerItem: {
     paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10,
     alignItems: 'center', marginVertical: 2,
   },
-  pickerItemSelected: { backgroundColor: '#38BDF820', borderWidth: 1.5, borderColor: '#38BDF8' },
-  pickerItemText: { fontSize: 20, fontWeight: '600', color: '#8B9CC8' },
-  pickerItemTextSelected: { color: '#38BDF8', fontWeight: '800' },
-  pickerColon: { fontSize: 28, fontWeight: '800', color: '#F0F4FF', marginTop: 20 },
+  pickerItemSelected: { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#4F46E5' },
+  pickerItemText: { fontSize: 20, fontWeight: '600', color: '#64748B' },
+  pickerItemTextSelected: { color: '#4F46E5', fontWeight: '800' },
+  pickerColon: { fontSize: 28, fontWeight: '800', color: '#1E293B', marginTop: 20 },
   timePreview: {
-    alignItems: 'center', backgroundColor: '#0F1117',
+    alignItems: 'center', backgroundColor: '#EFF6FF',
     borderRadius: 12, padding: 12, marginBottom: 20,
-    borderWidth: 1, borderColor: '#2A3450',
+    borderWidth: 1, borderColor: '#DBEAFE',
   },
-  timePreviewText: { fontSize: 32, fontWeight: '900', color: '#38BDF8' },
+  timePreviewText: { fontSize: 32, fontWeight: '900', color: '#4F46E5' },
   modalBtns: { flexDirection: 'row', gap: 12 },
   modalBtnCancel: {
     flex: 1, paddingVertical: 14, borderRadius: 14,
-    alignItems: 'center', backgroundColor: '#2A3450',
+    alignItems: 'center', backgroundColor: '#E2E8F0',
   },
-  modalBtnCancelText: { color: '#8B9CC8', fontSize: 15, fontWeight: '700' },
+  modalBtnCancelText: { color: '#64748B', fontSize: 15, fontWeight: '700' },
   modalBtnConfirm: {
     flex: 1, paddingVertical: 14, borderRadius: 14,
-    alignItems: 'center', backgroundColor: '#38BDF8',
+    alignItems: 'center', backgroundColor: '#4F46E5',
   },
-  modalBtnConfirmText: { color: '#F0F4FF', fontSize: 15, fontWeight: '700' },
+  modalBtnConfirmText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 });

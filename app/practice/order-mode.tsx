@@ -122,8 +122,8 @@ export default function OrderModeScreen() {
   if (showResult) {
     const pct = Math.round((score / TOTAL) * 100);
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle="dark-content" />
         <View style={styles.resultContainer}>
           <Text style={styles.resultEmoji}>{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪'}</Text>
           <Text style={styles.resultTitle}>¡Sesión completada!</Text>
@@ -139,8 +139,8 @@ export default function OrderModeScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -235,21 +235,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#2A3450',
+    borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
   backBtn: {
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#161B27', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center',
   },
-  backBtnText: { color: '#8B9CC8', fontSize: 16, fontWeight: '700' },
+  backBtnText: { color: '#64748B', fontSize: 16, fontWeight: '700' },
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
   counter: { fontSize: 14, color: '#FF9500', fontWeight: '700' },
   scroll: { padding: 20, flexGrow: 1 },
   card: {
-    backgroundColor: '#161B27', borderRadius: 20, padding: 20,
-    borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20,
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
-  instruction: { fontSize: 16, color: '#8B9CC8', marginBottom: 12 },
+  instruction: { fontSize: 16, color: '#64748B', marginBottom: 12 },
   translationBox: {
     backgroundColor: '#0D0F18', borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 10,
@@ -258,38 +258,38 @@ const styles = StyleSheet.create({
   translationText: { fontSize: 13, color: '#FFB347', fontStyle: 'italic' },
   builderArea: {
     minHeight: 80, backgroundColor: '#0D0F18', borderRadius: 12,
-    padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#2A3450',
+    padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E2E8F0',
     justifyContent: 'center',
   },
   placeholder: { color: '#3D4F6E', fontSize: 14, textAlign: 'center' },
   wordRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    backgroundColor: '#2A3450', borderRadius: 10, paddingHorizontal: 14,
+    backgroundColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 14,
     paddingVertical: 10, borderWidth: 1, borderColor: '#3D4168',
   },
   chipSelected: { backgroundColor: '#3D2A6A', borderColor: '#38BDF8' },
   chipCorrect: { borderColor: '#4ADE80', backgroundColor: '#1A3A1A' },
   chipWrong: { borderColor: '#FF4B4B', backgroundColor: '#3A1A1A' },
   chipText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  divider: { height: 1, backgroundColor: '#2A3450', marginVertical: 14 },
+  divider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 14 },
   feedback: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   btnRow: { flexDirection: 'row', gap: 10, marginTop: 16 },
   resetBtn: {
-    backgroundColor: '#161B27', borderRadius: 12, paddingVertical: 14,
-    paddingHorizontal: 16, borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 14,
+    paddingHorizontal: 16, borderWidth: 1, borderColor: '#E2E8F0',
   },
-  resetBtnText: { color: '#8B9CC8', fontSize: 14, fontWeight: '600' },
+  resetBtnText: { color: '#64748B', fontSize: 14, fontWeight: '600' },
   submitBtn: {
     flex: 1, backgroundColor: '#FF9500', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center',
   },
-  submitBtnDisabled: { backgroundColor: '#2A3450' },
+  submitBtnDisabled: { backgroundColor: '#E2E8F0' },
   submitBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   resultContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   resultEmoji: { fontSize: 72, marginBottom: 16 },
   resultTitle: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },
   resultScore: { fontSize: 48, fontWeight: '900', color: '#FF9500', marginBottom: 4 },
-  resultPct: { fontSize: 18, color: '#8B9CC8', marginBottom: 32 },
+  resultPct: { fontSize: 18, color: '#64748B', marginBottom: 32 },
   doneBtn: {
     backgroundColor: '#FF9500', borderRadius: 16, paddingVertical: 16,
     paddingHorizontal: 40,

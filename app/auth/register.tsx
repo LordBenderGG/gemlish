@@ -9,17 +9,17 @@ import { router } from 'expo-router';
 import { useGame } from '@/context/GameContext';
 
 const C = {
-  bg: '#0E1117',
-  surface: '#161B27',
-  surface2: '#1E2535',
-  text: '#F0F4FF',
-  muted: '#8B9CC8',
-  mutedLight: '#C4CEEA',
-  border: '#2A3450',
-  green: '#4ADE80',
-  blue: '#38BDF8',
-  error: '#F87171',
-  gold: '#FBBF24',
+  bg: '#F8FAFF',
+  surface: '#FFFFFF',
+  surface2: '#EFF6FF',
+  text: '#1E293B',
+  muted: '#64748B',
+  mutedLight: '#475569',
+  border: '#E2E8F0',
+  green: '#4F46E5',
+  blue: '#4F46E5',
+  error: '#EF4444',
+  gold: '#F59E0B',
 };
 
 // ─── Fortaleza de contraseña ──────────────────────────────────────────────────
@@ -103,7 +103,7 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
@@ -206,7 +206,7 @@ export default function RegisterScreen() {
                 style={styles.btnPrimary}
               >
                 {loading
-                  ? <ActivityIndicator color="#0E1117" />
+                  ? <ActivityIndicator color="#F8FAFF" />
                   : <Text style={styles.btnPrimaryText}>Crear Cuenta</Text>
                 }
               </LinearGradient>
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
   },
-  btnPrimaryText: { color: '#0E1117', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
+  btnPrimaryText: { color: '#F8FAFF', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
 
   note: { color: C.muted, fontSize: 12, textAlign: 'center', marginTop: 18, opacity: 0.7 },
 

@@ -353,3 +353,16 @@
 
 ## v2.1 — Fix Build Gradle
 - [x] Fix: minSdkVersion 22 → 24 confirmado en app.config.ts + buildArchs arm64-v8a/x86_64 + cache deshabilitado en eas.json
+
+## v3.0 — Rediseño RADICAL: Tema Claro + Colores Vibrantes
+- [ ] Nueva paleta CLARA: fondo blanco/gris muy claro, colores vibrantes (verde, azul, naranja, morado)
+- [ ] theme.config.js: modo claro por defecto, modo oscuro mejorado
+- [ ] Onboarding: fondo blanco, slides con color de acento por slide
+- [ ] Login/Registro: fondo claro, inputs con borde de color
+- [ ] index.tsx: header con gradiente de color, tarjetas de nivel coloridas, chips de práctica vibrantes
+- [ ] daily.tsx: fondo claro, tarjetas de palabras con color, barra de progreso vibrante
+- [ ] game.tsx: fondo claro, categorías con colores distintos
+- [ ] profile.tsx: tarjeta de usuario COMPACTA (no enorme), estadísticas coloridas, modo nocturno en Settings
+- [ ] exercise/[levelId].tsx: fondo claro, opciones con colores vibrantes
+- [ ] settings.tsx: modo nocturno funcional con toggle visible
+- [ ] stats.tsx: heatmap con colores vibrantes, gráficas coloridas

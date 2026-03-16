@@ -30,7 +30,7 @@ function WordReviewCard({ word, t }: { word: Word; t: ReturnType<typeof useTheme
           <Text style={styles.speakBtnText}>{isThisWordSpeaking ? '⏹' : '🔊'}</Text>
         </TouchableOpacity>
       </View>
-      <View style={[styles.exampleBox, { backgroundColor: '#0E1117', borderLeftColor: '#38BDF8' }]}>
+      <View style={[styles.exampleBox, { backgroundColor: '#F8FAFF', borderLeftColor: '#38BDF8' }]}>
         <Text style={[styles.exampleEn, { color: t.text }]}>"{word.example}"</Text>
         <Text style={[styles.exampleEs, { color: t.muted }]}>{word.exampleEs}</Text>
       </View>
@@ -60,8 +60,8 @@ export default function LevelDetailScreen() {
   ), [t]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: t.border }]}>
@@ -107,7 +107,7 @@ export default function LevelDetailScreen() {
       />
 
       {/* Botón de acción */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: t.border, backgroundColor: '#0E1117' }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: t.border, backgroundColor: '#F8FAFF' }]}>
         <TouchableOpacity
           style={[styles.startBtn, { backgroundColor: levelData.color }]}
           onPress={() => handleStartLevel()}

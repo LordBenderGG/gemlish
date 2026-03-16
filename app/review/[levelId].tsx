@@ -121,8 +121,8 @@ export default function ReviewScreen() {
 
   if (errorWords.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🎉</Text>
           <Text style={styles.emptyTitle}>¡Sin errores!</Text>
@@ -137,8 +137,8 @@ export default function ReviewScreen() {
 
   if (finished) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🏆</Text>
           <Text style={styles.emptyTitle}>¡Repaso completado!</Text>
@@ -155,8 +155,8 @@ export default function ReviewScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   card: {
-    backgroundColor: '#161B27',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2A3450',
+    borderColor: '#E2E8F0',
   },
   cardMastered: {
     borderColor: '#4ADE80',
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   exampleToggle: {
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#2A3450',
+    borderTopColor: '#E2E8F0',
   },
   exampleToggleText: {
     color: '#9BA1A6',

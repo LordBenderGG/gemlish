@@ -105,14 +105,14 @@ function MultipleChoiceView({
       )}
       <View style={styles.optionsGrid}>
         {exercise.options.map((opt, idx) => {
-          let bg = '#161B27';
-          let border = '#2A3450';
+          let bg = '#FFFFFF';
+          let border = '#E2E8F0';
           let textColor = '#FFFFFF';
           if (answered) {
             if (idx === exercise.correct) { bg = '#0D2A1A'; border = '#4ADE80'; textColor = '#4ADE80'; }
-            else if (idx === selected) { bg = '#3A1A1A'; border = '#FF4B4B'; textColor = '#FF4B4B'; }
+            else if (idx === selected) { bg = '#3A1A1A'; border = '#EF4444'; textColor = '#EF4444'; }
           } else if (selected === idx) {
-            bg = '#1A2A3A'; border = '#1CB0F6';
+            bg = '#1A2A3A'; border = '#4F46E5';
           }
           return (
             <TouchableOpacity
@@ -185,7 +185,7 @@ function TranslateView({
         onSubmitEditing={handleSubmit}
       />
       {submitted && (
-        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#FF4B4B' }]}>
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#EF4444' }]}>
           {isCorrect ? '¡Correcto! ✅' : `Respuesta correcta: "${exercise.correctAnswer}" ❌`}
         </Text>
       )}
@@ -292,8 +292,8 @@ function MatchPairsView({
                 <Text style={[
                   styles.matchCardText,
                   connected && { color: '#4ADE80' },
-                  selected && { color: '#1CB0F6' },
-                  isWrong && { color: '#FF4B4B' },
+                  selected && { color: '#4F46E5' },
+                  isWrong && { color: '#EF4444' },
                 ]} numberOfLines={2}>
                   {word}
                 </Text>
@@ -323,7 +323,7 @@ function MatchPairsView({
                 <Text style={[
                   styles.matchCardText,
                   connected && { color: '#4ADE80' },
-                  isWrong && { color: '#FF4B4B' },
+                  isWrong && { color: '#EF4444' },
                 ]} numberOfLines={2}>
                   {word}
                 </Text>
@@ -418,7 +418,7 @@ function ListenWriteView({
         onSubmitEditing={handleSubmit}
       />
       {submitted && (
-        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#FF4B4B' }]}>
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#EF4444' }]}>
           {isCorrect ? '¡Correcto! ✅' : `La palabra era: "${exercise.correctAnswer}" ❌`}
         </Text>
       )}
@@ -512,7 +512,7 @@ function SentenceOrderView({
               >
                 <Text style={[
                   styles.sentenceChipText,
-                  submitted && (isCorrect ? { color: '#4ADE80' } : { color: '#FF4B4B' }),
+                  submitted && (isCorrect ? { color: '#4ADE80' } : { color: '#EF4444' }),
                 ]}>
                   {word}
                 </Text>
@@ -542,7 +542,7 @@ function SentenceOrderView({
 
       {/* Feedback */}
       {submitted && (
-        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#FF4B4B', marginTop: 16 }]}>
+        <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#EF4444', marginTop: 16 }]}>
           {isCorrect
             ? '¡Correcto! ✅'
             : `Oración correcta: "${exercise.sentence}" ❌`}
@@ -615,14 +615,14 @@ function FillBlankView({
       {/* Opciones */}
       <View style={styles.fillOptionsGrid}>
         {exercise.options.map((opt, idx) => {
-          let bg = '#161B27';
-          let border = '#2A3450';
+          let bg = '#FFFFFF';
+          let border = '#E2E8F0';
           let textColor = '#FFFFFF';
           if (answered) {
             if (idx === exercise.correct) { bg = '#0D2A1A'; border = '#4ADE80'; textColor = '#4ADE80'; }
-            else if (idx === selected) { bg = '#3A1A1A'; border = '#FF4B4B'; textColor = '#FF4B4B'; }
+            else if (idx === selected) { bg = '#3A1A1A'; border = '#EF4444'; textColor = '#EF4444'; }
           } else if (selected === idx) {
-            bg = '#1A2A3A'; border = '#1CB0F6';
+            bg = '#1A2A3A'; border = '#4F46E5';
           }
           return (
             <TouchableOpacity
@@ -638,7 +638,7 @@ function FillBlankView({
       </View>
 
       {answered && (
-        <Text style={[styles.feedbackText, { color: selected === exercise.correct ? '#4ADE80' : '#FF4B4B', marginTop: 8 }]}>
+        <Text style={[styles.feedbackText, { color: selected === exercise.correct ? '#4ADE80' : '#EF4444', marginTop: 8 }]}>
           {selected === exercise.correct
             ? '¡Correcto! ✅'
             : `Respuesta correcta: "${exercise.correctAnswer}" ❌`}
@@ -721,7 +721,7 @@ function PerfectScreen({
   return (
     <View style={[perfectStyles.container, { paddingTop: insets.top }]}>
       <ConfettiOverlay visible />
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={[perfectStyles.scroll, { paddingBottom: Math.max(insets.bottom, 32) }]} showsVerticalScrollIndicator={false}>
         {/* Trofeo animado */}
         <Reanimated.View style={[perfectStyles.trophyWrapper, trophyStyle]}>
@@ -805,7 +805,7 @@ const perfectStyles = StyleSheet.create({
     borderColor: '#FFD70050',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#FFD700',
+    shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 20,
@@ -817,14 +817,14 @@ const perfectStyles = StyleSheet.create({
   perfectTitle: {
     fontSize: 42,
     fontWeight: '900',
-    color: '#FFD700',
+    color: '#F59E0B',
     textAlign: 'center',
     letterSpacing: 1,
     marginBottom: 6,
   },
   perfectSubtitle: {
     fontSize: 16,
-    color: '#8B9CC8',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -869,7 +869,7 @@ const perfectStyles = StyleSheet.create({
   },
   statCardRed: {
     backgroundColor: '#FF4B4B15',
-    borderColor: '#FF4B4B40',
+    borderColor: '#FECACA',
   },
   statCardPurple: {
     backgroundColor: '#CE82FF15',
@@ -887,7 +887,7 @@ const perfectStyles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 11,
-    color: '#8B9CC8',
+    color: '#64748B',
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -897,7 +897,7 @@ const perfectStyles = StyleSheet.create({
     gap: 10,
   },
   continueBtn: {
-    backgroundColor: '#FFD700',
+    backgroundColor: '#F59E0B',
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
@@ -908,15 +908,15 @@ const perfectStyles = StyleSheet.create({
     fontWeight: '800',
   },
   repeatBtn: {
-    backgroundColor: '#161B27',
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#2A3450',
+    borderColor: '#E2E8F0',
   },
   repeatBtnText: {
-    color: '#8B9CC8',
+    color: '#64748B',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1061,7 +1061,7 @@ export default function ExerciseScreen() {
     if (!level) return '#4ADE80';
     const type = level.exercises[currentIdx]?.type;
     switch (type) {
-      case 'listen-write': return '#1CB0F6';
+      case 'listen-write': return '#4F46E5';
       case 'fill-blank': return '#4ADE80';
       case 'sentence-order': return '#FF9500';
       case 'match-pairs': return '#CE82FF';
@@ -1216,7 +1216,7 @@ export default function ExerciseScreen() {
 
   if (!level) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
         <Text style={{ color: t.text, textAlign: 'center', marginTop: 40 }}>Nivel no encontrado</Text>
       </View>
     );
@@ -1266,10 +1266,10 @@ export default function ExerciseScreen() {
     }
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle="dark-content" />
         <LinearGradient
-          colors={['#0C1A2E', '#0E1117', '#0E1117']}
+          colors={['#0C1A2E', '#F8FAFF', '#F8FAFF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 220 }}
@@ -1313,8 +1313,8 @@ export default function ExerciseScreen() {
                   </View>
                 )}
                 {challengeBonus.gems > 0 && (
-                  <View style={[styles.challengeBonusBadge, { backgroundColor: '#00D4FF22', borderColor: '#00D4FF' }]}>
-                    <Text style={[styles.challengeBonusBadgeText, { color: '#00D4FF' }]}>+{challengeBonus.gems} 💎 extra</Text>
+                  <View style={[styles.challengeBonusBadge, { backgroundColor: '#00D4FF22', borderColor: '#4F46E5' }]}>
+                    <Text style={[styles.challengeBonusBadgeText, { color: '#4F46E5' }]}>+{challengeBonus.gems} 💎 extra</Text>
                   </View>
                 )}
               </View>
@@ -1329,7 +1329,7 @@ export default function ExerciseScreen() {
                 <View key={type} style={styles.breakdownRow}>
                   <Text style={styles.breakdownLabel}>{typeLabels[type] ?? type}</Text>
                   <View style={styles.breakdownBarBg}>
-                    <View style={[styles.breakdownBarFill, { width: `${Math.round((correct / total) * 100)}%` as any, backgroundColor: correct === total ? '#4ADE80' : correct / total >= 0.5 ? '#FF9500' : '#FF4B4B' }]} />
+                    <View style={[styles.breakdownBarFill, { width: `${Math.round((correct / total) * 100)}%` as any, backgroundColor: correct === total ? '#4ADE80' : correct / total >= 0.5 ? '#FF9500' : '#EF4444' }]} />
                   </View>
                   <Text style={styles.breakdownPct}>{correct}/{total}</Text>
                 </View>
@@ -1342,7 +1342,7 @@ export default function ExerciseScreen() {
             <Text style={styles.continueBtnText}>Continuar →</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.continueBtn, { backgroundColor: '#2A3450', marginTop: 10 }]}
+            style={[styles.continueBtn, { backgroundColor: '#E2E8F0', marginTop: 10 }]}
             onPress={() => {
               setCurrentIdx(0);
               setHearts(game.hearts);
@@ -1356,7 +1356,7 @@ export default function ExerciseScreen() {
               setShowResult(false);
             }}
           >
-            <Text style={[styles.continueBtnText, { color: '#8B9CC8' }]}>🔄 Repetir nivel</Text>
+            <Text style={[styles.continueBtnText, { color: '#64748B' }]}>🔄 Repetir nivel</Text>
           </TouchableOpacity>
           {errorWords.length > 0 && (
             <TouchableOpacity
@@ -1377,12 +1377,12 @@ export default function ExerciseScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle="dark-content" />
 
       {/* Header con gradiente */}
       <LinearGradient
-        colors={['#0C1A2E', '#0E1117']}
+        colors={['#0C1A2E', '#F8FAFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.exerciseHeader}
@@ -1421,19 +1421,19 @@ export default function ExerciseScreen() {
               : exercise.type === 'sentence-order' ? 'Ordenar'
               : 'Completar'}
           </Text>
-          <Text style={[styles.exerciseTypeName, { color: '#3D4F6E' }]}>
+          <Text style={[styles.exerciseTypeName, { color: '#94A3B8' }]}>
             · {currentIdx + 1}/{TOTAL_EXERCISES}
           </Text>
         </View>
         <View style={styles.subHeaderRight}>
           {isHardMode && (
-            <View style={{ backgroundColor: '#FF4B4B20', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#FF4B4B' }}>
-              <Text style={{ color: '#FF4B4B', fontSize: 11, fontWeight: '700' }}>🔥 Difícil</Text>
+            <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#EF4444' }}>
+              <Text style={{ color: '#EF4444', fontSize: 11, fontWeight: '700' }}>🔥 Difícil</Text>
             </View>
           )}
           {isListenMode && (
-            <View style={{ backgroundColor: '#1CB0F620', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#1CB0F6' }}>
-              <Text style={{ color: '#1CB0F6', fontSize: 11, fontWeight: '700' }}>🎧 Solo escucha</Text>
+            <View style={{ backgroundColor: '#1CB0F620', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#4F46E5' }}>
+              <Text style={{ color: '#4F46E5', fontSize: 11, fontWeight: '700' }}>🎧 Solo escucha</Text>
             </View>
           )}
           <Text style={styles.timerText}>⏱ {formatTime(elapsedSeconds)}</Text>
@@ -1531,7 +1531,7 @@ export default function ExerciseScreen() {
           justifyContent: 'center', alignItems: 'center', padding: 24,
         }}>
           <View style={{
-            backgroundColor: '#161B27', borderRadius: 20, padding: 28,
+            backgroundColor: '#FFFFFF', borderRadius: 20, padding: 28,
             alignItems: 'center', width: '100%', borderWidth: 1, borderColor: '#1E2A3A',
           }}>
             <Text style={{ fontSize: 48, marginBottom: 12 }}>💔</Text>
@@ -1550,7 +1550,7 @@ export default function ExerciseScreen() {
                   paddingHorizontal: 24, width: '100%', alignItems: 'center', marginBottom: 12,
                 }}
               >
-                <Text style={{ color: '#0E1117', fontWeight: '800', fontSize: 16 }}>
+                <Text style={{ color: '#F8FAFF', fontWeight: '800', fontSize: 16 }}>
                   {continueAdLoaded ? '🎥 Ver anuncio y continuar' : '⏳ Cargando anuncio...'}
                 </Text>
               </TouchableOpacity>
@@ -1559,7 +1559,7 @@ export default function ExerciseScreen() {
               onPress={() => { setShowNoHeartsModal(false); router.back(); }}
               style={{
                 borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24,
-                width: '100%', alignItems: 'center', borderWidth: 1, borderColor: '#2A3450',
+                width: '100%', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0',
               }}
             >
               <Text style={{ color: '#9BA1A6', fontSize: 14 }}>Salir del nivel</Text>
@@ -1596,16 +1596,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 8,
   },
-  exerciseCount: { fontSize: 13, color: '#8B9CC8', fontWeight: '600' },
+  exerciseCount: { fontSize: 13, color: '#64748B', fontWeight: '600' },
   hintBtn: {
-    backgroundColor: '#161B27', borderRadius: 20,
+    backgroundColor: '#FFFFFF', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 6,
-    borderWidth: 1, borderColor: '#2A3450',
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
-  hintBtnText: { fontSize: 12, color: '#FFD700', fontWeight: '600' },
+  hintBtnText: { fontSize: 12, color: '#F59E0B', fontWeight: '600' },
   exerciseContainer: { padding: 20, flex: 1 },
   questionLabel: {
-    fontSize: 12, color: '#8B9CC8', fontWeight: '700',
+    fontSize: 12, color: '#64748B', fontWeight: '700',
     marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8,
   },
   questionText: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 24, lineHeight: 30 },
@@ -1629,74 +1629,74 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD70020', borderRadius: 10, padding: 12,
     marginBottom: 16, borderWidth: 1, borderColor: '#FFD70040',
   },
-  hintText: { color: '#FFD700', fontSize: 14 },
+  hintText: { color: '#F59E0B', fontSize: 14 },
   hintAnswer: { fontWeight: '700' },
   translateInput: {
-    backgroundColor: '#161B27', borderWidth: 2, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#E2E8F0',
     borderRadius: 12, padding: 16, color: '#FFFFFF', fontSize: 16, marginBottom: 16,
   },
   inputCorrect: { borderColor: '#4ADE80', backgroundColor: '#0D2A1A' },
-  inputWrong: { borderColor: '#FF4B4B', backgroundColor: '#3A1A1A' },
+  inputWrong: { borderColor: '#EF4444', backgroundColor: '#3A1A1A' },
   feedbackText: { fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
   submitBtn: { backgroundColor: '#4ADE80', borderRadius: 12, padding: 16, alignItems: 'center' },
-  submitBtnDisabled: { backgroundColor: '#2A3450' },
+  submitBtnDisabled: { backgroundColor: '#E2E8F0' },
   submitBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   // Match pairs
-  matchHint: { fontSize: 12, color: '#8B9CC8', marginBottom: 16, fontStyle: 'italic' },
+  matchHint: { fontSize: 12, color: '#64748B', marginBottom: 16, fontStyle: 'italic' },
   matchGrid: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   matchColumn: { flex: 1, gap: 8 },
-  matchColHeader: { fontSize: 12, color: '#8B9CC8', fontWeight: '700', textAlign: 'center', marginBottom: 4 },
+  matchColHeader: { fontSize: 12, color: '#64748B', fontWeight: '700', textAlign: 'center', marginBottom: 4 },
   matchCard: {
-    backgroundColor: '#161B27', borderRadius: 10, borderWidth: 2,
-    borderColor: '#2A3450', padding: 12, alignItems: 'center',
+    backgroundColor: '#FFFFFF', borderRadius: 10, borderWidth: 2,
+    borderColor: '#E2E8F0', padding: 12, alignItems: 'center',
     minHeight: 52, justifyContent: 'center', flexDirection: 'row', gap: 4,
   },
-  matchCardSelected: { borderColor: '#1CB0F6', backgroundColor: '#0D1F2D' },
+  matchCardSelected: { borderColor: '#4F46E5', backgroundColor: '#0D1F2D' },
   matchCardConnected: { borderColor: '#4ADE80', backgroundColor: '#0D2A1A' },
-  matchCardWrong: { borderColor: '#FF4B4B', backgroundColor: '#2D0D0D' },
+  matchCardWrong: { borderColor: '#EF4444', backgroundColor: '#2D0D0D' },
   matchCardText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600', textAlign: 'center', flex: 1 },
   matchCheck: { fontSize: 14, color: '#4ADE80' },
-  matchProgress: { fontSize: 13, color: '#8B9CC8', textAlign: 'center', fontWeight: '600' },
+  matchProgress: { fontSize: 13, color: '#64748B', textAlign: 'center', fontWeight: '600' },
   // Listen & Write
   listenBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
     backgroundColor: '#1CB0F620', borderRadius: 16, padding: 20, marginBottom: 24,
     borderWidth: 2, borderColor: '#1CB0F640',
   },
-  listenBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#1CB0F6' },
+  listenBtnActive: { backgroundColor: '#1CB0F640', borderColor: '#4F46E5' },
   listenBtnEmoji: { fontSize: 32 },
-  listenBtnText: { fontSize: 16, fontWeight: '700', color: '#1CB0F6' },
+  listenBtnText: { fontSize: 16, fontWeight: '700', color: '#4F46E5' },
   // Pronunciación
   pronunciationWord: {
     fontSize: 36, fontWeight: '800', color: '#FFFFFF',
     textAlign: 'center', marginBottom: 8,
   },
   pronunciationPhonetic: {
-    fontSize: 18, color: '#1CB0F6', textAlign: 'center',
+    fontSize: 18, color: '#4F46E5', textAlign: 'center',
     marginBottom: 6, fontStyle: 'italic',
   },
   pronunciationTranslation: {
-    fontSize: 16, color: '#8B9CC8', textAlign: 'center',
+    fontSize: 16, color: '#64748B', textAlign: 'center',
     marginBottom: 20,
   },
   pronunciationExampleBox: {
-    backgroundColor: '#161B27', borderRadius: 12, padding: 16,
-    marginBottom: 20, borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16,
+    marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0',
   },
   pronunciationExampleEn: {
     fontSize: 15, color: '#FFFFFF', fontWeight: '600',
     marginBottom: 6, lineHeight: 22,
   },
   pronunciationExampleEs: {
-    fontSize: 13, color: '#8B9CC8', fontStyle: 'italic', lineHeight: 20,
+    fontSize: 13, color: '#64748B', fontStyle: 'italic', lineHeight: 20,
   },
   recordBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-    backgroundColor: '#FF4B4B20', borderRadius: 16, padding: 20, marginBottom: 12,
+    backgroundColor: '#FEE2E2', borderRadius: 16, padding: 20, marginBottom: 12,
     borderWidth: 2, borderColor: '#FF4B4B60',
   },
   recordBtnActive: {
-    backgroundColor: '#FF4B4B40', borderColor: '#FF4B4B',
+    backgroundColor: '#FECACA', borderColor: '#EF4444',
   },
   recordBtnDone: {
     backgroundColor: '#58CC0220', borderColor: '#58CC0260',
@@ -1716,7 +1716,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noMicText: { fontSize: 15, fontWeight: '700', color: '#FF9500', marginBottom: 4 },
-  noMicSubtext: { fontSize: 13, color: '#8B9CC8' },
+  noMicSubtext: { fontSize: 13, color: '#64748B' },
   pronunciationDone: {
     backgroundColor: '#58CC0220', borderRadius: 12, padding: 16,
     alignItems: 'center', marginTop: 16,
@@ -1724,59 +1724,59 @@ const styles = StyleSheet.create({
   pronunciationDoneText: { fontSize: 18, fontWeight: '700', color: '#4ADE80' },
   // Ordenar oración
   sentenceBuilderArea: {
-    minHeight: 80, backgroundColor: '#161B27', borderRadius: 12,
-    borderWidth: 2, borderColor: '#2A3450', padding: 12,
+    minHeight: 80, backgroundColor: '#FFFFFF', borderRadius: 12,
+    borderWidth: 2, borderColor: '#E2E8F0', padding: 12,
     marginBottom: 16, justifyContent: 'center',
   },
   sentencePlaceholder: {
-    color: '#6B7280', fontSize: 14, textAlign: 'center', fontStyle: 'italic',
+    color: '#64748B', fontSize: 14, textAlign: 'center', fontStyle: 'italic',
   },
   sentenceWordRow: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12,
   },
   sentenceChip: {
-    backgroundColor: '#2A3450', borderRadius: 10, paddingHorizontal: 14,
+    backgroundColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 14,
     paddingVertical: 10, borderWidth: 2, borderColor: '#3D4168',
   },
   sentenceChipSelected: {
-    backgroundColor: '#1A2A3A', borderColor: '#1CB0F6',
+    backgroundColor: '#1A2A3A', borderColor: '#4F46E5',
   },
   sentenceChipCorrect: {
     backgroundColor: '#0D2A1A', borderColor: '#4ADE80',
   },
   sentenceChipWrong: {
-    backgroundColor: '#3A1A1A', borderColor: '#FF4B4B',
+    backgroundColor: '#3A1A1A', borderColor: '#EF4444',
   },
   sentenceChipText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   sentenceDivider: {
-    height: 1, backgroundColor: '#2A3450', marginVertical: 8,
+    height: 1, backgroundColor: '#E2E8F0', marginVertical: 8,
   },
   sentenceButtonRow: {
     flexDirection: 'row', gap: 12, marginTop: 16,
   },
   resetBtn: {
-    backgroundColor: '#161B27', borderRadius: 12, padding: 16,
-    alignItems: 'center', borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16,
+    alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0',
     paddingHorizontal: 20,
   },
-  resetBtnText: { color: '#8B9CC8', fontSize: 15, fontWeight: '600' },
+  resetBtnText: { color: '#64748B', fontSize: 15, fontWeight: '600' },
   // Completar la oración
   fillSentenceBox: {
-    backgroundColor: '#161B27', borderRadius: 12, padding: 16,
-    marginBottom: 20, borderWidth: 1, borderColor: '#2A3450',
+    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16,
+    marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0',
   },
   fillSentenceText: {
     fontSize: 18, color: '#FFFFFF', lineHeight: 28, fontWeight: '500',
   },
   fillBlank: {
-    color: '#1CB0F6', fontWeight: '800', textDecorationLine: 'underline',
+    color: '#4F46E5', fontWeight: '800', textDecorationLine: 'underline',
   },
   fillSentenceTranslation: {
-    fontSize: 13, color: '#8B9CC8', marginTop: 10,
+    fontSize: 13, color: '#64748B', marginTop: 10,
     fontStyle: 'italic', lineHeight: 18,
   },
   sentenceTranslationBox: {
-    backgroundColor: '#161B27',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -1788,7 +1788,7 @@ const styles = StyleSheet.create({
     fontSize: 13, color: '#C4A8FF', fontStyle: 'italic', lineHeight: 18,
   },
   timerText: {
-    fontSize: 12, color: '#6B7280', fontVariant: ['tabular-nums'],
+    fontSize: 12, color: '#64748B', fontVariant: ['tabular-nums'],
   },
   streakToast: {
     position: 'absolute',
@@ -1818,11 +1818,11 @@ const styles = StyleSheet.create({
     textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4,
   },
   breakdownContainer: {
-    width: '100%', backgroundColor: '#161B27', borderRadius: 16,
-    padding: 16, marginVertical: 16, borderWidth: 1, borderColor: '#2A3450',
+    width: '100%', backgroundColor: '#FFFFFF', borderRadius: 16,
+    padding: 16, marginVertical: 16, borderWidth: 1, borderColor: '#E2E8F0',
   },
   breakdownTitle: {
-    fontSize: 14, color: '#8B9CC8', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase',
+    fontSize: 14, color: '#64748B', fontWeight: '700', marginBottom: 12, textTransform: 'uppercase',
   },
   breakdownRow: {
     flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 8,
@@ -1831,13 +1831,13 @@ const styles = StyleSheet.create({
     fontSize: 12, color: '#FFFFFF', width: 100,
   },
   breakdownBarBg: {
-    flex: 1, height: 8, backgroundColor: '#2A3450', borderRadius: 4, overflow: 'hidden',
+    flex: 1, height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden',
   },
   breakdownBarFill: {
     height: 8, borderRadius: 4,
   },
   breakdownPct: {
-    fontSize: 12, color: '#8B9CC8', width: 30, textAlign: 'right',
+    fontSize: 12, color: '#64748B', width: 30, textAlign: 'right',
   },
   fillOptionsGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 10,
@@ -1885,11 +1885,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   pulseRing1: {
-    borderColor: '#FF4B4B',
+    borderColor: '#EF4444',
     backgroundColor: 'transparent',
   },
   pulseRing2: {
-    borderColor: '#FF4B4B',
+    borderColor: '#EF4444',
     backgroundColor: 'transparent',
   },
   // Ícono de tipo en sub-header
@@ -1897,12 +1897,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   exerciseTypeEmoji: { fontSize: 14 },
-  exerciseTypeName: { fontSize: 11, color: '#6B7280', fontWeight: '600' },
+  exerciseTypeName: { fontSize: 11, color: '#64748B', fontWeight: '600' },
   subHeaderRight: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
   },
   streakBadge: {
-    backgroundColor: '#FF4B4B20', borderRadius: 20,
+    backgroundColor: '#FEE2E2', borderRadius: 20,
     paddingHorizontal: 10, paddingVertical: 4,
     borderWidth: 1, borderColor: '#FF4B4B60',
   },
@@ -1912,13 +1912,13 @@ const styles = StyleSheet.create({
     marginBottom: 16, borderWidth: 1.5, borderColor: '#FFD70060',
     alignItems: 'center',
   },
-  challengeBonusTitle: { fontSize: 16, fontWeight: '800', color: '#FFD700', marginBottom: 4 },
+  challengeBonusTitle: { fontSize: 16, fontWeight: '800', color: '#F59E0B', marginBottom: 4 },
   challengeBonusText: { fontSize: 13, color: '#FFD700AA', marginBottom: 10 },
   challengeBonusRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
   challengeBonusBadge: {
     backgroundColor: '#FFD70022', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: '#FFD700',
+    borderWidth: 1, borderColor: '#F59E0B',
   },
-  challengeBonusBadgeText: { fontSize: 13, color: '#FFD700', fontWeight: '700' },
+  challengeBonusBadgeText: { fontSize: 13, color: '#F59E0B', fontWeight: '700' },
 });

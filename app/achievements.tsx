@@ -127,7 +127,7 @@ export default function AchievementsScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -199,15 +199,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  backIcon: { fontSize: 22, color: '#ECEDEE' },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: '#ECEDEE' },
+  backIcon: { fontSize: 22, color: '#1E293B' },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B' },
 
   progressBox: { marginHorizontal: 16, marginBottom: 12 },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  progressLabel: { fontSize: 14, color: '#8B9CC8' },
-  progressPct: { fontSize: 14, fontWeight: '700', color: '#FFD700' },
+  progressLabel: { fontSize: 14, color: '#64748B' },
+  progressPct: { fontSize: 14, fontWeight: '700', color: '#F59E0B' },
   progressTrack: { height: 8, backgroundColor: '#2A2D2E', borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 4 },
+  progressFill: { height: '100%', backgroundColor: '#F59E0B', borderRadius: 4 },
 
   filterWrap: { marginBottom: 8 },
   filterList: { paddingHorizontal: 16, gap: 8 },
@@ -216,8 +216,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A2D2E', borderWidth: 1, borderColor: '#3A3D3E',
   },
   chipActive: { backgroundColor: '#38BDF8', borderColor: '#38BDF8' },
-  chipText: { fontSize: 13, color: '#8B9CC8', fontWeight: '500' },
-  chipTextActive: { color: '#F0F4FF', fontWeight: '700' },
+  chipText: { fontSize: 13, color: '#64748B', fontWeight: '500' },
+  chipTextActive: { color: '#1E293B', fontWeight: '700' },
 
   list: { paddingHorizontal: 16, paddingBottom: 32, gap: 10 },
 
@@ -235,9 +235,9 @@ const styles = StyleSheet.create({
   emojiBoxLocked: { borderColor: '#3A3D3E' },
   emoji: { fontSize: 26 },
   info: { flex: 1 },
-  title: { fontSize: 15, fontWeight: '700', color: '#ECEDEE', marginBottom: 2 },
+  title: { fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
   titleLocked: { color: '#687076' },
-  desc: { fontSize: 12, color: '#8B9CC8', lineHeight: 16 },
+  desc: { fontSize: 12, color: '#64748B', lineHeight: 16 },
   descLocked: { color: '#4A4D4E' },
   date: { fontSize: 11, color: '#38BDF8', marginTop: 4, fontWeight: '600' },
   shareBtn: {

@@ -43,8 +43,8 @@ function BarChart({ data, maxValue, height = 140, unit = '', isDark }: BarChartP
   const chartW = 320;
   const chartH = height;
   const barW = Math.floor((chartW - 16) / data.length) - 6;
-  const textColor = isDark ? '#8B9CC8' : '#687076';
-  const lineColor = isDark ? '#2A3450' : '#E5E7EB';
+  const textColor = isDark ? '#64748B' : '#687076';
+  const lineColor = isDark ? '#E2E8F0' : '#E5E7EB';
 
   return (
     <Svg width={chartW} height={chartH + 32} viewBox={`0 0 ${chartW} ${chartH + 32}`}>
@@ -125,7 +125,7 @@ const cardStyles = StyleSheet.create({
   },
   emoji: { fontSize: 24, marginBottom: 4 },
   value: { fontSize: 20, fontWeight: '800', marginBottom: 2 },
-  label: { fontSize: 11, color: '#8B9CC8', textAlign: 'center' },
+  label: { fontSize: 11, color: '#64748B', textAlign: 'center' },
 });
 
 // ─── Pantalla Principal ───────────────────────────────────────────────────────
@@ -240,21 +240,21 @@ export default function StatsScreen() {
     color: '#FBBF24',
   }));
 
-  const textPrimary = isDark ? '#ECEDEE' : '#11181C';
-  const textMuted = isDark ? '#8B9CC8' : '#687076';
-  const cardBg = isDark ? '#161B27' : '#F5F5F5';
-  const borderColor = isDark ? '#2A3450' : '#E5E7EB';
+  const textPrimary = isDark ? '#1E293B' : '#1E293B';
+  const textMuted = isDark ? '#64748B' : '#687076';
+  const cardBg = isDark ? '#FFFFFF' : '#F5F5F5';
+  const borderColor = isDark ? '#E2E8F0' : '#E5E7EB';
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: '#0E1117', paddingTop: insets.top }]}>
+      <View style={[styles.container, { backgroundColor: '#F8FAFF', paddingTop: insets.top }]}>
         <ActivityIndicator color="#1CB0F6" size="large" style={{ marginTop: 80 }} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: '#0E1117', paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: '#F8FAFF', paddingTop: insets.top }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -345,7 +345,7 @@ export default function StatsScreen() {
           <View style={[styles.divider, { backgroundColor: borderColor }]} />
           <View style={styles.dataRow}>
             <Text style={[styles.dataLabel, { color: textMuted }]}>Palabras con errores</Text>
-            <Text style={[styles.dataValue, { color: '#FF4B4B' }]}>{totalErrors} palabras</Text>
+            <Text style={[styles.dataValue, { color: '#EF4444' }]}>{totalErrors} palabras</Text>
           </View>
           <View style={[styles.divider, { backgroundColor: borderColor }]} />
           <View style={styles.dataRow}>

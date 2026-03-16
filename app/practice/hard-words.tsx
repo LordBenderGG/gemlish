@@ -121,7 +121,7 @@ function QuestionCard({ pw, questionType, onAnswer, questionNumber, total }: Que
     }
   }, [questionType, pw.word]);
 
-  const failBadgeColor = pw.failCount >= 5 ? '#FF4B4B' : pw.failCount >= 3 ? '#FF9600' : '#38BDF8';
+  const failBadgeColor = pw.failCount >= 5 ? '#EF4444' : pw.failCount >= 3 ? '#FF9600' : '#38BDF8';
 
   return (
     <Animated.View style={[styles.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
@@ -170,7 +170,7 @@ function QuestionCard({ pw, questionType, onAnswer, questionNumber, total }: Que
       {/* Feedback */}
       {submitted && (
         <View style={[styles.feedbackBox, isCorrect ? styles.feedbackCorrect : styles.feedbackWrong]}>
-          <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#FF4B4B' }]}>
+          <Text style={[styles.feedbackText, { color: isCorrect ? '#4ADE80' : '#EF4444' }]}>
             {isCorrect ? '✅ ¡Correcto!' : `❌ Era: "${questionType === 'translate-to-es' ? pw.word.translation : pw.word.word}"`}
           </Text>
           {!isCorrect && pw.word.example && (
@@ -220,9 +220,9 @@ function RoundResult({
           <Text style={styles.resultStatValue}>{mastered.length}</Text>
           <Text style={[styles.resultStatLabel, { color: '#4ADE80' }]}>Dominadas</Text>
         </View>
-        <View style={[styles.resultStat, { borderColor: '#FF4B4B40' }]}>
+        <View style={[styles.resultStat, { borderColor: '#FECACA' }]}>
           <Text style={styles.resultStatValue}>{stillHard.length}</Text>
-          <Text style={[styles.resultStatLabel, { color: '#FF4B4B' }]}>Pendientes</Text>
+          <Text style={[styles.resultStatLabel, { color: '#EF4444' }]}>Pendientes</Text>
         </View>
       </View>
 
@@ -378,8 +378,8 @@ export default function HardWordsPracticeScreen() {
 
   if (practiceWords.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🌟</Text>
           <Text style={styles.emptyTitle}>¡Sin palabras difíciles!</Text>
@@ -393,8 +393,8 @@ export default function HardWordsPracticeScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#0E1117' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -458,38 +458,38 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#2A3450',
+    borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
   closeBtn: {
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#2A3450', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center',
   },
-  closeBtnText: { color: '#8B9CC8', fontSize: 16, fontWeight: '700' },
+  closeBtnText: { color: '#64748B', fontSize: 16, fontWeight: '700' },
   headerCenter: { alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '800', color: '#FFFFFF' },
-  headerSubtitle: { fontSize: 12, color: '#8B9CC8', marginTop: 2 },
-  progressBarBg: { height: 6, backgroundColor: '#2A3450' },
-  progressBarFill: { height: 6, backgroundColor: '#FF4B4B', borderRadius: 3 },
+  headerSubtitle: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  progressBarBg: { height: 6, backgroundColor: '#E2E8F0' },
+  progressBarFill: { height: 6, backgroundColor: '#EF4444', borderRadius: 3 },
   content: { flex: 1, padding: 16, justifyContent: 'center' },
   // Tarjeta de pregunta
   card: {
-    backgroundColor: '#161B27', borderRadius: 20, padding: 20,
-    borderWidth: 1.5, borderColor: '#2A3450', gap: 14,
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20,
+    borderWidth: 1.5, borderColor: '#E2E8F0', gap: 14,
   },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressText: { fontSize: 13, color: '#6B7280', fontWeight: '600' },
+  progressText: { fontSize: 13, color: '#64748B', fontWeight: '600' },
   failBadge: {
     borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1,
   },
   failBadgeText: { fontSize: 11, fontWeight: '700' },
-  questionLabel: { fontSize: 14, color: '#8B9CC8', fontWeight: '600' },
+  questionLabel: { fontSize: 14, color: '#64748B', fontWeight: '600' },
   promptBox: {
     backgroundColor: '#0F1117', borderRadius: 14, padding: 16,
-    alignItems: 'center', borderWidth: 1, borderColor: '#2A3450',
+    alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0',
   },
   promptText: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' },
-  promptPhonetic: { fontSize: 13, color: '#8B9CC8', marginTop: 4, fontStyle: 'italic' },
+  promptPhonetic: { fontSize: 13, color: '#64748B', marginTop: 4, fontStyle: 'italic' },
   listenBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#1CB0F620', borderRadius: 14, paddingVertical: 14,
@@ -497,26 +497,26 @@ const styles = StyleSheet.create({
   },
   listenBtnActive: { backgroundColor: '#FF960020', borderColor: '#FF960040' },
   listenBtnEmoji: { fontSize: 20 },
-  listenBtnText: { fontSize: 15, color: '#1CB0F6', fontWeight: '700' },
+  listenBtnText: { fontSize: 15, color: '#4F46E5', fontWeight: '700' },
   input: {
     backgroundColor: '#0F1117', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 18, color: '#FFFFFF', borderWidth: 1.5, borderColor: '#2A3450',
+    fontSize: 18, color: '#FFFFFF', borderWidth: 1.5, borderColor: '#E2E8F0',
     fontWeight: '600',
   },
   inputCorrect: { borderColor: '#4ADE80', backgroundColor: '#58CC0210' },
-  inputWrong: { borderColor: '#FF4B4B', backgroundColor: '#FF4B4B10' },
+  inputWrong: { borderColor: '#EF4444', backgroundColor: '#FF4B4B10' },
   feedbackBox: {
     borderRadius: 14, padding: 14, borderWidth: 1, gap: 6,
   },
   feedbackCorrect: { backgroundColor: '#58CC0210', borderColor: '#58CC0240' },
-  feedbackWrong: { backgroundColor: '#FF4B4B10', borderColor: '#FF4B4B40' },
+  feedbackWrong: { backgroundColor: '#FF4B4B10', borderColor: '#FECACA' },
   feedbackText: { fontSize: 15, fontWeight: '800', textAlign: 'center' },
-  feedbackExample: { fontSize: 12, color: '#8B9CC8', textAlign: 'center', fontStyle: 'italic', lineHeight: 18 },
+  feedbackExample: { fontSize: 12, color: '#64748B', textAlign: 'center', fontStyle: 'italic', lineHeight: 18 },
   submitBtn: {
-    backgroundColor: '#FF4B4B', borderRadius: 14, paddingVertical: 15,
+    backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 15,
     alignItems: 'center',
   },
-  submitBtnDisabled: { backgroundColor: '#2A3450' },
+  submitBtnDisabled: { backgroundColor: '#E2E8F0' },
   submitBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   // Resultado de ronda
   resultContainer: { alignItems: 'center', gap: 20 },
@@ -524,40 +524,40 @@ const styles = StyleSheet.create({
   resultTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF' },
   resultStats: { flexDirection: 'row', gap: 16 },
   resultStat: {
-    flex: 1, backgroundColor: '#161B27', borderRadius: 16, padding: 16,
+    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16,
     alignItems: 'center', borderWidth: 1.5,
   },
   resultStatValue: { fontSize: 32, fontWeight: '800', color: '#FFFFFF' },
   resultStatLabel: { fontSize: 13, fontWeight: '700', marginTop: 4 },
   hardListBox: {
-    width: '100%', backgroundColor: '#161B27', borderRadius: 16, padding: 16,
+    width: '100%', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16,
     borderWidth: 1, borderColor: '#FF4B4B30', gap: 8,
   },
-  hardListTitle: { fontSize: 13, color: '#8B9CC8', fontWeight: '600', marginBottom: 4 },
+  hardListTitle: { fontSize: 13, color: '#64748B', fontWeight: '600', marginBottom: 4 },
   hardListItem: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#2A3450',
+    paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
   hardListEn: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  hardListEs: { fontSize: 13, color: '#8B9CC8' },
+  hardListEs: { fontSize: 13, color: '#64748B' },
   resultBtns: { width: '100%', gap: 10 },
   continueBtn: {
-    backgroundColor: '#FF4B4B', borderRadius: 14, paddingVertical: 15,
+    backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 15,
     alignItems: 'center',
   },
   continueBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   finishBtn: {
-    backgroundColor: '#2A3450', borderRadius: 14, paddingVertical: 15,
-    alignItems: 'center', borderWidth: 1, borderColor: '#3D4F6E',
+    backgroundColor: '#E2E8F0', borderRadius: 14, paddingVertical: 15,
+    alignItems: 'center', borderWidth: 1, borderColor: '#94A3B8',
   },
-  finishBtnText: { color: '#8B9CC8', fontSize: 16, fontWeight: '700' },
+  finishBtnText: { color: '#64748B', fontSize: 16, fontWeight: '700' },
   // Pantalla vacía
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32, gap: 16 },
   emptyEmoji: { fontSize: 64 },
   emptyTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' },
-  emptySubtitle: { fontSize: 14, color: '#8B9CC8', textAlign: 'center', lineHeight: 22 },
+  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22 },
   backBtn: {
-    backgroundColor: '#2A3450', borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12,
+    backgroundColor: '#E2E8F0', borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12,
     marginTop: 8,
   },
   backBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
