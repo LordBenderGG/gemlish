@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeContext } from '@/lib/theme-provider';
 import { useNotifications } from '@/hooks/use-notifications';
 import * as Notifications from 'expo-notifications';
 import { useSoundSettings } from '@/lib/sound-settings';
@@ -113,9 +112,6 @@ export default function SettingsScreen() {
   const t = useThemeStyles();
   const { settings, loading, permissionGranted, enableNotifications, disableNotifications, updateTime } = useNotifications();
   const { soundEnabled, setSoundEnabled } = useSoundSettings();
-  const { colorScheme, setColorScheme } = useThemeContext();
-  const isDark = colorScheme === 'dark';
-
   const openSystemSettings = useCallback(() => {
     if (Platform.OS === 'ios') {
       Linking.openURL('app-settings:');
@@ -165,7 +161,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -198,28 +194,8 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* ── Apariencia ──────────────────────────────────────────────────────────────────────────────────── */}
-        {/* Banner AdMob — encima de Apariencia */}
+        {/* Banner AdMob */}
         <AdBanner style={{ marginVertical: 4 }} />
-
-        <Text style={styles.sectionTitle}>🌙 Apariencia</Text>
-        <View style={styles.card}>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingEmoji}>{isDark ? '🌙' : '☀️'}</Text>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Modo Nocturno</Text>
-              <Text style={styles.settingSub}>
-                {isDark ? 'Fondo oscuro activo' : 'Fondo claro activo'}
-              </Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={(val) => setColorScheme(val ? 'dark' : 'light')}
-              trackColor={{ false: '#E2E8F0', true: '#6366F1' }}
-              thumbColor={isDark ? '#4F46E5' : '#94A3B8'}
-            />
-          </View>
-        </View>
 
         {/* ── Notificaciones ────────────────────────────────────────────────────────────────────────────────────── */}
         <Text style={styles.sectionTitle}>🔔 Recordatorio de Racha</Text>  {/* Banner informativo */}

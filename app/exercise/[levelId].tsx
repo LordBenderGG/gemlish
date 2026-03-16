@@ -107,12 +107,12 @@ function MultipleChoiceView({
         {exercise.options.map((opt, idx) => {
           let bg = '#FFFFFF';
           let border = '#E2E8F0';
-          let textColor = '#FFFFFF';
+          let textColor = '#1E293B';
           if (answered) {
-            if (idx === exercise.correct) { bg = '#0D2A1A'; border = '#4ADE80'; textColor = '#4ADE80'; }
-            else if (idx === selected) { bg = '#3A1A1A'; border = '#EF4444'; textColor = '#EF4444'; }
+            if (idx === exercise.correct) { bg = '#F0FDF4'; border = '#4ADE80'; textColor = '#166534'; }
+            else if (idx === selected) { bg = '#FEF2F2'; border = '#EF4444'; textColor = '#991B1B'; }
           } else if (selected === idx) {
-            bg = '#1A2A3A'; border = '#4F46E5';
+            bg = '#EFF6FF'; border = '#4F46E5'; textColor = '#3730A3';
           }
           return (
             <TouchableOpacity
@@ -617,12 +617,12 @@ function FillBlankView({
         {exercise.options.map((opt, idx) => {
           let bg = '#FFFFFF';
           let border = '#E2E8F0';
-          let textColor = '#FFFFFF';
+          let textColor = '#1E293B';
           if (answered) {
-            if (idx === exercise.correct) { bg = '#0D2A1A'; border = '#4ADE80'; textColor = '#4ADE80'; }
-            else if (idx === selected) { bg = '#3A1A1A'; border = '#EF4444'; textColor = '#EF4444'; }
+            if (idx === exercise.correct) { bg = '#F0FDF4'; border = '#4ADE80'; textColor = '#166534'; }
+            else if (idx === selected) { bg = '#FEF2F2'; border = '#EF4444'; textColor = '#991B1B'; }
           } else if (selected === idx) {
-            bg = '#1A2A3A'; border = '#4F46E5';
+            bg = '#EFF6FF'; border = '#4F46E5'; textColor = '#3730A3';
           }
           return (
             <TouchableOpacity
@@ -1216,7 +1216,7 @@ export default function ExerciseScreen() {
 
   if (!level) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
         <Text style={{ color: t.text, textAlign: 'center', marginTop: 40 }}>Nivel no encontrado</Text>
       </View>
     );
@@ -1266,7 +1266,7 @@ export default function ExerciseScreen() {
     }
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
         <StatusBar barStyle="dark-content" />
         <LinearGradient
           colors={['#0C1A2E', '#F8FAFF', '#F8FAFF']}
@@ -1377,7 +1377,7 @@ export default function ExerciseScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* Header con gradiente */}
@@ -1582,12 +1582,12 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
     justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.10)',
   },
-  backBtnText: { color: '#E0E0FF', fontSize: 16, fontWeight: '700' },
-  progressBarBg: { flex: 1, height: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' },
+  backBtnText: { color: '#1E293B', fontSize: 16, fontWeight: '700' },
+  progressBarBg: { flex: 1, height: 10, backgroundColor: '#E2E8F0', borderRadius: 5, overflow: 'hidden' },
   progressBarFill: { height: 10, borderRadius: 5 },
   heartsRow: { flexDirection: 'row', gap: 2 },
   heartIcon: { fontSize: 14 },
@@ -1608,7 +1608,7 @@ const styles = StyleSheet.create({
     fontSize: 12, color: '#64748B', fontWeight: '700',
     marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8,
   },
-  questionText: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 24, lineHeight: 30 },
+  questionText: { fontSize: 22, fontWeight: '700', color: '#1E293B', marginBottom: 24, lineHeight: 30 },
   optionsGrid: { gap: 10 },
   optionBtn: {
     flexDirection: 'row', alignItems: 'center',
@@ -1633,10 +1633,10 @@ const styles = StyleSheet.create({
   hintAnswer: { fontWeight: '700' },
   translateInput: {
     backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#E2E8F0',
-    borderRadius: 12, padding: 16, color: '#FFFFFF', fontSize: 16, marginBottom: 16,
+    borderRadius: 12, padding: 16, color: '#1E293B', fontSize: 16, marginBottom: 16,
   },
-  inputCorrect: { borderColor: '#4ADE80', backgroundColor: '#0D2A1A' },
-  inputWrong: { borderColor: '#EF4444', backgroundColor: '#3A1A1A' },
+  inputCorrect: { borderColor: '#4ADE80', backgroundColor: '#F0FDF4' },
+  inputWrong: { borderColor: '#EF4444', backgroundColor: '#FEF2F2' },
   feedbackText: { fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
   submitBtn: { backgroundColor: '#4ADE80', borderRadius: 12, padding: 16, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: '#E2E8F0' },
@@ -1651,10 +1651,10 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0', padding: 12, alignItems: 'center',
     minHeight: 52, justifyContent: 'center', flexDirection: 'row', gap: 4,
   },
-  matchCardSelected: { borderColor: '#4F46E5', backgroundColor: '#0D1F2D' },
-  matchCardConnected: { borderColor: '#4ADE80', backgroundColor: '#0D2A1A' },
-  matchCardWrong: { borderColor: '#EF4444', backgroundColor: '#2D0D0D' },
-  matchCardText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600', textAlign: 'center', flex: 1 },
+  matchCardSelected: { borderColor: '#4F46E5', backgroundColor: '#EFF6FF' },
+  matchCardConnected: { borderColor: '#4ADE80', backgroundColor: '#F0FDF4' },
+  matchCardWrong: { borderColor: '#EF4444', backgroundColor: '#FEF2F2' },
+  matchCardText: { color: '#1E293B', fontSize: 13, fontWeight: '600', textAlign: 'center', flex: 1 },
   matchCheck: { fontSize: 14, color: '#4ADE80' },
   matchProgress: { fontSize: 13, color: '#64748B', textAlign: 'center', fontWeight: '600' },
   // Listen & Write
@@ -1735,19 +1735,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12,
   },
   sentenceChip: {
-    backgroundColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 14,
-    paddingVertical: 10, borderWidth: 2, borderColor: '#3D4168',
+    backgroundColor: '#F1F5F9', borderRadius: 10, paddingHorizontal: 14,
+    paddingVertical: 10, borderWidth: 2, borderColor: '#CBD5E1',
   },
   sentenceChipSelected: {
-    backgroundColor: '#1A2A3A', borderColor: '#4F46E5',
+    backgroundColor: '#EFF6FF', borderColor: '#4F46E5',
   },
   sentenceChipCorrect: {
-    backgroundColor: '#0D2A1A', borderColor: '#4ADE80',
+    backgroundColor: '#F0FDF4', borderColor: '#4ADE80',
   },
   sentenceChipWrong: {
-    backgroundColor: '#3A1A1A', borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2', borderColor: '#EF4444',
   },
-  sentenceChipText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  sentenceChipText: { color: '#1E293B', fontSize: 15, fontWeight: '600' },
   sentenceDivider: {
     height: 1, backgroundColor: '#E2E8F0', marginVertical: 8,
   },
@@ -1766,7 +1766,7 @@ const styles = StyleSheet.create({
     marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0',
   },
   fillSentenceText: {
-    fontSize: 18, color: '#FFFFFF', lineHeight: 28, fontWeight: '500',
+    fontSize: 18, color: '#1E293B', lineHeight: 28, fontWeight: '500',
   },
   fillBlank: {
     color: '#4F46E5', fontWeight: '800', textDecorationLine: 'underline',

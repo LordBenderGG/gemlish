@@ -409,7 +409,7 @@ export default function DailyScreen() {
             }}
             activeOpacity={0.8}
           >
-            <Text style={styles.completeBtnText}>
+            <Text style={[styles.completeBtnText, !allLearned && styles.completeBtnTextDisabled]}>
               {allLearned ? '🧠 Hacer Mini Quiz (5 preguntas)' : `Faltan ${30 - learnedCount} palabras`}
             </Text>
           </TouchableOpacity>
@@ -565,6 +565,7 @@ const styles = StyleSheet.create({
   },
   completeBtnDisabled: { backgroundColor: '#E2E8F0' },
   completeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  completeBtnTextDisabled: { color: '#94A3B8', fontSize: 16, fontWeight: '700' },
   // Done
   doneContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   doneEmoji: { fontSize: 72, marginBottom: 16 },

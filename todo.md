@@ -400,3 +400,9 @@
 - [x] Logros: corregir al tema claro (fondo blanco, texto negro)
 - [x] Settings: mover banner de perfil arriba de la sección Apariencia
 - [x] Modo nocturno: implementar completamente (toggle funcional con Switch)
+
+## v1.27 — Correcciones de visibilidad de texto
+- [x] Eliminar toggle de modo nocturno de Settings (forzar tema claro permanente)
+- [x] Corregir tarjetas de niveles bloqueados en index.tsx (texto visible sobre fondo gris)
+- [x] Corregir opciones de respuesta invisibles en exercise/[levelId].tsx
+- [x] Corregir botón "Faltan N palabras" en daily.tsx (texto visible sobre fondo gris)
