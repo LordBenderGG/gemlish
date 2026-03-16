@@ -406,3 +406,9 @@
 - [x] Corregir tarjetas de niveles bloqueados en index.tsx (texto visible sobre fondo gris)
 - [x] Corregir opciones de respuesta invisibles en exercise/[levelId].tsx
 - [x] Corregir botón "Faltan N palabras" en daily.tsx (texto visible sobre fondo gris)
+
+## v1.28 — Forzar tema claro permanente
+- [x] ThemeProvider: forzar siempre 'light', ignorar AsyncStorage y sistema
+- [x] app.config.ts: userInterfaceStyle cambiado a 'light'
+- [x] Tab bar: colores hardcodeados en claro, eliminada lógica isDark
+- [x] Limpiar AsyncStorage de cualquier valor de tema oscuro guardado al iniciar

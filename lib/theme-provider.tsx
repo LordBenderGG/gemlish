@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { Appearance, View } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
 const THEME_KEY = "@gemlish_theme_v3";
-const DEFAULT_SCHEME: ColorScheme = "light"; // MODO CLARO por defecto
+// Siempre modo claro — el modo oscuro fue eliminado de la app
+const FORCED_SCHEME: ColorScheme = "light";
 
 type ThemeContextValue = {
   colorScheme: ColorScheme;
@@ -18,67 +19,56 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(DEFAULT_SCHEME);
-  const [isManual, setIsManual] = useState(false);
-
-  const applyScheme = useCallback((scheme: ColorScheme) => {
-    nativewindColorScheme.set(scheme);
-    Appearance.setColorScheme?.(scheme);
+  const applyLight = useCallback(() => {
+    nativewindColorScheme.set("light");
+    Appearance.setColorScheme?.("light");
     if (typeof document !== "undefined") {
       const root = document.documentElement;
-      root.dataset.theme = scheme;
-      root.classList.toggle("dark", scheme === "dark");
-      const palette = SchemeColors[scheme];
+      root.dataset.theme = "light";
+      root.classList.remove("dark");
+      const palette = SchemeColors["light"];
       Object.entries(palette).forEach(([token, value]) => {
         root.style.setProperty(`--color-${token}`, value);
       });
     }
   }, []);
 
-  // Cargar preferencia guardada al iniciar
+  // Al iniciar: borrar cualquier tema oscuro guardado y forzar claro
   useEffect(() => {
-    AsyncStorage.getItem(THEME_KEY).then((saved) => {
-      const scheme: ColorScheme = (saved === "dark" || saved === "light") ? saved : DEFAULT_SCHEME;
-      setColorSchemeState(scheme);
-      setIsManual(!!saved);
-      applyScheme(scheme);
-    });
-  }, [applyScheme]);
+    AsyncStorage.removeItem(THEME_KEY);
+    applyLight();
+  }, [applyLight]);
 
-  const setColorScheme = useCallback(async (scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    setIsManual(true);
-    applyScheme(scheme);
-    await AsyncStorage.setItem(THEME_KEY, scheme);
-  }, [applyScheme]);
+  // setColorScheme y resetToSystem son no-ops: siempre claro
+  const setColorScheme = useCallback(async (_scheme: ColorScheme) => {
+    applyLight();
+    await AsyncStorage.removeItem(THEME_KEY);
+  }, [applyLight]);
 
   const resetToSystem = useCallback(async () => {
-    const system = (Appearance.getColorScheme() as ColorScheme) ?? DEFAULT_SCHEME;
-    setColorSchemeState(system);
-    setIsManual(false);
-    applyScheme(system);
+    applyLight();
     await AsyncStorage.removeItem(THEME_KEY);
-  }, [applyScheme]);
+  }, [applyLight]);
 
   const themeVariables = useMemo(
     () =>
       vars({
-        "color-primary": SchemeColors[colorScheme].primary,
-        "color-background": SchemeColors[colorScheme].background,
-        "color-surface": SchemeColors[colorScheme].surface,
-        "color-foreground": SchemeColors[colorScheme].foreground,
-        "color-muted": SchemeColors[colorScheme].muted,
-        "color-border": SchemeColors[colorScheme].border,
-        "color-success": SchemeColors[colorScheme].success,
-        "color-warning": SchemeColors[colorScheme].warning,
-        "color-error": SchemeColors[colorScheme].error,
+        "color-primary": SchemeColors["light"].primary,
+        "color-background": SchemeColors["light"].background,
+        "color-surface": SchemeColors["light"].surface,
+        "color-foreground": SchemeColors["light"].foreground,
+        "color-muted": SchemeColors["light"].muted,
+        "color-border": SchemeColors["light"].border,
+        "color-success": SchemeColors["light"].success,
+        "color-warning": SchemeColors["light"].warning,
+        "color-error": SchemeColors["light"].error,
       }),
-    [colorScheme],
+    [],
   );
 
   const value = useMemo(
-    () => ({ colorScheme, setColorScheme, isManual, resetToSystem }),
-    [colorScheme, setColorScheme, isManual, resetToSystem],
+    () => ({ colorScheme: FORCED_SCHEME, setColorScheme, isManual: false, resetToSystem }),
+    [setColorScheme, resetToSystem],
   );
 
   return (

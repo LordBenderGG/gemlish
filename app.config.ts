@@ -26,7 +26,7 @@ const config: ExpoConfig = {
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
-  userInterfaceStyle: "dark",
+  userInterfaceStyle: "light",
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
