@@ -412,3 +412,7 @@
 - [x] app.config.ts: userInterfaceStyle cambiado a 'light'
 - [x] Tab bar: colores hardcodeados en claro, eliminada lógica isDark
 - [x] Limpiar AsyncStorage de cualquier valor de tema oscuro guardado al iniciar
+
+## v1.29 — Correcciones de build Android
+- [x] minSdkVersion ya estaba en 24 en app.config.ts (confirmado)
+- [x] NODE_ENV agregado explícitamente en todos los perfiles de eas.json (development, preview, production)
