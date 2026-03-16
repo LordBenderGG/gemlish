@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  Dimensions, Animated, StatusBar, FlatList,
+  Dimensions, Animated, StatusBar, FlatList, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -167,15 +167,23 @@ function SlideView({ slide, isActive }: { slide: Slide; isActive: boolean }) {
 
   return (
     <View style={[styles.slide, { width: SCREEN_W }]}>
-      {/* Emoji hero con gradiente */}
+      {/* Icono hero — logo real en slide 1, emoji en el resto */}
       <Animated.View style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <LinearGradient
-          colors={slide.gradientColors}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={styles.emojiContainer}
-        >
-          <Text style={styles.slideEmoji}>{slide.emoji}</Text>
-        </LinearGradient>
+        {slide.id === '1' ? (
+          <Image
+            source={require('@/assets/images/icon.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <LinearGradient
+            colors={slide.gradientColors}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={styles.emojiContainer}
+          >
+            <Text style={styles.slideEmoji}>{slide.emoji}</Text>
+          </LinearGradient>
+        )}
       </Animated.View>
 
       <Animated.Text style={[styles.slideTitle, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
@@ -371,6 +379,12 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 28,
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 28,
     marginBottom: 28,
   },
   slideEmoji: { fontSize: 56 },

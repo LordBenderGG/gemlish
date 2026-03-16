@@ -155,12 +155,7 @@ function StatsHeader({ username, gems, xp, streak }: {
   const timeGreeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
 
   return (
-    <LinearGradient
-      colors={['#4F46E5', '#6366F1', '#F8FAFF']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.headerWrapper}
-    >
+    <View style={styles.headerWrapper}>
       <View style={styles.header}>
         {/* Izquierda: saludo + nombre + XP */}
         <View style={styles.headerLeft}>
@@ -173,28 +168,18 @@ function StatsHeader({ username, gems, xp, streak }: {
         </View>
         {/* Derecha: gemas y racha */}
         <View style={styles.headerRight}>
-          <LinearGradient
-            colors={['#DBEAFE', '#BFDBFE']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.statPillGradient}
-          >
+          <View style={[styles.statPillGradient, { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE' }]}>
             <Text style={styles.statPillEmoji}>💎</Text>
-            <Text style={[styles.statPillValue, { color: '#38BDF8' }]}>{gems}</Text>
-          </LinearGradient>
-          <LinearGradient
-            colors={streak >= 3 ? ['#FEF3C7', '#FDE68A'] : ['#EFF6FF', '#FFFFFF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.statPillGradient}
-          >
+            <Text style={[styles.statPillValue, { color: '#0EA5E9' }]}>{gems}</Text>
+          </View>
+          <View style={[styles.statPillGradient, { backgroundColor: streak >= 3 ? '#FEF3C7' : '#F8FAFF', borderWidth: 1, borderColor: streak >= 3 ? '#FDE68A' : '#E2E8F0' }]}>
             <FireAnimation streak={streak} />
-            <Text style={[styles.statPillValue, { color: streak >= 3 ? '#FBBF24' : '#1E293B' }]}>{streak}</Text>
-          </LinearGradient>
+            <Text style={[styles.statPillValue, { color: streak >= 3 ? '#D97706' : '#64748B' }]}>{streak}</Text>
+          </View>
         </View>
       </View>
       <OfflineBadge />
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -506,7 +491,7 @@ export default function LevelsScreen() {
         return (
           <View style={styles.progressWidget}>
             <LinearGradient
-              colors={['#EFF6FF', '#DBEAFE', '#0A1E40']}
+              colors={['#4F46E5', '#6366F1', '#818CF8']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.progressWidgetGradient}
@@ -608,10 +593,10 @@ export default function LevelsScreen() {
         <Text style={styles.practiceSectionLabel}>MODOS DE PRÁCTICA</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.practiceRow}>
           {[
-            { emoji: '⚡', title: 'Repaso', colors: ['#0A2040', '#1A3A6A'] as [string,string], accent: '#38BDF8', route: '/practice/quick-review' },
-            { emoji: '🎧', title: 'Escucha', colors: ['#0A2A14', '#1A4A2A'] as [string,string], accent: '#4ADE80', route: '/practice/listen-mode' },
-            { emoji: '📝', title: 'Ordenar', colors: ['#2A1A00', '#4A3000'] as [string,string], accent: '#FBBF24', route: '/practice/order-mode' },
-            { emoji: '🔥', title: 'Difíciles', colors: ['#2A0808', '#4A1010'] as [string,string], accent: '#F87171', route: '/practice/hard-words' },
+            { emoji: '⚡', title: 'Repaso', colors: ['#EFF6FF', '#DBEAFE'] as [string,string], accent: '#3B82F6', route: '/practice/quick-review' },
+            { emoji: '🎧', title: 'Escucha', colors: ['#F0FDF4', '#DCFCE7'] as [string,string], accent: '#16A34A', route: '/practice/listen-mode' },
+            { emoji: '📝', title: 'Ordenar', colors: ['#FFFBEB', '#FEF3C7'] as [string,string], accent: '#D97706', route: '/practice/order-mode' },
+            { emoji: '🔥', title: 'Difíciles', colors: ['#FFF1F2', '#FFE4E6'] as [string,string], accent: '#E11D48', route: '/practice/hard-words' },
           ].map((mode) => (
             <TouchableOpacity
               key={mode.title}
@@ -623,7 +608,7 @@ export default function LevelsScreen() {
                 colors={mode.colors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.practiceChip}
+                style={[styles.practiceChip, { borderWidth: 1, borderColor: mode.accent + '40' }]}
               >
                 <Text style={styles.practiceChipEmoji}>{mode.emoji}</Text>
                 <Text style={[styles.practiceChipTitle, { color: mode.accent }]}>{mode.title}</Text>
@@ -700,6 +685,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
@@ -711,7 +701,7 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flex: 1 },
   greetingTime: { fontSize: 12, fontWeight: '500', color: '#64748B', letterSpacing: 0.2 },
-  greetingName: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginTop: 1, letterSpacing: -0.4 },
+  greetingName: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginTop: 1, letterSpacing: -0.4, flexShrink: 1 },
   xpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
   xpStar: { fontSize: 12 },
   xpAmount: { fontSize: 13, fontWeight: '700', color: '#4ADE80', marginLeft: 4 },
@@ -947,7 +937,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   practiceChipEmoji: { fontSize: 16 },
-  practiceChipTitle: { fontSize: 13, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.1 },
+  practiceChipTitle: { fontSize: 13, fontWeight: '800', letterSpacing: -0.1 },
   // Legacy grid styles (kept for compat)
   practiceSectionTitle: { fontSize: 12, fontWeight: '700', color: '#6B7280', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 },
   practiceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -1239,8 +1229,8 @@ const styles = StyleSheet.create({
   progressWidget: {
     marginHorizontal: 12, marginTop: 10, marginBottom: 4,
     borderRadius: 20, overflow: 'hidden',
-    shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
+    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 10, elevation: 6,
   },
   progressWidgetGradient: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 },
   progressWidgetTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },

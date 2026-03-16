@@ -198,27 +198,20 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* ── Modo Nocturno ─────────────────────────────────────────────────────────────────── */}
+        {/* ── Apariencia ──────────────────────────────────────────────────────────────────────────────────── */}
         <Text style={styles.sectionTitle}>🌙 Apariencia</Text>
         <View style={styles.card}>
           <View style={styles.settingRow}>
-            <Text style={styles.settingEmoji}>{isDark ? '🌙' : '☀️'}</Text>
+            <Text style={styles.settingEmoji}>☀️</Text>
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Modo Nocturno</Text>
-              <Text style={styles.settingSub}>
-                {isDark ? 'Fondo oscuro activo' : 'Fondo claro activo'}
-              </Text>
+              <Text style={styles.settingSub}>Próximamente disponible</Text>
             </View>
-            <Switch
-              value={isDark}
-              onValueChange={(val) => setColorScheme(val ? 'dark' : 'light')}
-              trackColor={{ false: '#E2E8F0', true: '#6366F1' }}
-              thumbColor={isDark ? '#4F46E5' : '#94A3B8'}
-            />
+            <View style={{ backgroundColor: '#F1F5F9', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <Text style={{ fontSize: 11, color: '#94A3B8', fontWeight: '600' }}>Pronto</Text>
+            </View>
           </View>
-        </View>
-
-        {/* ── Notificaciones ─────────────────────────────────────────────────────────────────── */}
+        </View>       {/* ── Notificaciones ─────────────────────────────────────────────────────────────────── */}
         <Text style={styles.sectionTitle}>🔔 Recordatorio de Racha</Text>  {/* Banner informativo */}
         <View style={[styles.notifBanner, settings.enabled && styles.notifBannerActive]}>
           <Text style={styles.notifBannerEmoji}>{settings.enabled ? '🔥' : '💤'}</Text>

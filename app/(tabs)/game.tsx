@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
   headerSub: { fontSize: 12, color: '#64748B', marginTop: 2 },
   gemsBadge: {
     backgroundColor: '#EFF6FF', borderRadius: 20,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   gameCardHeader: { flexDirection: 'row', gap: 14, marginBottom: 12 },
   gameCardBigEmoji: { fontSize: 52, lineHeight: 60 },
   gameCardInfo: { flex: 1 },
-  gameCardTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', marginBottom: 4 },
+  gameCardTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 4 },
   gameCardDescEn: { fontSize: 13, color: '#64748B', lineHeight: 18, marginBottom: 4, fontStyle: 'italic' },
   gameCardDescEs: { fontSize: 12, color: '#64748B', lineHeight: 17 },
   gameCardReward: {
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   },
   catCardDisabled: { opacity: 0.5 },
   catEmoji: { fontSize: 32, marginBottom: 6 },
-  catLabel: { fontSize: 14, fontWeight: '800', color: '#FFFFFF', marginBottom: 4 },
+  catLabel: { fontSize: 14, fontWeight: '800', color: '#1E293B', marginBottom: 4 },
   catDescEn: { fontSize: 11, color: '#64748B', textAlign: 'center', lineHeight: 15, fontStyle: 'italic', marginBottom: 2 },
   catDescEs: { fontSize: 11, color: '#64748B', textAlign: 'center', lineHeight: 15, marginBottom: 10 },
   catPlayBtn: {
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#E2E8F0',
   },
   gameBackBtnText: { color: '#64748B', fontSize: 13, fontWeight: '600' },
-  gameHeaderTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
+  gameHeaderTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B' },
   gemsSmall: {
     backgroundColor: '#EFF6FF', borderRadius: 16,
     paddingHorizontal: 10, paddingVertical: 5,
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   boardStat: { flex: 1, alignItems: 'center' },
   boardStatLabel: { fontSize: 9, color: '#64748B', fontWeight: '600', textTransform: 'uppercase' },
-  boardStatValue: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', marginTop: 1 },
+  boardStatValue: { fontSize: 13, fontWeight: '700', color: '#1E293B', marginTop: 1 },
   board: {
     flex: 1,
     flexDirection: 'row',
@@ -549,9 +549,9 @@ const styles = StyleSheet.create({
   cardMatchedBack: { borderColor: '#4ADE80' },
   cardMatchedFront: { borderColor: '#4ADE80', backgroundColor: '#0D2010' },
   cardEn: { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#4F46E5' },
-  cardEs: { backgroundColor: '#1A0D2D', borderWidth: 1.5, borderColor: '#38BDF8' },
+  cardEs: { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#38BDF8' },
   cardLangFlag: { fontSize: 10, marginBottom: 2 },
-  cardWord: { fontWeight: '700', color: '#FFFFFF', textAlign: 'center', lineHeight: 14 },
+  cardWord: { fontWeight: '700', color: '#1E293B', textAlign: 'center', lineHeight: 14 },
   rewardHint: {
     marginHorizontal: 14, marginBottom: 10,
     backgroundColor: '#EFF6FF', borderRadius: 10, padding: 8,
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5', borderRadius: 16,
     paddingHorizontal: 32, paddingVertical: 16, marginTop: 28, marginBottom: 12,
   },
-  claimBtnText: { color: '#0F1117', fontSize: 17, fontWeight: '800' },
+  claimBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
   claimedBox: { alignItems: 'center', marginTop: 24, marginBottom: 12 },
   claimedText: { color: '#4ADE80', fontSize: 16, fontWeight: '700' },
   claimedSub: { color: '#64748B', fontSize: 14, marginTop: 4 },
@@ -575,5 +575,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28, paddingVertical: 14, marginTop: 12,
     borderWidth: 1, borderColor: '#E2E8F0',
   },
-  backMenuBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  backMenuBtnText: { color: '#64748B', fontSize: 15, fontWeight: '600' },
 });

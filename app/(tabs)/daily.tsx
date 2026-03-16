@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
   },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
   headerSub: { fontSize: 12, color: '#64748B', marginTop: 2 },
   streakBadge: {
     backgroundColor: '#FEF3C7', borderRadius: 20,
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   wordCardLearned: { borderColor: '#BBF7D0', backgroundColor: '#DCFCE7' },
   wordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   wordMain: { flex: 1 },
-  wordEnglish: { fontSize: 24, fontWeight: '800', color: '#FFFFFF' },
+  wordEnglish: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
   wordPronunciation: { fontSize: 13, color: '#64748B', marginTop: 2, fontStyle: 'italic' },
   speakBtn: {
     width: 48, height: 48, borderRadius: 24,
@@ -568,18 +568,18 @@ const styles = StyleSheet.create({
   // Done
   doneContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   doneEmoji: { fontSize: 72, marginBottom: 16 },
-  doneTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', marginBottom: 8, textAlign: 'center' },
+  doneTitle: { fontSize: 24, fontWeight: '800', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
   doneSub: { fontSize: 16, color: '#F59E0B', fontWeight: '700', marginBottom: 4 },
   doneSub2: { fontSize: 14, color: '#64748B', marginBottom: 20 },
   // Quiz
   quizContainer: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#E2E8F0' },
   quizTitle: { fontSize: 14, color: '#64748B', fontWeight: '700', marginBottom: 4 },
-  quizInstruction: { fontSize: 18, color: '#FFFFFF', fontWeight: '700', marginBottom: 16 },
+  quizInstruction: { fontSize: 18, color: '#1E293B', fontWeight: '700', marginBottom: 16 },
   quizWordBox: {
     backgroundColor: '#F0F9FF', borderRadius: 14, padding: 20,
     alignItems: 'center', marginBottom: 20,
   },
-  quizWord: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', marginBottom: 4 },
+  quizWord: { fontSize: 32, fontWeight: '900', color: '#1E293B', marginBottom: 4 },
   quizPhonetic: { fontSize: 14, color: '#64748B', fontStyle: 'italic' },
   quizOptions: { gap: 10 },
   quizOption: {
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24,
     borderWidth: 1, borderColor: '#E2E8F0',
   },
-  spacedWord: { fontSize: 36, fontWeight: '900', color: '#FFFFFF', textAlign: 'center', marginBottom: 4 },
+  spacedWord: { fontSize: 36, fontWeight: '900', color: '#1E293B', textAlign: 'center', marginBottom: 4 },
   spacedPhonetic: { fontSize: 14, color: '#64748B', fontStyle: 'italic', textAlign: 'center', marginBottom: 20 },
   spacedTranslation: { fontSize: 24, fontWeight: '800', color: '#4F46E5', textAlign: 'center', marginBottom: 16 },
   revealBtn: {

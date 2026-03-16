@@ -366,3 +366,29 @@
 - [ ] exercise/[levelId].tsx: fondo claro, opciones con colores vibrantes
 - [ ] settings.tsx: modo nocturno funcional con toggle visible
 - [ ] stats.tsx: heatmap con colores vibrantes, gráficas coloridas
+
+## v3.1 — Fixes de UI (capturas del usuario)
+- [ ] Icono onboarding: usar logo real con bordes redondeados (no el diamante genérico)
+- [ ] Eliminar pantalla splash oscura antes del onboarding
+- [ ] Barra de tabs: fondo blanco, iconos y texto en negro/oscuro
+- [ ] Títulos de todas las pantallas: color negro/oscuro visible
+- [ ] Header Home: color del nombre de usuario negro (no azul), widget de progreso con texto negro
+- [ ] Header Tarea Diaria: título visible con fondo claro
+- [ ] Header Juego: título y subtítulo visibles
+- [ ] Header Juego Memory Pairs: título visible en la barra superior
+- [ ] Tarjeta de perfil: reducir a la mitad de tamaño
+- [ ] Título "Perfil" en header: color negro visible
+- [ ] Modo nocturno: corregir para que realmente cambie el tema
+- [ ] Pantalla ejercicio: texto de opciones visible, header con texto negro
+
+## v1.25 — Correcciones de UI (modo claro)
+- [x] Tab bar: fondo blanco, texto negro, iconos con color del tema
+- [x] Header de Home: reemplazar gradiente azul índigo por fondo blanco limpio
+- [x] Widget de progreso: gradiente índigo-violeta (visible sobre fondo claro)
+- [x] Modos de práctica: colores pastel claros con texto del acento
+- [x] Header de Perfil: reemplazar gradiente oscuro por fondo blanco
+- [x] Tarjeta hero de Perfil: reducida al 50% (layout horizontal, avatar 64px)
+- [x] Títulos de pantallas (daily, game, profile): corregir color blanco → negro
+- [x] Textos blancos en quiz, spaced review, done screen del daily
+- [x] Textos blancos en game (títulos de cartas, categorías, tablero)
+- [x] Toggle de modo nocturno: marcado como "Próximamente" (pantallas usan colores hardcodeados)

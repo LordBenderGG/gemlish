@@ -564,12 +564,7 @@ export default function ProfileScreen() {
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
       <StatusBar barStyle="dark-content" />
 
-      <LinearGradient
-        colors={['#1A2744', '#0E1A2E', '#F8FAFF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>👤 Perfil</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/stats' as any)} activeOpacity={0.7}>
@@ -582,7 +577,7 @@ export default function ProfileScreen() {
             <Text style={styles.logoutBtnText}>Salir</Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
@@ -594,30 +589,21 @@ export default function ProfileScreen() {
           onClose={() => setShowAvatarPicker(false)}
         />
 
-        {/* Tarjeta de usuario — Hero con gradiente */}
-        <LinearGradient
-          colors={['#EFF6FF', '#DBEAFE', '#BFDBFE']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.userCard}
-        >
+        {/* Tarjeta de usuario — Hero compacto */}
+        <View style={styles.userCard}>
           <TouchableOpacity
             style={{ position: 'relative' }}
             onPress={() => setShowAvatarPicker(true)}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={['#38BDF8', '#0EA5E9', '#0284C7']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.avatarCircle}
-            >
-              <Text style={{ fontSize: 42 }}>{avatar}</Text>
-            </LinearGradient>
+            <View style={styles.avatarCircle}>
+              <Text style={{ fontSize: 32 }}>{avatar}</Text>
+            </View>
             <View style={styles.avatarEditBtn}>
               <Text style={styles.avatarEditIcon}>✏️</Text>
             </View>
           </TouchableOpacity>
+          <View style={{ flex: 1 }}>
           {editingName ? (
             <View style={styles.nameEditRow}>
               <TextInput
@@ -647,21 +633,22 @@ export default function ProfileScreen() {
             </View>
           )}
           {nameError ? <Text style={styles.nameError}>{nameError}</Text> : null}
-          <View style={[styles.levelBadge, { borderColor: levelTitle.color }]}>
+          <View style={[styles.levelBadge, { borderColor: levelTitle.color, alignSelf: 'flex-start', marginBottom: 8 }]}>
             <Text style={[styles.levelBadgeText, { color: levelTitle.color }]}>{levelTitle.title}</Text>
           </View>
 
           <View style={styles.courseProgress}>
             <View style={styles.courseProgressRow}>
-              <Text style={styles.courseProgressLabel}>Progreso del Curso</Text>
+              <Text style={styles.courseProgressLabel}>Progreso</Text>
               <Text style={styles.courseProgressPct}>{progressPct}%</Text>
             </View>
             <View style={styles.progressBarBg}>
               <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
             </View>
-            <Text style={styles.courseProgressSub}>{stats.levelsCompleted} / 500 niveles completados</Text>
+            <Text style={styles.courseProgressSub}>{stats.levelsCompleted} / 500 niveles</Text>
           </View>
-        </LinearGradient>
+          </View>
+        </View>
 
         {/* Banner AdMob — debajo del perfil del usuario */}
         <AdBanner style={{ marginBottom: 8 }} />
@@ -881,6 +868,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -908,25 +901,30 @@ const styles = StyleSheet.create({
   settingsLinkArrow: { fontSize: 22, color: '#64748B' },
   scroll: { padding: 16, gap: 16 },
   userCard: {
-    borderRadius: 24, padding: 24,
-    alignItems: 'center', borderWidth: 2, borderColor: '#DBEAFE',
-    overflow: 'hidden',
-    shadowColor: '#38BDF8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
+    borderRadius: 20, padding: 14,
+    alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    flexDirection: 'row',
+    gap: 14,
   },
   avatarCircle: {
-    width: 88, height: 88, borderRadius: 44,
+    width: 64, height: 64, borderRadius: 32,
     justifyContent: 'center', alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 2,
+    borderColor: '#DBEAFE',
+    flexShrink: 0,
   },
   avatarText: { fontSize: 36, fontWeight: '800', color: '#1E293B' },
-  userName: { fontSize: 22, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
+  userName: { fontSize: 17, fontWeight: '800', color: '#1E293B', marginBottom: 4 },
   levelBadge: {
-    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6,
-    borderWidth: 2, marginBottom: 16,
+    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3,
+    borderWidth: 1.5,
   },
   levelBadgeText: { fontSize: 14, fontWeight: '700' },
   courseProgress: { width: '100%' },
