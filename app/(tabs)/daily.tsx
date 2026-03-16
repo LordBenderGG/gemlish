@@ -334,22 +334,29 @@ export default function DailyScreen() {
           <Text style={styles.doneSub2}>Vuelve mañana para nuevas palabras</Text>
           {dueWords.length > 0 && (
             <TouchableOpacity
-              style={[styles.completeBtn, { marginTop: 20 }]}
+              style={[styles.doneBtn, { marginTop: 20, backgroundColor: '#4ADE80' }]}
               onPress={() => setPhase('spaced-review')}
             >
-              <Text style={styles.completeBtnText}>🔄 Repasar {dueWords.length} palabras pendientes</Text>
+              <Text style={styles.doneBtnText}>🔄 Repasar {dueWords.length} palabras pendientes</Text>
             </TouchableOpacity>
           )}
           {Platform.OS !== 'web' && (
             <TouchableOpacity
-              style={[styles.completeBtn, { marginTop: 12, backgroundColor: '#1E2A3A', borderWidth: 1, borderColor: '#38BDF840' }]}
+              style={[styles.doneBtn, { marginTop: 12, backgroundColor: '#1E2A3A', borderWidth: 1, borderColor: '#38BDF840' }]}
               onPress={() => { if (!showDailyRetryAd()) setPhase('quiz'); }}
             >
-              <Text style={[styles.completeBtnText, { color: '#38BDF8' }]}>
+              <Text style={[styles.doneBtnText, { color: '#38BDF8' }]}>
                 {dailyRetryAdLoaded ? '🎥 Ver anuncio para repetir quiz' : '🔄 Repetir quiz'}
               </Text>
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            style={[styles.doneBtn, { marginTop: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0' }]}
+            onPress={() => setPhase('study')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.doneBtnText, { color: '#4F46E5' }]}>📖 Ver lista de palabras</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -566,6 +573,15 @@ const styles = StyleSheet.create({
   completeBtnDisabled: { backgroundColor: '#E2E8F0' },
   completeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   completeBtnTextDisabled: { color: '#94A3B8', fontSize: 16, fontWeight: '700' },
+  // Botones pantalla done (más anchos y con mejor padding)
+  doneBtn: {
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: '100%',
+  },
+  doneBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', textAlign: 'center' },
   // Done
   doneContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   doneEmoji: { fontSize: 72, marginBottom: 16 },
