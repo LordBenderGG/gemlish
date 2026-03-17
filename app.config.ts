@@ -71,7 +71,7 @@ const config: ExpoConfig = {
       "react-native-google-mobile-ads",
       {
         // IDs de PRUEBA de Google. Reemplazar con IDs reales de AdMob antes de publicar.
-        androidAppId: "ca-app-pub-3940256099942544~3347511713",
+        androidAppId: "ca-app-pub-9019813013540172~8482362619",
         iosAppId: "ca-app-pub-3940256099942544~1458002511",
         // Cumplimiento GDPR/CCPA: solicitar consentimiento antes de mostrar anuncios personalizados
         userTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you.",

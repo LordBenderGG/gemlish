@@ -40,22 +40,21 @@ if (Platform.OS !== 'web') {
 }
 
 // ─── IDs de anuncios ──────────────────────────────────────────────────────────
-// Estos son los IDs de PRUEBA oficiales de Google.
-// Reemplazar por los IDs reales cuando se tenga cuenta AdMob.
+// IDs reales de AdMob — Gemlish Android
 export const AD_UNIT_IDS = {
   // Banner
-  BANNER_HOME: TestIds.ADAPTIVE_BANNER,
-  BANNER_STATS: TestIds.ADAPTIVE_BANNER,
+  BANNER_HOME: 'ca-app-pub-9019813013540172/8657131164',
+  BANNER_STATS: 'ca-app-pub-9019813013540172/8657131164',
 
   // Interstitial
-  INTERSTITIAL_LEVEL_COMPLETE: TestIds.INTERSTITIAL,
-  INTERSTITIAL_PRACTICE_MODE: TestIds.INTERSTITIAL,
+  INTERSTITIAL_LEVEL_COMPLETE: 'ca-app-pub-9019813013540172/2084951559',
+  INTERSTITIAL_PRACTICE_MODE: 'ca-app-pub-9019813013540172/2084951559',
 
   // Rewarded
-  REWARDED_CONTINUE: TestIds.REWARDED,
-  REWARDED_DAILY_RETRY: TestIds.REWARDED,
-  REWARDED_PRONUNCIATION: TestIds.REWARDED,
-  REWARDED_HARD_MODE_HINT: TestIds.REWARDED,
+  REWARDED_CONTINUE: 'ca-app-pub-9019813013540172/8161108035',
+  REWARDED_DAILY_RETRY: 'ca-app-pub-9019813013540172/8161108035',
+  REWARDED_PRONUNCIATION: 'ca-app-pub-9019813013540172/8161108035',
+  REWARDED_HARD_MODE_HINT: 'ca-app-pub-9019813013540172/8161108035',
 };
 
 // ─── Contador para mostrar interstitial cada N niveles ────────────────────────
