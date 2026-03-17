@@ -17,9 +17,13 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web' && moduleName === 'react-native-google-mobile-ads') {
     return { type: 'empty' };
   }
-  // expo-sqlite usa WebAssembly que no es soportado por Metro en web preview
-  // En Android/iOS funciona nativamente sin este workaround
-  if (platform === 'web' && moduleName && moduleName.includes('wa-sqlite')) {
+  // expo-sqlite usa SQLite nativo en Android/iOS
+  // En web preview no está soportado — se usa el shim de database.web.ts
+  if (platform === 'web' && moduleName && (
+    moduleName.includes('wa-sqlite') ||
+    moduleName.includes('expo-sqlite') ||
+    moduleName === 'expo-sqlite'
+  )) {
     return { type: 'empty' };
   }
   if (originalResolveRequest) {

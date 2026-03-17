@@ -19,25 +19,53 @@
  *   - db_meta        → versión de la base de datos (para migraciones)
  */
 
-import * as SQLite from 'expo-sqlite';
+import { Platform } from 'react-native';
 
 // ─── Versión actual del esquema ───────────────────────────────────────────────
 // Incrementa este número cada vez que hagas un cambio en la estructura de la BD
 const DB_VERSION = 1;
 
-// ─── Instancia singleton ──────────────────────────────────────────────────────
-let _db: SQLite.SQLiteDatabase | null = null;
+// ─── Tipos ───────────────────────────────────────────────────────────────────
 
-export function getDb(): SQLite.SQLiteDatabase {
-  if (!_db) {
-    _db = SQLite.openDatabaseSync('gemlish.db');
+type SQLiteDB = {
+  execSync: (sql: string) => void;
+  runSync: (sql: string, params?: any[]) => void;
+  getFirstSync: <T>(sql: string, params?: any[]) => T | null;
+  getAllSync: <T>(sql: string, params?: any[]) => T[];
+};
+
+// ─── Shim para web (no-op) ────────────────────────────────────────────────────
+
+class WebShim implements SQLiteDB {
+  execSync(_sql: string): void {}
+  runSync(_sql: string, _params?: any[]): void {}
+  getFirstSync<T>(_sql: string, _params?: any[]): T | null { return null; }
+  getAllSync<T>(_sql: string, _params?: any[]): T[] { return []; }
+}
+
+// ─── Instancia singleton ──────────────────────────────────────────────────────
+
+let _db: SQLiteDB | null = null;
+
+export function getDb(): SQLiteDB {
+  if (_db) return _db;
+
+  if (Platform.OS === 'web') {
+    _db = new WebShim();
+    return _db;
   }
+
+  // Solo importar expo-sqlite en Android/iOS
+  const SQLite = require('expo-sqlite');
+  _db = SQLite.openDatabaseSync('gemlish.db') as SQLiteDB;
   return _db;
 }
 
 // ─── Inicialización y migraciones ─────────────────────────────────────────────
 
 export function initDatabase(): void {
+  if (Platform.OS === 'web') return;
+
   const db = getDb();
 
   // Crear tabla de metadatos si no existe (siempre la primera operación)
@@ -58,7 +86,7 @@ export function initDatabase(): void {
   runMigrations(db, currentVersion);
 }
 
-function runMigrations(db: SQLite.SQLiteDatabase, fromVersion: number): void {
+function runMigrations(db: SQLiteDB, fromVersion: number): void {
   let version = fromVersion;
 
   // Cada case aplica la migración correspondiente y avanza la versión

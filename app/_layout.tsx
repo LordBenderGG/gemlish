@@ -2,9 +2,11 @@ import "@/global.css";
 import "@/lib/force-light-mode";
 import { initDatabase } from "@/lib/database";
 import { migrateFromAsyncStorageIfNeeded } from "@/lib/migrate-from-asyncstorage";
+import { Platform } from "react-native";
 
 // Inicializar base de datos SQLite al arrancar (síncrono, antes de cualquier render)
-if (typeof window === 'undefined' || typeof (globalThis as any).ExpoDomWebView !== 'undefined' || require('react-native').Platform.OS !== 'web') {
+// Solo en Android/iOS — en web usa el shim de database.web.ts
+if (Platform.OS !== 'web') {
   try { initDatabase(); } catch {}
 }
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -18,7 +20,6 @@ import { usePendingAchievements } from '@/hooks/use-pending-achievements';
 import { useNotifications } from '@/hooks/use-notifications';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { Platform } from "react-native";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import {
