@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  StatusBar, Alert, ScrollView, Platform,
+  StatusBar, Alert, ScrollView, Platform, TextInput,
 } from 'react-native';
 import { useRewardedAd, AD_UNIT_IDS } from '@/hooks/useAdMob';
 import { AdBanner } from '@/components/AdBanner';
@@ -369,22 +369,82 @@ export default function DailyScreen() {
     );
   }
 
-    // ─── Fase: Estudio ─────────────────────────────────────────────────────
+    // ─── Fase: Estudio (con pestañas Hoy / Aprendidas) ────────────────────────
+  return (
+    <StudyTabsView
+      words={words}
+      daily={daily}
+      game={game}
+      insets={insets}
+      t={t}
+      learnedCount={learnedCount}
+      progressPct={progressPct}
+      allLearned={allLearned}
+      dueWords={dueWords}
+      renderItem={renderItem}
+      onBack={daily.dailyCompleted ? () => setPhase('done') : undefined}
+      onStartQuiz={() => setPhase('quiz')}
+    />
+  );
+}
+
+// ─── StudyTabsView ─────────────────────────────────────────────────────────────
+interface StudyTabsViewProps {
+  words: Word[];
+  daily: import('@/lib/storage').DailyState;
+  game: import('@/lib/storage').GameState;
+  insets: { top: number; bottom: number };
+  t: ReturnType<typeof import('@/hooks/use-theme-styles').useThemeStyles>;
+  learnedCount: number;
+  progressPct: number;
+  allLearned: boolean;
+  dueWords: Word[];
+  renderItem: ({ item }: { item: Word }) => React.ReactElement;
+  onBack?: () => void;
+  onStartQuiz: () => void;
+}
+
+function StudyTabsView({
+  words, daily, game, insets, t, learnedCount, progressPct, allLearned,
+  dueWords, renderItem, onBack, onStartQuiz,
+}: StudyTabsViewProps) {
+  const [activeTab, setActiveTab] = useState<'hoy' | 'aprendidas'>('hoy');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Construir lista de todas las palabras aprendidas históricamente
+  const allLearnedWordKeys = Object.keys(daily.allLearnedWords || {});
+  const allWords = useMemo(() => LESSONS.flatMap(l => l.words), []);
+  const allLearnedList = useMemo(() =>
+    allWords.filter(w => daily.allLearnedWords?.[w.word]),
+  [allWords, daily.allLearnedWords]);
+
+  // Filtrar por búsqueda (inglés o español)
+  const filteredLearned = useMemo(() => {
+    if (!searchQuery.trim()) return allLearnedList;
+    const q = searchQuery.toLowerCase().trim();
+    return allLearnedList.filter(w =>
+      w.word.toLowerCase().includes(q) ||
+      w.translation.toLowerCase().includes(q)
+    );
+  }, [allLearnedList, searchQuery]);
+
+  const renderLearnedItem = useCallback(({ item }: { item: Word }) => (
+    <WordCard word={item} isLearned={true} onLearn={() => {}} />
+  ), []);
+
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
       <StatusBar barStyle={t.isDark ? 'light-content' : 'dark-content'} />
 
+      {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>📅 Tarea Diaria</Text>
-          <Text style={styles.headerSub}>
-            {daily.dailyCompleted ? 'Palabras de hoy — pulsa 🔊 para escuchar' : 'Aprende 30 palabras nuevas hoy'}
-          </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {daily.dailyCompleted && (
+          {onBack && (
             <TouchableOpacity
-              onPress={() => setPhase('done')}
+              onPress={onBack}
               style={{ backgroundColor: '#EFF6FF', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: '#BFDBFE' }}
               activeOpacity={0.7}
             >
@@ -397,50 +457,125 @@ export default function DailyScreen() {
         </View>
       </View>
 
-      <View style={styles.progressSection}>
-        <View style={styles.progressLabelRow}>
-          <Text style={styles.progressLabel}>Progreso de hoy</Text>
-          <Text style={styles.progressCount}>{learnedCount}/30 palabras</Text>
-        </View>
-        <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
-        </View>
-        {dueWords.length > 0 && (
-          <Text style={styles.dueLabel}>📚 {dueWords.length} palabras pendientes de repaso</Text>
-        )}
+      {/* Pestañas */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'hoy' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('hoy')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'hoy' && styles.tabBtnTextActive]}>
+            📖 Hoy (30)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'aprendidas' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('aprendidas')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'aprendidas' && styles.tabBtnTextActive]}>
+            ✅ Aprendidas ({allLearnedWordKeys.length})
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Banner AdMob — Tarea Diaria */}
-      <AdBanner style={{ marginBottom: 4 }} />
+      {/* Pestaña HOY */}
+      {activeTab === 'hoy' && (
+        <>
+          <View style={styles.progressSection}>
+            <View style={styles.progressLabelRow}>
+              <Text style={styles.progressLabel}>Progreso de hoy</Text>
+              <Text style={styles.progressCount}>{learnedCount}/30 palabras</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
+            </View>
+            {dueWords.length > 0 && (
+              <Text style={styles.dueLabel}>📚 {dueWords.length} palabras pendientes de repaso</Text>
+            )}
+          </View>
+          <AdBanner style={{ marginBottom: 4 }} />
+          <FlatList
+            data={words}
+            keyExtractor={(item) => item.word}
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={5}
+            maxToRenderPerBatch={5}
+          />
+          {!daily.dailyCompleted && (
+            <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
+              <TouchableOpacity
+                style={[styles.completeBtn, !allLearned && styles.completeBtnDisabled]}
+                onPress={() => {
+                  if (!allLearned) {
+                    Alert.alert('Faltan palabras', `Aún te faltan ${30 - learnedCount} palabras por marcar como aprendidas.`);
+                    return;
+                  }
+                  onStartQuiz();
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.completeBtnText, !allLearned && styles.completeBtnTextDisabled]}>
+                  {allLearned ? '🧠 Hacer Mini Quiz (5 preguntas)' : `Faltan ${30 - learnedCount} palabras`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </>
+      )}
 
-      <FlatList
-        data={words}
-        keyExtractor={(item) => item.word}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-      />
-
-      {!daily.dailyCompleted && (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
-          <TouchableOpacity
-            style={[styles.completeBtn, !allLearned && styles.completeBtnDisabled]}
-            onPress={() => {
-              if (!allLearned) {
-                Alert.alert('Faltan palabras', `Aún te faltan ${30 - learnedCount} palabras por marcar como aprendidas.`);
-                return;
-              }
-              setPhase('quiz');
-            }}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.completeBtnText, !allLearned && styles.completeBtnTextDisabled]}>
-              {allLearned ? '🧠 Hacer Mini Quiz (5 preguntas)' : `Faltan ${30 - learnedCount} palabras`}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* Pestaña APRENDIDAS */}
+      {activeTab === 'aprendidas' && (
+        <>
+          {/* Buscador */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="🔍 Buscar en inglés o español..."
+              placeholderTextColor="#94A3B8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.searchClear}>
+                <Text style={{ color: '#94A3B8', fontSize: 16 }}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {allLearnedWordKeys.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>📚</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#1E293B', textAlign: 'center', marginBottom: 8 }}>
+                Aún no hay palabras aprendidas
+              </Text>
+              <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>
+                Aprende las palabras de hoy y aparecerán aquí para siempre.
+              </Text>
+            </View>
+          ) : filteredLearned.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>🔍</Text>
+              <Text style={{ fontSize: 16, color: '#64748B', textAlign: 'center' }}>
+                No se encontró "{searchQuery}"
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredLearned}
+              keyExtractor={(item) => item.word}
+              renderItem={renderLearnedItem}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              initialNumToRender={8}
+              maxToRenderPerBatch={8}
+            />
+          )}
+        </>
       )}
     </View>
   );
@@ -645,4 +780,27 @@ const styles = StyleSheet.create({
   },
   rateBtnEmoji: { fontSize: 24, marginBottom: 4 },
   rateBtnText: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  // Pestañas
+  tabBar: {
+    flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+  },
+  tabBtn: {
+    flex: 1, paddingVertical: 12, alignItems: 'center',
+    borderBottomWidth: 3, borderBottomColor: 'transparent',
+  },
+  tabBtnActive: { borderBottomColor: '#4F46E5' },
+  tabBtnText: { fontSize: 14, fontWeight: '600', color: '#94A3B8' },
+  tabBtnTextActive: { color: '#4F46E5' },
+  // Buscador
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    margin: 12, backgroundColor: '#F8FAFC',
+    borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+  },
+  searchInput: {
+    flex: 1, paddingVertical: 12, fontSize: 15, color: '#1E293B',
+  },
+  searchClear: { padding: 4 },
 });

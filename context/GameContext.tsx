@@ -62,7 +62,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     challengeStreak: 0, lastChallengeDate: '', challengeHistory: [], levelBestTimes: {},
   });
   const [daily, setDaily] = useState<DailyState>({
-    lastDailyDate: '', learnedWords: {}, dailyCompleted: false, totalDaysCompleted: 0,
+    lastDailyDate: '', learnedWords: {}, allLearnedWords: {}, dailyCompleted: false, totalDaysCompleted: 0,
   });
   const [miniGame, setMiniGame] = useState<MiniGameState>({
     date: new Date().toISOString().split('T')[0], playedMs: 0,
@@ -308,6 +308,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const next: DailyState = {
       ...daily,
       learnedWords: { ...daily.learnedWords, [word]: true },
+      // Acumular históricamente todas las palabras aprendidas (nunca se borra)
+      allLearnedWords: { ...daily.allLearnedWords, [word]: true },
     };
     setDaily(next);
     await saveDailyState(username, next);

@@ -35,6 +35,8 @@ export interface GameState {
 export interface DailyState {
   lastDailyDate: string;
   learnedWords: Record<string, boolean>;
+  // Historial acumulado de TODAS las palabras aprendidas (no se resetea)
+  allLearnedWords: Record<string, boolean>;
   dailyCompleted: boolean;
   totalDaysCompleted: number;
 }
@@ -194,6 +196,7 @@ export async function saveGameState(username: string, state: GameState): Promise
 const DEFAULT_DAILY_STATE: DailyState = {
   lastDailyDate: '',
   learnedWords: {},
+  allLearnedWords: {},
   dailyCompleted: false,
   totalDaysCompleted: 0,
 };
