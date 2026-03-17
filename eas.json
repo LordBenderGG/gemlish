@@ -12,7 +12,8 @@
         "disabled": true
       },
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "ORG_GRADLE_PROJECT_minSdkVersion": "24"
       },
       "android": {
         "buildType": "apk",
@@ -25,7 +26,8 @@
         "disabled": true
       },
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "ORG_GRADLE_PROJECT_minSdkVersion": "24"
       },
       "android": {
         "buildType": "apk"
@@ -37,7 +39,8 @@
         "disabled": true
       },
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "ORG_GRADLE_PROJECT_minSdkVersion": "24"
       },
       "android": {
         "buildType": "app-bundle"
