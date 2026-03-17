@@ -8,7 +8,8 @@
  * Aquí solo manejamos Appearance (React Native nativo).
  */
 
-import { Appearance } from "react-native";
+import { Appearance, Platform } from "react-native";
+import * as SystemUI from "expo-system-ui";
 
 // Forzar React Native Appearance a modo claro
 // Esto afecta al runtime nativo (Android/iOS)
@@ -16,4 +17,9 @@ try {
   Appearance.setColorScheme?.("light");
 } catch {
   // Ignorar si no está disponible (SSR)
+}
+
+// Forzar fondo blanco en la root view (evita fondo oscuro en Android edge-to-edge)
+if (Platform.OS !== "web") {
+  SystemUI.setBackgroundColorAsync("#F8FAFF").catch(() => {});
 }

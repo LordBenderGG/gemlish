@@ -42,6 +42,7 @@ const config: ExpoConfig = {
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
     },
+    userInterfaceStyle: "light",
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
@@ -65,8 +66,10 @@ const config: ExpoConfig = {
     output: "static",
     favicon: "./assets/images/favicon.png",
   },
+  backgroundColor: "#F8FAFF",
   plugins: [
     "expo-router",
+    "expo-system-ui",
     [
       "react-native-google-mobile-ads",
       {

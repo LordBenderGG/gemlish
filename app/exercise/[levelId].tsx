@@ -1382,7 +1382,7 @@ export default function ExerciseScreen() {
 
       {/* Header con gradiente */}
       <LinearGradient
-        colors={['#0C1A2E', '#F8FAFF']}
+        colors={['#FFFFFF', '#F8FAFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.exerciseHeader}
