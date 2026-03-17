@@ -130,7 +130,7 @@ export default function AchievementsScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-      <StatusBar barStyle={t.isDark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>

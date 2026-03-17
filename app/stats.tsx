@@ -10,7 +10,6 @@ import { useGame } from '@/context/GameContext';
 import { getPracticeHistory } from '@/lib/practice-history';
 import type { PracticeSession } from '@/lib/practice-history';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -36,15 +35,14 @@ interface BarChartProps {
   maxValue: number;
   height?: number;
   unit?: string;
-  isDark: boolean;
 }
 
-function BarChart({ data, maxValue, height = 140, unit = '', isDark }: BarChartProps) {
+function BarChart({ data, maxValue, height = 140, unit = '' }: Omit<BarChartProps, 'isDark'>) {
   const chartW = 320;
   const chartH = height;
   const barW = Math.floor((chartW - 16) / data.length) - 6;
-  const textColor = isDark ? '#64748B' : '#687076';
-  const lineColor = isDark ? '#E2E8F0' : '#E5E7EB';
+  const textColor = '#687076';
+  const lineColor = '#E5E7EB';
 
   return (
     <Svg width={chartW} height={chartH + 32} viewBox={`0 0 ${chartW} ${chartH + 32}`}>
@@ -133,8 +131,7 @@ const cardStyles = StyleSheet.create({
 export default function StatsScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  // La app siempre usa modo claro
   const { username, game, daily } = useGame();
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,10 +237,10 @@ export default function StatsScreen() {
     color: '#FBBF24',
   }));
 
-  const textPrimary = isDark ? '#1E293B' : '#1E293B';
-  const textMuted = isDark ? '#64748B' : '#687076';
-  const cardBg = isDark ? '#FFFFFF' : '#F5F5F5';
-  const borderColor = isDark ? '#E2E8F0' : '#E5E7EB';
+  const textPrimary = '#1E293B';
+  const textMuted = '#687076';
+  const cardBg = '#F5F5F5';
+  const borderColor = '#E5E7EB';
 
   if (loading) {
     return (
@@ -290,7 +287,6 @@ export default function StatsScreen() {
             <BarChart
               data={levelsBarData}
               maxValue={maxLevels}
-              isDark={isDark}
             />
           </View>
         </View>
@@ -303,7 +299,6 @@ export default function StatsScreen() {
             <BarChart
               data={sessionBarData}
               maxValue={maxSessions}
-              isDark={isDark}
             />
           </View>
         </View>
@@ -316,7 +311,6 @@ export default function StatsScreen() {
             <BarChart
               data={wordsBarData}
               maxValue={maxWords}
-              isDark={isDark}
             />
           </View>
         </View>
@@ -330,7 +324,6 @@ export default function StatsScreen() {
               data={accuracyBarData}
               maxValue={100}
               unit="%"
-              isDark={isDark}
             />
           </View>
         </View>

@@ -61,7 +61,7 @@ export default function LevelDetailScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: t.border }]}>

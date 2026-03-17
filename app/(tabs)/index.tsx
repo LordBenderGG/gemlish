@@ -478,7 +478,7 @@ export default function LevelsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
-      <StatusBar barStyle={t.isDark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
       <StatsHeader
         username={username || 'Estudiante'}
         gems={gems}

@@ -284,7 +284,7 @@ export default function QuickReviewScreen() {
 
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.resultContainer}>
           <Text style={styles.resultEmoji}>
             {timedOut ? '⏰' : accuracy >= 80 ? '🏆' : accuracy >= 60 ? '💪' : '📚'}
@@ -326,7 +326,7 @@ export default function QuickReviewScreen() {
   if (words.length === 0) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📚</Text>
           <Text style={styles.emptyTitle}>Sin palabras disponibles</Text>
@@ -341,7 +341,7 @@ export default function QuickReviewScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>

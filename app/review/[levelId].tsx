@@ -122,7 +122,7 @@ export default function ReviewScreen() {
   if (errorWords.length === 0) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🎉</Text>
           <Text style={styles.emptyTitle}>¡Sin errores!</Text>
@@ -138,7 +138,7 @@ export default function ReviewScreen() {
   if (finished) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-        <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>🏆</Text>
           <Text style={styles.emptyTitle}>¡Repaso completado!</Text>
@@ -156,7 +156,7 @@ export default function ReviewScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: '#F8FAFF' }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'dark-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
       <View style={styles.header}>

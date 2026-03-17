@@ -11,7 +11,6 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
 import { useNotifications } from '@/hooks/use-notifications';
-import { useThemeContext } from '@/lib/theme-provider';
 import { LESSONS } from '@/data/lessons';
 import { ACHIEVEMENTS } from '@/lib/achievements';
 import type { Achievement, AchievementStats } from '@/lib/achievements';
@@ -382,7 +381,7 @@ const LEADERBOARD_KEY = '@gemlish_all_users';
 function LeaderboardSection() {
   const { game, username } = useGame();
   const t = useThemeStyles();
-  const isDark = t.bg === '#F8FAFF';
+  // La app siempre usa modo claro
   const [entries, setEntries] = React.useState<Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>>([]);
 
   React.useEffect(() => {
@@ -422,12 +421,12 @@ function LeaderboardSection() {
         return (
           <View key={entry.username} style={[
             { flexDirection: 'row', alignItems: 'center', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 },
-            { backgroundColor: isMe ? (isDark ? '#0D2A1A' : '#e8f5e9') : (isDark ? '#FFFFFF' : '#F5F5F5') },
+            { backgroundColor: isMe ? '#e8f5e9' : '#F5F5F5' },
             isMe && { borderWidth: 1.5, borderColor: '#4ADE80' },
           ]}>
             <Text style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{medals[i] ?? `${i + 1}`}</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: isMe ? '#4ADE80' : (isDark ? '#1E293B' : '#1E293B'), fontWeight: isMe ? '800' : '600', fontSize: 14 }}>
+              <Text style={{ color: isMe ? '#4ADE80' : '#1E293B', fontWeight: isMe ? '800' : '600', fontSize: 14 }}>
                 {isMe ? `${entry.username} (Tú)` : entry.username}
               </Text>
               <Text style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>{entry.levelsCompleted} niveles · 🔥 {entry.streak} días</Text>
@@ -474,8 +473,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
   const { username, game, daily, logout, renameUsername } = useGame();
-  const { colorScheme, setColorScheme, isManual, resetToSystem } = useThemeContext();
-  const isDark = colorScheme === 'dark';
+  // La app siempre usa modo claro — no se necesita lógica de tema
   const [practiceHistory, setPracticeHistory] = useState<PracticeSession[]>([]);
   const [avatar, setAvatar] = useState('🦊');
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -797,10 +795,10 @@ export default function ProfileScreen() {
               )}
             </View>
             {(game.challengeHistory ?? []).map((entry, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#FFFFFF' : '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 }}>
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 6, gap: 10 }}>
                 <Text style={{ fontSize: 22 }}>🏆</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: isDark ? '#1E293B' : '#1E293B', fontWeight: '700', fontSize: 13 }}>Nivel {entry.levelId}: {entry.levelName}</Text>
+                  <Text style={{ color: '#1E293B', fontWeight: '700', fontSize: 13 }}>Nivel {entry.levelId}: {entry.levelName}</Text>
                   <Text style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>{entry.date}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
