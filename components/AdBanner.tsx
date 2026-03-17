@@ -5,7 +5,8 @@
  */
 import React from 'react';
 import { Platform, View } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { AD_UNIT_IDS } from '@/hooks/useAdMob';
 
 interface AdBannerProps {
   style?: object;
@@ -16,7 +17,7 @@ export function AdBanner({ style }: AdBannerProps) {
   return (
     <View style={style}>
       <BannerAd
-        unitId={TestIds.ADAPTIVE_BANNER}
+        unitId={AD_UNIT_IDS.BANNER_HOME}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{ requestNonPersonalizedAdsOnly: false }}
       />
