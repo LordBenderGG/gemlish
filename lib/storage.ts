@@ -137,8 +137,25 @@ export async function getCurrentUser(): Promise<string | null> {
 
 export async function logoutUser(): Promise<void> {
   const db = getDb();
+  // Antes de borrar la sesión, guardar el último username para pre-llenar el login
+  const row = db.getFirstSync<{ username: string }>(`SELECT username FROM session WHERE id = 1`);
+  if (row?.username) {
+    db.runSync(
+      `INSERT OR REPLACE INTO db_meta (key, value) VALUES ('last_username', ?)`,
+      [row.username]
+    );
+  }
   // Borrar la sesión activa — el usuario y su progreso permanecen intactos en la BD
   db.runSync(`DELETE FROM session WHERE id = 1`);
+}
+
+/** Devuelve el último username que inició sesión (para pre-llenar el campo de login) */
+export async function getLastUsername(): Promise<string | null> {
+  const db = getDb();
+  const row = db.getFirstSync<{ value: string }>(
+    `SELECT value FROM db_meta WHERE key = 'last_username'`
+  );
+  return row?.value ?? null;
 }
 
 export async function hasExistingUsers(): Promise<boolean> {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
@@ -7,6 +7,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useGame } from '@/context/GameContext';
+import { getLastUsername } from '@/lib/storage';
 
 const C = {
   bg: '#F8FAFF',
@@ -25,6 +26,13 @@ export default function LoginScreen() {
   const { login } = useGame();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // Pre-llenar el campo de usuario con el último username usado
+  useEffect(() => {
+    getLastUsername().then(last => {
+      if (last) setUsername(last);
+    });
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
