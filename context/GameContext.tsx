@@ -5,6 +5,7 @@ import {
   getDailyState, saveDailyState,
   getMiniGameState, saveMiniGameState,
   getCurrentUser, loginUser, logoutUser, registerUser, renameUser,
+  canClaimDailyBonus, markDailyBonusClaimed,
 } from '@/lib/storage';
 import { getDailyChallenge, saveDailyChallenge } from '@/lib/daily-challenge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,6 +28,7 @@ interface GameContextValue {
   saveLevelErrors: (levelId: number, errorWords: string[]) => Promise<void>;
   loseHeart: () => Promise<void>;
   spendGems: (amount: number) => Promise<boolean>;
+  claimDailyBonus: () => Promise<boolean>; // true si se entregaron gemas
 
   // Tarea Diaria
   daily: DailyState;
@@ -131,10 +133,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getDailyState(key),
         getMiniGameState(key),
       ]);
-      setGame(g);
+      // Bono de bienvenida: 100 gemas al registrarse
+      const gWithBonus = { ...g, gems: g.gems + 100 };
+      await saveGameState(key, gWithBonus);
+      setGame(gWithBonus);
       setDaily(d);
       setMiniGame(mg);
-      updateLeaderboard(key, g);
+      updateLeaderboard(key, gWithBonus);
     }
     return result;
   }, []);
@@ -360,13 +365,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return result;
   }, [username]);
 
+  // ─── Bono Diario ─────────────────────────────────────────────────────────
+
+  const claimDailyBonus = useCallback(async (): Promise<boolean> => {
+    if (!username) return false;
+    const eligible = await canClaimDailyBonus(username);
+    if (!eligible) return false;
+    const nextGame: GameState = { ...game, gems: game.gems + 25 };
+    setGame(nextGame);
+    await saveGameState(username, nextGame);
+    await markDailyBonusClaimed(username);
+    return true;
+  }, [username, game]);
+
   // ─── Render ────────────────────────────────────────────────────────────────────────────────────
 
   return (
     <GameContext.Provider value={{
       username, isLoading,
       login, register, logout, renameUsername,
-      game, updateGame, completeLevel, saveLevelErrors, loseHeart, spendGems,
+      game, updateGame, completeLevel, saveLevelErrors, loseHeart, spendGems, claimDailyBonus,
       daily, markWordLearned, finishDaily, resetDailyIfNeeded,
       miniGame, addMiniGameTime, winMiniGame,
     }}>

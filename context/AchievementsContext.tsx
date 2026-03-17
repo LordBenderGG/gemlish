@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AchievementToast } from '@/components/achievement-toast';
 import { checkNewAchievements, type Achievement, type AchievementStats } from '@/lib/achievements';
+import { useGame } from '@/context/GameContext';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ export function useAchievements(): AchievementsContextValue {
 
 export function AchievementsProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  const { updateGame, game } = useGame();
   const [currentToast, setCurrentToast] = useState<Achievement | null>(null);
   const queueRef = useRef<Achievement[]>([]);
   const isShowingRef = useRef(false);
@@ -52,14 +54,20 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
     const newOnes = await checkNewAchievements(username, stats);
     if (newOnes.length === 0) return;
 
-    // Encolar todos los nuevos logros
+    // Entregar gemas por los logros desbloqueados
+    const totalGems = newOnes.reduce((sum, a) => sum + (a.gems ?? 0), 0);
+    if (totalGems > 0) {
+      await updateGame({ gems: game.gems + totalGems });
+    }
+
+    // Encolar todos los nuevos logros para mostrar el toast
     queueRef.current.push(...newOnes);
 
     // Si no hay toast mostrándose, mostrar el primero
     if (!isShowingRef.current) {
       showNext();
     }
-  }, [showNext]);
+  }, [showNext, updateGame, game.gems]);
 
   return (
     <AchievementsContext.Provider value={{ checkAchievements }}>

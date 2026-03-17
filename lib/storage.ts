@@ -322,3 +322,139 @@ export async function saveMiniGameState(username: string, state: MiniGameState):
     [username, JSON.stringify(state)]
   );
 }
+
+// ─── Bono Diario de Login ────────────────────────────────────────────────────
+
+/**
+ * Verifica si el usuario puede recibir el bono diario de 25 gemas.
+ * El bono se da una vez cada 24 horas desde el último reclamo.
+ * Retorna true si puede reclamar, false si ya lo reclamó hoy.
+ */
+export async function canClaimDailyBonus(username: string): Promise<boolean> {
+  const db = getDb();
+  const key = `daily_bonus_${username}`;
+  const row = db.getFirstSync<{ value: string }>(
+    `SELECT value FROM db_meta WHERE key = ?`, [key]
+  );
+  if (!row?.value) return true;
+  const lastClaim = new Date(row.value).getTime();
+  const now = Date.now();
+  return now - lastClaim >= 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Registra que el usuario reclamó el bono diario ahora.
+ */
+export async function markDailyBonusClaimed(username: string): Promise<void> {
+  const db = getDb();
+  const key = `daily_bonus_${username}`;
+  db.runSync(
+    `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+    [key, new Date().toISOString()]
+  );
+}
+
+// ─── Cooldown de Video en Memory Pairs ──────────────────────────────────────
+
+export interface VideoRewardState {
+  usesToday: number;       // Cuántas veces se usó hoy (máx 3)
+  lastUseTime: number;     // Timestamp del último uso (ms)
+  lastUseDate: string;     // Fecha del último uso (YYYY-MM-DD)
+}
+
+const VIDEO_COOLDOWN_MS = 20 * 60 * 1000;  // 20 minutos entre usos
+const VIDEO_MAX_DAILY = 3;                  // Máximo 3 veces por día
+const VIDEO_BLOCK_AFTER_LAST_MS = 24 * 60 * 60 * 1000; // 24h tras el 3er uso
+
+export async function getVideoRewardState(username: string): Promise<VideoRewardState> {
+  const db = getDb();
+  const key = `video_reward_${username}`;
+  const row = db.getFirstSync<{ value: string }>(
+    `SELECT value FROM db_meta WHERE key = ?`, [key]
+  );
+  const today = new Date().toISOString().split('T')[0];
+  if (!row?.value) return { usesToday: 0, lastUseTime: 0, lastUseDate: today };
+  try {
+    const saved: VideoRewardState = JSON.parse(row.value);
+    // Si es un día nuevo, resetear el contador
+    if (saved.lastUseDate !== today) {
+      // Verificar si el bloqueo de 24h desde el 3er uso ya expiró
+      if (saved.usesToday >= VIDEO_MAX_DAILY) {
+        const timeSinceLast = Date.now() - saved.lastUseTime;
+        if (timeSinceLast >= VIDEO_BLOCK_AFTER_LAST_MS) {
+          return { usesToday: 0, lastUseTime: 0, lastUseDate: today };
+        }
+        // Aún en bloqueo de 24h
+        return { ...saved, lastUseDate: today };
+      }
+      return { usesToday: 0, lastUseTime: 0, lastUseDate: today };
+    }
+    return saved;
+  } catch {
+    return { usesToday: 0, lastUseTime: 0, lastUseDate: today };
+  }
+}
+
+export async function saveVideoRewardState(username: string, state: VideoRewardState): Promise<void> {
+  const db = getDb();
+  const key = `video_reward_${username}`;
+  db.runSync(
+    `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+    [key, JSON.stringify(state)]
+  );
+}
+
+/**
+ * Verifica si el usuario puede ver un video ahora.
+ * Retorna: { canWatch: boolean, reason?: string, msUntilAvailable?: number }
+ */
+export async function getVideoWatchStatus(username: string): Promise<{
+  canWatch: boolean;
+  reason?: 'cooldown' | 'daily_limit' | 'blocked_24h';
+  msUntilAvailable?: number;
+}> {
+  const state = await getVideoRewardState(username);
+  const now = Date.now();
+
+  // Bloqueo de 24h tras el 3er uso
+  if (state.usesToday >= VIDEO_MAX_DAILY) {
+    const timeSinceLast = now - state.lastUseTime;
+    if (timeSinceLast < VIDEO_BLOCK_AFTER_LAST_MS) {
+      return {
+        canWatch: false,
+        reason: 'blocked_24h',
+        msUntilAvailable: VIDEO_BLOCK_AFTER_LAST_MS - timeSinceLast,
+      };
+    }
+    // Ya pasaron 24h, puede ver
+    return { canWatch: true };
+  }
+
+  // Cooldown de 20 minutos entre usos
+  if (state.lastUseTime > 0) {
+    const timeSinceLast = now - state.lastUseTime;
+    if (timeSinceLast < VIDEO_COOLDOWN_MS) {
+      return {
+        canWatch: false,
+        reason: 'cooldown',
+        msUntilAvailable: VIDEO_COOLDOWN_MS - timeSinceLast,
+      };
+    }
+  }
+
+  return { canWatch: true };
+}
+
+/**
+ * Registra que el usuario vio un video y reclamó la recompensa.
+ */
+export async function recordVideoWatched(username: string): Promise<void> {
+  const state = await getVideoRewardState(username);
+  const today = new Date().toISOString().split('T')[0];
+  const newState: VideoRewardState = {
+    usesToday: state.lastUseDate === today ? state.usesToday + 1 : 1,
+    lastUseTime: Date.now(),
+    lastUseDate: today,
+  };
+  await saveVideoRewardState(username, newState);
+}

@@ -1,8 +1,10 @@
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, StatusBar, Alert,
   ScrollView, Animated, Dimensions,
 } from 'react-native';
+import { useRewardedAd, AD_UNIT_IDS } from '@/hooks/useAdMob';
+import { getVideoWatchStatus, recordVideoWatched } from '@/lib/storage';
 import { AdBanner } from '@/components/AdBanner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
@@ -14,7 +16,10 @@ import {
 
 const MAX_DAILY_MS = 30 * 60 * 1000; // 30 minutos
 const PAIRS_COUNT = 12; // 12 pares = 24 cartas = tablero 6×4
-const GEMS_REWARD = 10;
+const GEMS_REWARD = 10; // Recompensa por ganar Memory Pairs
+const VIDEO_GEMS = 50; // Gemas por ver video en Memory Pairs
+const VIDEO_MAX_DAILY = 3; // Máximo 3 videos por día
+const VIDEO_COOLDOWN_MS = 20 * 60 * 1000; // 20 minutos entre videos
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // 6 columnas con padding 10 a cada lado y gap 6 entre cartas
@@ -237,7 +242,7 @@ export default function GameScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
   const scheme = useColorScheme();
-  const { game, miniGame, addMiniGameTime, winMiniGame } = useGame();
+  const { game, username, updateGame, miniGame, addMiniGameTime, winMiniGame } = useGame();
 
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [gameWon, setGameWon] = useState(false);
@@ -245,6 +250,73 @@ export default function GameScreen() {
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('random');
+
+  // ─── Estado del botón Ver Video ─────────────────────────────────────────
+  const [videoStatus, setVideoStatus] = useState<{
+    canWatch: boolean;
+    reason?: string;
+    msUntilAvailable?: number;
+    usesToday?: number;
+  }>({ canWatch: true });
+  const [videoCountdown, setVideoCountdown] = useState('');
+  const videoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const refreshVideoStatus = useCallback(async () => {
+    if (!username) return;
+    const status = await getVideoWatchStatus(username);
+    setVideoStatus(status);
+  }, [username]);
+
+  useEffect(() => {
+    refreshVideoStatus();
+  }, [refreshVideoStatus]);
+
+  // Actualizar countdown cada segundo cuando hay cooldown
+  useEffect(() => {
+    if (videoTimerRef.current) clearInterval(videoTimerRef.current);
+    if (videoStatus.canWatch || !videoStatus.msUntilAvailable) {
+      setVideoCountdown('');
+      return;
+    }
+    const updateCountdown = () => {
+      const ms = videoStatus.msUntilAvailable! - (Date.now() - (Date.now() - videoStatus.msUntilAvailable!));
+      // Recalcular desde el estado actual
+      refreshVideoStatus();
+    };
+    videoTimerRef.current = setInterval(refreshVideoStatus, 10000); // refresh cada 10s
+    return () => { if (videoTimerRef.current) clearInterval(videoTimerRef.current); };
+  }, [videoStatus.canWatch, videoStatus.msUntilAvailable, refreshVideoStatus]);
+
+  const formatCooldown = (ms: number) => {
+    const totalSec = Math.ceil(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
+
+  const handleVideoRewarded = useCallback(async () => {
+    if (!username) return;
+    await recordVideoWatched(username);
+    await updateGame({ gems: game.gems + VIDEO_GEMS });
+    await refreshVideoStatus();
+    Alert.alert('🎉 ¡Recompensa!', `+${VIDEO_GEMS} 💎 añadidas a tu cuenta.`);
+  }, [username, game.gems, updateGame, refreshVideoStatus]);
+
+  const { loaded: videoAdLoaded, showAd: showVideoAd } = useRewardedAd(
+    AD_UNIT_IDS.REWARDED_CONTINUE,
+    handleVideoRewarded
+  );
+
+  const handleWatchVideo = useCallback(async () => {
+    if (!videoStatus.canWatch) return;
+    const shown = showVideoAd();
+    if (!shown) {
+      Alert.alert('Sin anuncios', 'No hay anuncios disponibles ahora. Intenta en unos minutos.');
+    }
+  }, [videoStatus.canWatch, showVideoAd]);
 
   const remainingMs = Math.max(0, MAX_DAILY_MS - miniGame.playedMs);
 
@@ -415,6 +487,34 @@ export default function GameScreen() {
           <View style={styles.gameCardReward}>
             <Text style={styles.gameCardRewardText}>🏆 Recompensa: +{GEMS_REWARD} 💎 por partida ganada · 30 min diarios</Text>
           </View>
+
+          {/* Botón Ver Video */}
+          <View style={styles.videoRewardSection}>
+            <View style={styles.videoRewardInfo}>
+              <Text style={styles.videoRewardTitle}>🎬 Ver video · +{VIDEO_GEMS} 💎</Text>
+              <Text style={styles.videoRewardSub}>
+                {videoStatus.canWatch
+                  ? `Disponible · ${VIDEO_MAX_DAILY - (videoStatus.usesToday ?? 0)} de ${VIDEO_MAX_DAILY} usos restantes hoy`
+                  : videoStatus.reason === 'blocked_24h'
+                    ? `🔒 Bloqueado · disponible en ${formatCooldown(videoStatus.msUntilAvailable ?? 0)}`
+                    : `⏳ Cooldown · disponible en ${formatCooldown(videoStatus.msUntilAvailable ?? 0)}`
+                }
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.videoBtn,
+                (!videoStatus.canWatch || !videoAdLoaded) && styles.videoBtnDisabled,
+              ]}
+              onPress={handleWatchVideo}
+              disabled={!videoStatus.canWatch || !videoAdLoaded}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.videoBtnText}>
+                {!videoStatus.canWatch ? '🔒' : !videoAdLoaded ? '⏳' : '▶ Ver'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>Elige una categoría:</Text>
@@ -578,4 +678,19 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#E2E8F0',
   },
   backMenuBtnText: { color: '#64748B', fontSize: 15, fontWeight: '600' },
+  videoRewardSection: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: 14, marginTop: 10, marginBottom: 4,
+    backgroundColor: '#F5F3FF', borderRadius: 12, padding: 12,
+    borderWidth: 1, borderColor: '#DDD6FE',
+  },
+  videoRewardInfo: { flex: 1 },
+  videoRewardTitle: { fontSize: 14, fontWeight: '700', color: '#4F46E5' },
+  videoRewardSub: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  videoBtn: {
+    backgroundColor: '#4F46E5', borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 8, marginLeft: 10,
+  },
+  videoBtnDisabled: { backgroundColor: '#C4B5FD' },
+  videoBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 });

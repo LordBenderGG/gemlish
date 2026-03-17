@@ -1153,7 +1153,7 @@ export default function ExerciseScreen() {
       const xpEarned = level?.xp || 10;
       // Calcular gemsEarned con el wrongCount final (incluyendo el error actual si aplica)
       const finalWrongCount = wrongCount + (!correct ? 1 : 0);
-      const gemsEarned = finalWrongCount === 0 ? 5 : 2;
+      const gemsEarned = finalWrongCount === 0 ? 10 : 5;
       const elapsedMs = elapsedSeconds * 1000;
       const completionResult = await completeLevel(levelNum, xpEarned, gemsEarned, elapsedMs);
       setWasChallengeLevel(completionResult.wasChallenge);
@@ -1227,7 +1227,7 @@ export default function ExerciseScreen() {
   // ─── Pantalla de Resultado ───────────────────────────────────────────────
 
   if (showResult) {
-    const gemsEarned = wrongCount === 0 ? 5 : 2;
+    const gemsEarned = wrongCount === 0 ? 10 : 5;
     const xpEarned = level.xp;
     const isPerfect = wrongCount === 0;
     const totalTime = formatTime(elapsedSeconds);

@@ -450,3 +450,12 @@
 - [x] Migrar lib/storage.ts para usar SQLite en lugar de AsyncStorage
 - [x] Migrar datos existentes de AsyncStorage a SQLite al primer arranque (sin perder progreso)
 - [x] Verificar TypeScript y tests
+
+## Sistema de Gemas v2
+
+- [ ] Actualizar gemas por nivel: sin errores +10, con errores +5
+- [ ] Bono de bienvenida: +100 gemas al registrarse
+- [ ] Bono diario: +25 gemas cada 24h desde el primer login
+- [ ] Botón "Ver video" en Memory Pairs: +50 gemas, cooldown 20min, máx 3/día, bloqueo 24h tras el 3er uso
+- [ ] Agregar campo gems a cada logro en achievements.ts
+- [ ] Entregar gemas automáticamente al desbloquear un logro
