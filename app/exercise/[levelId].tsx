@@ -1190,7 +1190,7 @@ export default function ExerciseScreen() {
       setHintUsed(false);
       setExerciseKey(k => k + 1);
     }
-  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, internalStreak, completeLevel, saveLevelErrors, loseHeart, animateProgress, transitionToNext, playCorrect, playWrong, playLevelComplete, playStreak]);
+  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, internalStreak, completeLevel, saveLevelErrors, loseHeart, animateProgress, transitionToNext, playCorrect, playWrong, playLevelComplete, playStreak, checkAchievements, username]);
 
   const handleHint = useCallback(async () => {
     if (hintUsed) return;

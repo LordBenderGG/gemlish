@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import {
   GameState, DailyState, MiniGameState,
   getGameState, saveGameState,
@@ -28,6 +28,7 @@ interface GameContextValue {
   saveLevelErrors: (levelId: number, errorWords: string[]) => Promise<void>;
   loseHeart: () => Promise<void>;
   spendGems: (amount: number) => Promise<boolean>;
+  addGems: (amount: number) => Promise<void>;
   claimDailyBonus: () => Promise<boolean>; // true si se entregaron gemas
 
   // Tarea Diaria
@@ -70,6 +71,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
     date: new Date().toISOString().split('T')[0], playedMs: 0,
   });
 
+  // ─── Refs para evitar stale closures ────────────────────────────────────
+  // CRÍTICO: Siempre leer el estado más reciente desde los refs, no desde el closure
+  const gameRef = useRef(game);
+  const dailyRef = useRef(daily);
+  const miniGameRef = useRef(miniGame);
+  const usernameRef = useRef(username);
+
+  useEffect(() => { gameRef.current = game; }, [game]);
+  useEffect(() => { dailyRef.current = daily; }, [daily]);
+  useEffect(() => { miniGameRef.current = miniGame; }, [miniGame]);
+  useEffect(() => { usernameRef.current = username; }, [username]);
+
   // ─── Cargar usuario al iniciar ───────────────────────────────────────────
 
   useEffect(() => {
@@ -77,6 +90,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const user = await getCurrentUser();
       if (user) {
         setUsername(user);
+        usernameRef.current = user;
         const [g, d, mg] = await Promise.all([
           getGameState(user),
           getDailyState(user),
@@ -85,6 +99,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setGame(g);
         setDaily(d);
         setMiniGame(mg);
+        gameRef.current = g;
+        dailyRef.current = d;
+        miniGameRef.current = mg;
       }
       setIsLoading(false);
     })();
@@ -110,6 +127,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (result.ok) {
       const key = u.toLowerCase();
       setUsername(key);
+      usernameRef.current = key;
       const [g, d, mg] = await Promise.all([
         getGameState(key),
         getDailyState(key),
@@ -118,6 +136,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setGame(g);
       setDaily(d);
       setMiniGame(mg);
+      gameRef.current = g;
+      dailyRef.current = d;
+      miniGameRef.current = mg;
       updateLeaderboard(key, g);
     }
     return result;
@@ -128,6 +149,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (result.ok) {
       const key = u.toLowerCase();
       setUsername(key);
+      usernameRef.current = key;
       const [g, d, mg] = await Promise.all([
         getGameState(key),
         getDailyState(key),
@@ -139,6 +161,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setGame(gWithBonus);
       setDaily(d);
       setMiniGame(mg);
+      gameRef.current = gWithBonus;
+      dailyRef.current = d;
+      miniGameRef.current = mg;
       updateLeaderboard(key, gWithBonus);
     }
     return result;
@@ -147,16 +172,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await logoutUser();
     setUsername(null);
+    usernameRef.current = null;
   }, []);
 
   // ─── Juego ───────────────────────────────────────────────────────────────
 
   const updateGame = useCallback(async (patch: Partial<GameState>) => {
-    if (!username) return;
-    const next = { ...game, ...patch };
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = gameRef.current;
+    const next = { ...current, ...patch };
     setGame(next);
-    await saveGameState(username, next);
-  }, [username, game]);
+    gameRef.current = next;
+    await saveGameState(u, next);
+  }, []);
 
   const completeLevel = useCallback(async (
     levelId: number,
@@ -164,36 +193,36 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gemsEarned: number,
     elapsedMs?: number,
   ): Promise<{ wasChallenge: boolean; challengeBonus: { xp: number; gems: number } }> => {
-    if (!username) return { wasChallenge: false, challengeBonus: { xp: 0, gems: 0 } };
+    const u = usernameRef.current;
+    if (!u) return { wasChallenge: false, challengeBonus: { xp: 0, gems: 0 } };
+
+    // SIEMPRE leer el estado más reciente desde el ref (no desde el closure)
+    const current = gameRef.current;
+
     const today = new Date().toISOString().split('T')[0];
-    // Calcular la fecha de ayer para verificar continuidad de racha
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    // Usar levelCompletedDates para detectar si ya hubo actividad hoy
-    const prevDatesCheck = game.levelCompletedDates ?? {};
+
+    const prevDatesCheck = current.levelCompletedDates ?? {};
     const alreadyActiveToday = (prevDatesCheck[today] ?? 0) > 0;
     const wasActiveYesterday = (prevDatesCheck[yesterdayStr] ?? 0) > 0;
-    let newStreak = game.streak;
+    let newStreak = current.streak;
     if (!alreadyActiveToday) {
-      // Primera actividad del día: incrementar solo si hubo actividad ayer o la racha es 0
-      if (wasActiveYesterday || game.streak === 0) {
+      if (wasActiveYesterday || current.streak === 0) {
         newStreak += 1;
       } else {
-        // El usuario saltó al menos un día — resetear racha
         newStreak = 1;
       }
     }
 
-    // Registrar fecha de nivel completado para gráfica de actividad
-    const prevDates = game.levelCompletedDates ?? {};
+    const prevDates = current.levelCompletedDates ?? {};
     const updatedDates = {
       ...prevDates,
       [today]: (prevDates[today] ?? 0) + 1,
     };
 
-    // Actualizar mejor tiempo del nivel
-    const prevBestTimes = game.levelBestTimes ?? {};
+    const prevBestTimes = current.levelBestTimes ?? {};
     const updatedBestTimes = { ...prevBestTimes };
     if (elapsedMs !== undefined) {
       const prev = prevBestTimes[levelId];
@@ -202,37 +231,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Verificar si este nivel es el desafío del día y no ha sido completado aún
     let bonusXp = 0;
     let bonusGems = 0;
     let wasChallenge = false;
-    let newDailyChallengesCompleted = game.dailyChallengesCompleted ?? 0;
-    let newChallengeStreak = game.challengeStreak ?? 0;
-    let newLastChallengeDate = game.lastChallengeDate ?? '';
-    let newChallengeHistory = [...(game.challengeHistory ?? [])];
+    let newDailyChallengesCompleted = current.dailyChallengesCompleted ?? 0;
+    let newChallengeStreak = current.challengeStreak ?? 0;
+    let newLastChallengeDate = current.lastChallengeDate ?? '';
+    let newChallengeHistory = [...(current.challengeHistory ?? [])];
 
     try {
-      const challenge = await getDailyChallenge(username);
+      const challenge = await getDailyChallenge(u);
       if (challenge && challenge.date === today && !challenge.completed && challenge.levelId === levelId) {
-        // Marcar el desafío como completado
-        await saveDailyChallenge(username, { ...challenge, completed: true });
+        await saveDailyChallenge(u, { ...challenge, completed: true });
         bonusXp = challenge.xpEarned - xpEarned;
         bonusGems = challenge.gemsEarned - gemsEarned;
         newDailyChallengesCompleted += 1;
         wasChallenge = true;
 
-        // Actualizar racha de desafíos
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        if (newLastChallengeDate === yesterdayStr || newLastChallengeDate === today) {
+        const yest = new Date();
+        yest.setDate(yest.getDate() - 1);
+        const yestStr = yest.toISOString().split('T')[0];
+        if (newLastChallengeDate === yestStr || newLastChallengeDate === today) {
           newChallengeStreak += 1;
         } else {
-          newChallengeStreak = 1; // Reiniciar si no fue ayer
+          newChallengeStreak = 1;
         }
         newLastChallengeDate = today;
 
-        // Actualizar historial (máx 7 entradas)
         const { getLevelData } = await import('@/data/lessons');
         newChallengeHistory = [
           { date: today, levelId: challenge.levelId, levelName: getLevelData(challenge.levelId).name, xpEarned: challenge.xpEarned, gemsEarned: challenge.gemsEarned },
@@ -244,14 +269,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
 
     const next: GameState = {
-      ...game,
-      xp: game.xp + xpEarned + bonusXp,
-      gems: game.gems + gemsEarned + bonusGems,
+      ...current,
+      xp: current.xp + xpEarned + bonusXp,
+      gems: current.gems + gemsEarned + bonusGems,
       streak: newStreak,
-      hearts: Math.min(game.hearts + 1, 5),
-      maxUnlockedLevel: Math.max(game.maxUnlockedLevel, levelId + 1),
+      hearts: Math.min(current.hearts + 1, 5),
+      maxUnlockedLevel: Math.max(current.maxUnlockedLevel, levelId + 1),
       levelProgress: {
-        ...game.levelProgress,
+        ...current.levelProgress,
         [levelId]: { completed: true, score: 100 },
       },
       levelCompletedDates: updatedDates,
@@ -262,121 +287,164 @@ export function GameProvider({ children }: { children: ReactNode }) {
       challengeHistory: newChallengeHistory,
     };
     setGame(next);
-    await saveGameState(username, next);
+    gameRef.current = next;
+    await saveGameState(u, next);
     return { wasChallenge, challengeBonus: { xp: bonusXp, gems: bonusGems } };
-  }, [username, game]);
+  }, []);
 
   const loseHeart = useCallback(async () => {
-    if (!username) return;
-    const next = { ...game, hearts: Math.max(game.hearts - 1, 0) };
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = gameRef.current;
+    const next = { ...current, hearts: Math.max(current.hearts - 1, 0) };
     setGame(next);
-    await saveGameState(username, next);
-  }, [username, game]);
+    gameRef.current = next;
+    await saveGameState(u, next);
+  }, []);
 
   const spendGems = useCallback(async (amount: number): Promise<boolean> => {
-    if (!username || game.gems < amount) return false;
-    const next = { ...game, gems: game.gems - amount };
+    const u = usernameRef.current;
+    const current = gameRef.current;
+    if (!u || current.gems < amount) return false;
+    const next = { ...current, gems: current.gems - amount };
     setGame(next);
-    await saveGameState(username, next);
+    gameRef.current = next;
+    await saveGameState(u, next);
     return true;
-  }, [username, game]);
+  }, []);
+
+  const addGems = useCallback(async (amount: number): Promise<void> => {
+    const u = usernameRef.current;
+    if (!u || amount <= 0) return;
+    // Siempre leer del ref para evitar stale closure
+    const current = gameRef.current;
+    const next = { ...current, gems: current.gems + amount };
+    setGame(next);
+    gameRef.current = next;
+    await saveGameState(u, next);
+  }, []);
 
   const saveLevelErrors = useCallback(async (levelId: number, errorWords: string[]) => {
-    if (!username) return;
+    const u = usernameRef.current;
+    if (!u) return;
+    // CRÍTICO: leer el estado más reciente desde el ref para no sobreescribir
+    // el progreso guardado por completeLevel (que se llamó justo antes)
+    const current = gameRef.current;
     const next: GameState = {
-      ...game,
-      levelErrors: { ...game.levelErrors, [levelId]: errorWords },
+      ...current,
+      levelErrors: { ...current.levelErrors, [levelId]: errorWords },
     };
     setGame(next);
-    await saveGameState(username, next);
-  }, [username, game]);
+    gameRef.current = next;
+    await saveGameState(u, next);
+  }, []);
 
   // ─── Tarea Diaria ────────────────────────────────────────────────────────
 
   const resetDailyIfNeeded = useCallback(async () => {
-    if (!username) return;
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = dailyRef.current;
     const today = new Date().toISOString().split('T')[0];
-    if (daily.lastDailyDate !== today) {
+    if (current.lastDailyDate !== today) {
       const next: DailyState = {
-        ...daily,
+        ...current,
         lastDailyDate: today,
         learnedWords: {},
         dailyCompleted: false,
       };
       setDaily(next);
-      await saveDailyState(username, next);
+      dailyRef.current = next;
+      await saveDailyState(u, next);
     }
-  }, [username, daily]);
+  }, []);
 
   const markWordLearned = useCallback(async (word: string) => {
-    if (!username) return;
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = dailyRef.current;
     const next: DailyState = {
-      ...daily,
-      learnedWords: { ...daily.learnedWords, [word]: true },
-      // Acumular históricamente todas las palabras aprendidas (nunca se borra)
-      allLearnedWords: { ...daily.allLearnedWords, [word]: true },
+      ...current,
+      learnedWords: { ...current.learnedWords, [word]: true },
+      allLearnedWords: { ...current.allLearnedWords, [word]: true },
     };
     setDaily(next);
-    await saveDailyState(username, next);
-  }, [username, daily]);
+    dailyRef.current = next;
+    await saveDailyState(u, next);
+  }, []);
 
   const finishDaily = useCallback(async () => {
-    if (!username || daily.dailyCompleted) return;
-    const next: DailyState = {
-      ...daily,
+    const u = usernameRef.current;
+    const currentDaily = dailyRef.current;
+    if (!u || currentDaily.dailyCompleted) return;
+    const nextDaily: DailyState = {
+      ...currentDaily,
       dailyCompleted: true,
-      totalDaysCompleted: daily.totalDaysCompleted + 1,
+      totalDaysCompleted: currentDaily.totalDaysCompleted + 1,
     };
-    setDaily(next);
-    await saveDailyState(username, next);
-
-    // Recompensar: +10 💸 +20 XP
-    // NOTA: NO incrementar streak aquí. La racha se maneja únicamente en completeLevel
-    // para evitar doble incremento cuando el usuario completa un nivel Y la tarea diaria el mismo día.
+    setDaily(nextDaily);
+    dailyRef.current = nextDaily;
+    await saveDailyState(u, nextDaily);
+    // Recompensar: +10 💎 +20 XP
+    const currentGame = gameRef.current;
     const nextGame: GameState = {
-      ...game,
-      gems: game.gems + 10,
-      xp: game.xp + 20,
+      ...currentGame,
+      gems: currentGame.gems + 10,
+      xp: currentGame.xp + 20,
     };
     setGame(nextGame);
-    await saveGameState(username, nextGame);
-  }, [username, daily, game]);
+    gameRef.current = nextGame;
+    await saveGameState(u, nextGame);
+  }, []);
 
   // ─── Minijuego ───────────────────────────────────────────────────────────
 
   const addMiniGameTime = useCallback(async (ms: number) => {
-    if (!username) return;
-    const next: MiniGameState = { ...miniGame, playedMs: miniGame.playedMs + ms };
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = miniGameRef.current;
+    const next: MiniGameState = { ...current, playedMs: current.playedMs + ms };
     setMiniGame(next);
-    await saveMiniGameState(username, next);
-  }, [username, miniGame]);
+    miniGameRef.current = next;
+    await saveMiniGameState(u, next);
+  }, []);
 
   const winMiniGame = useCallback(async () => {
-    if (!username) return;
-    const nextGame: GameState = { ...game, gems: game.gems + 10 };
+    const u = usernameRef.current;
+    if (!u) return;
+    const current = gameRef.current;
+    const nextGame: GameState = { ...current, gems: current.gems + 10 };
     setGame(nextGame);
-    await saveGameState(username, nextGame);
-  }, [username, game]);
+    gameRef.current = nextGame;
+    await saveGameState(u, nextGame);
+  }, []);
 
   const renameUsername = useCallback(async (newName: string): Promise<{ ok: boolean; error?: string }> => {
-    if (!username) return { ok: false, error: 'No hay sesión activa' };
-    const result = await renameUser(username, newName);
-    if (result.ok) setUsername(newName.trim());
+    const u = usernameRef.current;
+    if (!u) return { ok: false, error: 'No hay sesión activa' };
+    const result = await renameUser(u, newName);
+    if (result.ok) {
+      setUsername(newName.trim());
+      usernameRef.current = newName.trim();
+    }
     return result;
-  }, [username]);
+  }, []);
 
   // ─── Bono Diario ─────────────────────────────────────────────────────────
 
   const claimDailyBonus = useCallback(async (): Promise<boolean> => {
-    if (!username) return false;
-    const eligible = await canClaimDailyBonus(username);
+    const u = usernameRef.current;
+    if (!u) return false;
+    const eligible = await canClaimDailyBonus(u);
     if (!eligible) return false;
-    const nextGame: GameState = { ...game, gems: game.gems + 25 };
+    const current = gameRef.current;
+    const nextGame: GameState = { ...current, gems: current.gems + 25 };
     setGame(nextGame);
-    await saveGameState(username, nextGame);
-    await markDailyBonusClaimed(username);
+    gameRef.current = nextGame;
+    await saveGameState(u, nextGame);
+    await markDailyBonusClaimed(u);
     return true;
-  }, [username, game]);
+  }, []);
 
   // ─── Render ────────────────────────────────────────────────────────────────────────────────────
 
@@ -384,7 +452,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     <GameContext.Provider value={{
       username, isLoading,
       login, register, logout, renameUsername,
-      game, updateGame, completeLevel, saveLevelErrors, loseHeart, spendGems, claimDailyBonus,
+      game, updateGame, completeLevel, saveLevelErrors, loseHeart, spendGems, addGems, claimDailyBonus,
       daily, markWordLearned, finishDaily, resetDailyIfNeeded,
       miniGame, addMiniGameTime, winMiniGame,
     }}>

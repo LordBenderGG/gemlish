@@ -333,8 +333,9 @@ function LevelCard({ levelNum, isCompleted, isUnlocked, onPress, onPressLocked }
 export default function LevelsScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const { username, game } = useGame();
+  const { username, game, claimDailyBonus } = useGame();
   const { xp, gems, streak, maxUnlockedLevel, levelProgress } = game;
+  const [dailyBonusGems, setDailyBonusGems] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewLevel, setPreviewLevel] = useState<number | null>(null);
@@ -371,8 +372,14 @@ export default function LevelsScreen() {
         showUnlockAnimation(maxUnlockedLevel);
       }
       prevMaxUnlockedRef.current = maxUnlockedLevel;
-      // Recargar desafío del día al volver al mapa
-    }, [maxUnlockedLevel, showUnlockAnimation])
+      // Reclamar bono diario de 25 gemas si aplica
+      claimDailyBonus().then(claimed => {
+        if (claimed) {
+          setDailyBonusGems(25);
+          setTimeout(() => setDailyBonusGems(null), 3500);
+        }
+      }).catch(() => {});
+    }, [maxUnlockedLevel, showUnlockAnimation, claimDailyBonus])
   );
 
   const unlockAnimStyle = useAnimatedStyle(() => ({
@@ -628,6 +635,12 @@ export default function LevelsScreen() {
 
       {/* Confeti de desbloqueo */}
       <ConfettiOverlay visible={showConfetti} />
+      {/* Toast de bono diario */}
+      {dailyBonusGems !== null && (
+        <View style={styles.dailyBonusToast} pointerEvents="none">
+          <Text style={styles.dailyBonusText}>🎁 ¡Bono diario! +{dailyBonusGems} 💎</Text>
+        </View>
+      )}
 
       {/* Overlay de animación de desbloqueo */}
       {unlockAnim && (
@@ -1193,5 +1206,25 @@ const styles = StyleSheet.create({
   progressWidgetBarBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 100, marginBottom: 8, overflow: 'hidden' },
   progressWidgetBarFill: { height: '100%' as any, backgroundColor: '#4ADE80', borderRadius: 100 },
   progressWidgetNext: { fontSize: 11, color: 'rgba(196,206,234,0.6)', fontWeight: '500' },
+  dailyBonusToast: {
+    position: 'absolute',
+    top: 90,
+    alignSelf: 'center',
+    backgroundColor: '#4F46E5',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
+    zIndex: 9998,
+  },
+  dailyBonusText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
 

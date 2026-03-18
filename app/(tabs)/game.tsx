@@ -242,7 +242,7 @@ export default function GameScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
   const scheme = useColorScheme();
-  const { game, username, updateGame, miniGame, addMiniGameTime, winMiniGame } = useGame();
+  const { game, username, updateGame, addGems, miniGame, addMiniGameTime, winMiniGame } = useGame();
 
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [gameWon, setGameWon] = useState(false);
@@ -300,10 +300,10 @@ export default function GameScreen() {
   const handleVideoRewarded = useCallback(async () => {
     if (!username) return;
     await recordVideoWatched(username);
-    await updateGame({ gems: game.gems + VIDEO_GEMS });
+    await addGems(VIDEO_GEMS);
     await refreshVideoStatus();
     Alert.alert('🎉 ¡Recompensa!', `+${VIDEO_GEMS} 💎 añadidas a tu cuenta.`);
-  }, [username, game.gems, updateGame, refreshVideoStatus]);
+  }, [username, addGems, refreshVideoStatus]);
 
   const { loaded: videoAdLoaded, showAd: showVideoAd } = useRewardedAd(
     AD_UNIT_IDS.REWARDED_CONTINUE,

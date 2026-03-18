@@ -459,3 +459,12 @@
 - [ ] Botón "Ver video" en Memory Pairs: +50 gemas, cooldown 20min, máx 3/día, bloqueo 24h tras el 3er uso
 - [ ] Agregar campo gems a cada logro en achievements.ts
 - [ ] Entregar gemas automáticamente al desbloquear un logro
+
+## v1.32 — QA y corrección de bugs críticos
+- [x] BUG CRÍTICO: Stale closure en GameContext — saveLevelErrors sobreescribía el progreso guardado por completeLevel (nivel completado, XP, gemas se perdían después de completar un nivel)
+- [x] BUG CRÍTICO: Todas las funciones del GameContext usaban `game` del closure (stale) — corregido con useRef (gameRef, dailyRef, miniGameRef, usernameRef)
+- [x] BUG: AchievementsContext usaba updateGame con game.gems stale — corregido con nueva función addGems()
+- [x] BUG: game.tsx handleVideoRewarded usaba updateGame con game.gems stale — corregido con addGems()
+- [x] BUG: claimDailyBonus nunca se llamaba desde ninguna pantalla — conectado en index.tsx con toast visual "+25 💎 Bono diario"
+- [x] BUG: checkAchievements y username faltaban en dependencias de handleAnswer useCallback
+- [x] MEJORA: Nueva función addGems() en GameContext para incrementos seguros de gemas sin stale closure

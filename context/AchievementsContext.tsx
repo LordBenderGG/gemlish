@@ -29,7 +29,8 @@ export function useAchievements(): AchievementsContextValue {
 
 export function AchievementsProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
-  const { updateGame, game } = useGame();
+  // Usar addGems (lee siempre del ref más reciente en GameContext)
+  const { addGems } = useGame();
   const [currentToast, setCurrentToast] = useState<Achievement | null>(null);
   const queueRef = useRef<Achievement[]>([]);
   const isShowingRef = useRef(false);
@@ -55,9 +56,10 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
     if (newOnes.length === 0) return;
 
     // Entregar gemas por los logros desbloqueados
+    // addGems siempre lee el estado más reciente desde gameRef en GameContext
     const totalGems = newOnes.reduce((sum, a) => sum + (a.gems ?? 0), 0);
     if (totalGems > 0) {
-      await updateGame({ gems: game.gems + totalGems });
+      await addGems(totalGems);
     }
 
     // Encolar todos los nuevos logros para mostrar el toast
@@ -67,7 +69,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
     if (!isShowingRef.current) {
       showNext();
     }
-  }, [showNext, updateGame, game.gems]);
+  }, [showNext, addGems]);
 
   return (
     <AchievementsContext.Provider value={{ checkAchievements }}>
