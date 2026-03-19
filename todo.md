@@ -482,3 +482,8 @@
 - [x] Mostrar estrellas en la pantalla de resultado del ejercicio (exercise/[levelId].tsx)
 - [x] Mostrar 3 estrellas doradas en PerfectScreen
 - [x] Auditoría QA completa post-cambio: TypeScript limpio, edge cases cubiertos
+
+## v1.35 — Fix lógica tarea diaria
+- [x] BUG: Palabras del día siguen visibles en "Hoy" después de completar el quiz — corregido: pestaña Hoy muestra mensaje vacío cuando dailyCompleted=true
+- [x] BUG: Día 2 solo mostraba 10 palabras nuevas al final de las ya aprendidas — corregido: getDailyWords ahora recibe allLearnedWords y excluye palabras ya aprendidas, siempre retorna 30 palabras nuevas
+- [x] Crash potencial en MiniQuiz si questions está vacío — corregido con guard defensivo

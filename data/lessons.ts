@@ -6077,14 +6077,14 @@ export function getTodayKey(): string {
   return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 }
 
-export function getDailyWords(): Word[] {
-  const today = new Date();
-  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const startLesson = dayOfYear % 30;
-  const dailyWords: Word[] = [];
-  for (let i = 0; i < 3; i++) {
-    const lessonIndex = (startLesson + i) % 30;
-    dailyWords.push(...LESSONS[lessonIndex].words);
-  }
-  return dailyWords.slice(0, 30);
+export function getDailyWords(allLearnedWords?: Record<string, boolean>): Word[] {
+  // Obtener todas las palabras de todas las lecciones en orden
+  const allWords: Word[] = LESSONS.flatMap(l => l.words);
+  // Si hay palabras ya aprendidas, excluirlas para dar siempre palabras nuevas
+  const learned = allLearnedWords ?? {};
+  const unlearned = allWords.filter(w => learned[w.word] !== true);
+  // Si ya se aprendieron todas, reiniciar desde el principio
+  const pool = unlearned.length >= 30 ? unlearned : allWords;
+  // Tomar las primeras 30 del pool (en orden, sin las aprendidas)
+  return pool.slice(0, 30);
 }

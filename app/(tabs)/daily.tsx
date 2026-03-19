@@ -161,6 +161,12 @@ function MiniQuiz({ words, onComplete }: MiniQuizProps) {
 
   const q = questions[idx];
 
+  // Guard: si no hay preguntas (edge case), completar inmediatamente
+  if (!q) {
+    onComplete(0);
+    return null;
+  }
+
   const handleSelect = useCallback((option: string) => {
     if (selected !== null) return;
     setSelected(option);
@@ -219,7 +225,9 @@ export default function DailyScreen() {
   const t = useThemeStyles();
   const scheme = useColorScheme();
   const { username, daily, markWordLearned, finishDaily, resetDailyIfNeeded, game } = useGame();
-  const [words] = useState<Word[]>(() => getDailyWords());
+  // Calcular las 30 palabras del día excluyendo las ya aprendidas históricamente
+  // Se recalcula cuando cambia allLearnedWords (nuevo día o nueva sesión)
+  const words = useMemo(() => getDailyWords(daily.allLearnedWords), [daily.allLearnedWords]);
   const [phase, setPhase] = useState<Phase>('study');
   const { showAd: showDailyRetryAd, loaded: dailyRetryAdLoaded } = useRewardedAd(
     AD_UNIT_IDS.REWARDED_DAILY_RETRY,
@@ -482,46 +490,62 @@ function StudyTabsView({
       {/* Pestaña HOY */}
       {activeTab === 'hoy' && (
         <>
-          <View style={styles.progressSection}>
-            <View style={styles.progressLabelRow}>
-              <Text style={styles.progressLabel}>Progreso de hoy</Text>
-              <Text style={styles.progressCount}>{learnedCount}/30 palabras</Text>
+          {daily.dailyCompleted ? (
+            // Tarea completada: sección Hoy vacía hasta mañana
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+              <Text style={{ fontSize: 64, marginBottom: 16 }}>🌟</Text>
+              <Text style={{ fontSize: 20, fontWeight: '800', color: '#1E293B', textAlign: 'center', marginBottom: 8 }}>
+                ¡Tarea completada!
+              </Text>
+              <Text style={{ fontSize: 15, color: '#64748B', textAlign: 'center', marginBottom: 4 }}>
+                Vuelve mañana para 30 palabras nuevas.
+              </Text>
+              <Text style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center' }}>
+                Las palabras de hoy ya están en la pestaña Aprendidas.
+              </Text>
             </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
-            </View>
-            {dueWords.length > 0 && (
-              <Text style={styles.dueLabel}>📚 {dueWords.length} palabras pendientes de repaso</Text>
-            )}
-          </View>
-          <AdBanner style={{ marginBottom: 4 }} />
-          <FlatList
-            data={words}
-            keyExtractor={(item) => item.word}
-            renderItem={renderItem}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            initialNumToRender={5}
-            maxToRenderPerBatch={5}
-          />
-          {!daily.dailyCompleted && (
-            <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
-              <TouchableOpacity
-                style={[styles.completeBtn, !allLearned && styles.completeBtnDisabled]}
-                onPress={() => {
-                  if (!allLearned) {
-                    Alert.alert('Faltan palabras', `Aún te faltan ${30 - learnedCount} palabras por marcar como aprendidas.`);
-                    return;
-                  }
-                  onStartQuiz();
-                }}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.completeBtnText, !allLearned && styles.completeBtnTextDisabled]}>
-                  {allLearned ? '🧠 Hacer Mini Quiz (5 preguntas)' : `Faltan ${30 - learnedCount} palabras`}
-                </Text>
-              </TouchableOpacity>
-            </View>
+          ) : (
+            <>
+              <View style={styles.progressSection}>
+                <View style={styles.progressLabelRow}>
+                  <Text style={styles.progressLabel}>Progreso de hoy</Text>
+                  <Text style={styles.progressCount}>{learnedCount}/30 palabras</Text>
+                </View>
+                <View style={styles.progressBarBg}>
+                  <View style={[styles.progressBarFill, { width: `${progressPct}%` as any }]} />
+                </View>
+                {dueWords.length > 0 && (
+                  <Text style={styles.dueLabel}>📚 {dueWords.length} palabras pendientes de repaso</Text>
+                )}
+              </View>
+              <AdBanner style={{ marginBottom: 4 }} />
+              <FlatList
+                data={words}
+                keyExtractor={(item) => item.word}
+                renderItem={renderItem}
+                contentContainerStyle={styles.list}
+                showsVerticalScrollIndicator={false}
+                initialNumToRender={5}
+                maxToRenderPerBatch={5}
+              />
+              <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
+                <TouchableOpacity
+                  style={[styles.completeBtn, !allLearned && styles.completeBtnDisabled]}
+                  onPress={() => {
+                    if (!allLearned) {
+                      Alert.alert('Faltan palabras', `Aún te faltan ${30 - learnedCount} palabras por marcar como aprendidas.`);
+                      return;
+                    }
+                    onStartQuiz();
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.completeBtnText, !allLearned && styles.completeBtnTextDisabled]}>
+                    {allLearned ? '🧠 Hacer Mini Quiz (5 preguntas)' : `Faltan ${30 - learnedCount} palabras`}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
         </>
       )}
