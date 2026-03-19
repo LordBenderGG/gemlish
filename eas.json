@@ -43,7 +43,8 @@
         "ORG_GRADLE_PROJECT_minSdkVersion": "24"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "credentialsSource": "local"
       },
       "ios": {
         "autoIncrement": true
