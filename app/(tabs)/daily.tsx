@@ -392,6 +392,7 @@ export default function DailyScreen() {
       renderItem={renderItem}
       onBack={daily.dailyCompleted ? () => setPhase('done') : undefined}
       onStartQuiz={() => setPhase('quiz')}
+      initialTab={daily.dailyCompleted ? 'aprendidas' : 'hoy'}
     />
   );
 }
@@ -410,13 +411,15 @@ interface StudyTabsViewProps {
   renderItem: ({ item }: { item: Word }) => React.ReactElement;
   onBack?: () => void;
   onStartQuiz: () => void;
+  /** Pestaña inicial: 'aprendidas' cuando se viene de la pantalla de completado */
+  initialTab?: 'hoy' | 'aprendidas';
 }
 
 function StudyTabsView({
   words, daily, game, insets, t, learnedCount, progressPct, allLearned,
-  dueWords, renderItem, onBack, onStartQuiz,
+  dueWords, renderItem, onBack, onStartQuiz, initialTab,
 }: StudyTabsViewProps) {
-  const [activeTab, setActiveTab] = useState<'hoy' | 'aprendidas'>('hoy');
+  const [activeTab, setActiveTab] = useState<'hoy' | 'aprendidas'>(initialTab ?? 'hoy');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Construir lista de todas las palabras aprendidas históricamente

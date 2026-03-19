@@ -487,3 +487,7 @@
 - [x] BUG: Palabras del día siguen visibles en "Hoy" después de completar el quiz — corregido: pestaña Hoy muestra mensaje vacío cuando dailyCompleted=true
 - [x] BUG: Día 2 solo mostraba 10 palabras nuevas al final de las ya aprendidas — corregido: getDailyWords ahora recibe allLearnedWords y excluye palabras ya aprendidas, siempre retorna 30 palabras nuevas
 - [x] Crash potencial en MiniQuiz si questions está vacío — corregido con guard defensivo
+
+## v1.36 — Fix UI bugs
+- [x] BUG: Al volver de la lista tras completar el quiz, la pestaña activa ahora arranca en "Aprendidas" cuando dailyCompleted=true
+- [x] BUG: Fondo negro sólido en overlay de nivel desbloqueado — cambiado de rgba(0,0,0,0.85) a rgba(0,0,0,0.45) semitransparente
