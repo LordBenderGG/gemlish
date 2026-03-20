@@ -5,7 +5,7 @@
  * usando la fecha como semilla para que sea consistente durante todo el día.
  * Al completarlo, el usuario recibe el doble de XP y diamantes.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGetJson, kvSetJson } from './local-kv';
 
 export interface DailyChallenge {
   /** Fecha del desafío en formato YYYY-MM-DD */
@@ -55,13 +55,11 @@ export function getDailyChallengeLevel(today: string, maxUnlockedLevel: number):
 // ─── Persistencia ────────────────────────────────────────────────────────────
 
 export async function getDailyChallenge(username: string): Promise<DailyChallenge | null> {
-  const raw = await AsyncStorage.getItem(KEY(username));
-  if (!raw) return null;
-  return JSON.parse(raw) as DailyChallenge;
+  return kvGetJson<DailyChallenge | null>(KEY(username), null);
 }
 
 export async function saveDailyChallenge(username: string, challenge: DailyChallenge): Promise<void> {
-  await AsyncStorage.setItem(KEY(username), JSON.stringify(challenge));
+  await kvSetJson(KEY(username), challenge);
 }
 
 /**

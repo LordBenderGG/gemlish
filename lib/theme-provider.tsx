@@ -1,9 +1,9 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { Appearance, View } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
+import { kvRemove } from "@/lib/local-kv";
 
 const THEME_KEY = "@gemlish_theme_v3";
 // Siempre modo claro — el modo oscuro fue eliminado de la app
@@ -35,19 +35,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Al iniciar: borrar cualquier tema oscuro guardado y forzar claro
   useEffect(() => {
-    AsyncStorage.removeItem(THEME_KEY);
+    kvRemove(THEME_KEY).catch(() => {});
     applyLight();
   }, [applyLight]);
 
   // setColorScheme y resetToSystem son no-ops: siempre claro
   const setColorScheme = useCallback(async (_scheme: ColorScheme) => {
     applyLight();
-    await AsyncStorage.removeItem(THEME_KEY);
+    await kvRemove(THEME_KEY);
   }, [applyLight]);
 
   const resetToSystem = useCallback(async () => {
     applyLight();
-    await AsyncStorage.removeItem(THEME_KEY);
+    await kvRemove(THEME_KEY);
   }, [applyLight]);
 
   const themeVariables = useMemo(

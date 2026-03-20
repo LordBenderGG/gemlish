@@ -3,7 +3,7 @@
  * Persiste si el usuario quiere efectos de sonido activados o no
  */
 import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGet, kvSet } from './local-kv';
 
 const SOUND_ENABLED_KEY = '@gemlish_sound_enabled';
 
@@ -20,7 +20,7 @@ export function useSoundSettings() {
 
   useEffect(() => {
     // Cargar preferencia guardada al montar
-    AsyncStorage.getItem(SOUND_ENABLED_KEY).then(val => {
+    kvGet(SOUND_ENABLED_KEY).then(val => {
       const enabled = val !== 'false'; // default: true
       _soundEnabled = enabled;
       setSoundEnabledState(enabled);
@@ -37,7 +37,7 @@ export function useSoundSettings() {
   const setSoundEnabled = useCallback((value: boolean) => {
     _soundEnabled = value;
     notifyListeners(value);
-    AsyncStorage.setItem(SOUND_ENABLED_KEY, String(value)).catch(() => {});
+    kvSet(SOUND_ENABLED_KEY, String(value)).catch(() => {});
   }, []);
 
   return { soundEnabled, setSoundEnabled };

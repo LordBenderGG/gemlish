@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView,
+  View, Text, TouchableOpacity, StyleSheet,
   StatusBar, FlatList,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -9,7 +9,6 @@ import { useGame } from '@/context/GameContext';
 import { useSpeech } from '@/hooks/use-speech';
 import { LESSONS } from '@/data/lessons';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // Buscar datos de una palabra en las lecciones
 function findWordData(wordEn: string) {
@@ -64,7 +63,7 @@ function WordReviewCard({ wordEn, onMastered }: { wordEn: string; onMastered: ()
 
       {flipped && word.example && (
         <View style={styles.exampleBox}>
-          <Text style={styles.exampleEn}>"{word.example}"</Text>
+          <Text style={styles.exampleEn}>&ldquo;{word.example}&rdquo;</Text>
           <Text style={styles.exampleEs}>{word.exampleEs}</Text>
         </View>
       )}
@@ -94,7 +93,6 @@ function WordReviewCard({ wordEn, onMastered }: { wordEn: string; onMastered: ()
 export default function ReviewScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const { game } = useGame();
   const levelNum = parseInt(levelId || '1', 10);
@@ -191,7 +189,7 @@ export default function ReviewScreen() {
         )}
         ListHeaderComponent={
           <Text style={styles.listHeader}>
-            Palabras que necesitas repasar — toca "Ya lo sé" cuando las domines
+            Palabras que necesitas repasar — toca &ldquo;Ya lo sé&rdquo; cuando las domines
           </Text>
         }
         ListEmptyComponent={

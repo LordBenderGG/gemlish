@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGetJson, kvSetJson } from './local-kv';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,7 @@ const MAX_SESSIONS = 20; // Guardar solo las últimas 20 sesiones
 // ─── Funciones ───────────────────────────────────────────────────────────────
 
 export async function getPracticeHistory(username: string): Promise<PracticeSession[]> {
-  const raw = await AsyncStorage.getItem(KEY(username));
-  if (!raw) return [];
-  return JSON.parse(raw) as PracticeSession[];
+  return kvGetJson<PracticeSession[]>(KEY(username), []);
 }
 
 export async function savePracticeSession(
@@ -38,7 +36,7 @@ export async function savePracticeSession(
   const history = await getPracticeHistory(username);
   // Insertar al principio (más reciente primero) y limitar
   const updated = [newSession, ...history].slice(0, MAX_SESSIONS);
-  await AsyncStorage.setItem(KEY(username), JSON.stringify(updated));
+  await kvSetJson(KEY(username), updated);
   return newSession;
 }
 

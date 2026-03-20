@@ -7,7 +7,6 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotifications } from '@/hooks/use-notifications';
-import * as Notifications from 'expo-notifications';
 import { useSoundSettings } from '@/lib/sound-settings';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
 import { useGame } from '@/context/GameContext';

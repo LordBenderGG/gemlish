@@ -8,7 +8,6 @@ import { getLevelData, getLevelIcon, Word } from '@/data/lessons';
 import { useGame } from '@/context/GameContext';
 import { useSpeech } from '@/hooks/use-speech';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 function WordReviewCard({ word, t }: { word: Word; t: ReturnType<typeof useThemeStyles> }) {
   const { speaking, toggle, currentWord } = useSpeech();
@@ -31,7 +30,7 @@ function WordReviewCard({ word, t }: { word: Word; t: ReturnType<typeof useTheme
         </TouchableOpacity>
       </View>
       <View style={[styles.exampleBox, { backgroundColor: '#F8FAFF', borderLeftColor: '#38BDF8' }]}>
-        <Text style={[styles.exampleEn, { color: t.text }]}>"{word.example}"</Text>
+        <Text style={[styles.exampleEn, { color: t.text }]}>&ldquo;{word.example}&rdquo;</Text>
         <Text style={[styles.exampleEs, { color: t.muted }]}>{word.exampleEs}</Text>
       </View>
     </View>
@@ -41,7 +40,6 @@ function WordReviewCard({ word, t }: { word: Word; t: ReturnType<typeof useTheme
 export default function LevelDetailScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
   const { levelId } = useLocalSearchParams<{ levelId: string }>();
   const levelNum = parseInt(levelId || '1', 10);
   const { game } = useGame();

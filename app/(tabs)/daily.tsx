@@ -11,9 +11,9 @@ import { useGame } from '@/context/GameContext';
 import { getDailyWords, Word, LESSONS } from '@/data/lessons';
 import { useSpeech } from '@/hooks/use-speech';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
+import { useFocusEffect } from 'expo-router';
+import { kvGetJson, kvSetJson } from '@/lib/local-kv';
 
 // ─── SM-2 Repaso Espaciado ────────────────────────────────────────────────────
 
@@ -46,14 +46,11 @@ function sm2Update(card: SM2Card, quality: number): SM2Card {
 }
 
 async function loadSM2Cards(username: string): Promise<Record<string, SM2Card>> {
-  try {
-    const raw = await AsyncStorage.getItem(SM2_KEY(username));
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+  return kvGetJson<Record<string, SM2Card>>(SM2_KEY(username), {});
 }
 
 async function saveSM2Cards(username: string, cards: Record<string, SM2Card>): Promise<void> {
-  await AsyncStorage.setItem(SM2_KEY(username), JSON.stringify(cards));
+  await kvSetJson(SM2_KEY(username), cards);
 }
 
 function getDueWords(cards: Record<string, SM2Card>): string[] {
@@ -93,7 +90,7 @@ function WordCard({ word, isLearned, onLearn }: WordCardProps) {
       </View>
       <Text style={styles.wordTranslation}>{word.translation}</Text>
       <View style={styles.exampleBox}>
-        <Text style={styles.exampleEn}>"{word.example}"</Text>
+        <Text style={styles.exampleEn}>&ldquo;{word.example}&rdquo;</Text>
         <Text style={styles.exampleEs}>{word.exampleEs}</Text>
       </View>
       <TouchableOpacity
@@ -159,15 +156,9 @@ function MiniQuiz({ words, onComplete }: MiniQuizProps) {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, []);
 
-  const q = questions[idx];
-
-  // Guard: si no hay preguntas (edge case), completar inmediatamente
-  if (!q) {
-    onComplete(0);
-    return null;
-  }
-
   const handleSelect = useCallback((option: string) => {
+    const q = questions[idx];
+    if (!q) return;
     if (selected !== null) return;
     setSelected(option);
     const correct = option === q.correct;
@@ -182,7 +173,18 @@ function MiniQuiz({ words, onComplete }: MiniQuizProps) {
         setSelected(null);
       }
     }, 1200);
-  }, [selected, q, idx, questions.length, score, playCorrect, playWrong, onComplete]);
+  }, [selected, idx, questions, score, playCorrect, playWrong, onComplete]);
+
+  const q = questions[idx];
+
+  // Guard: si no hay preguntas (edge case), completar inmediatamente
+  useEffect(() => {
+    if (!q) onComplete(0);
+  }, [q, onComplete]);
+
+  if (!q) {
+    return null;
+  }
 
   return (
     <View style={styles.quizContainer}>
@@ -223,11 +225,20 @@ type Phase = 'study' | 'quiz' | 'spaced-review' | 'done';
 export default function DailyScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
   const { username, daily, markWordLearned, finishDaily, resetDailyIfNeeded, game } = useGame();
-  // Calcular las 30 palabras del día excluyendo las ya aprendidas históricamente
-  // Se recalcula cuando cambia allLearnedWords (nuevo día o nueva sesión)
-  const words = useMemo(() => getDailyWords(daily.allLearnedWords), [daily.allLearnedWords]);
+  const [todayWordSnapshot, setTodayWordSnapshot] = useState<Record<string, boolean>>({});
+  const [snapshotDate, setSnapshotDate] = useState('');
+
+  // Fijar las 30 palabras del día para evitar que cambien mientras el usuario aprende.
+  useEffect(() => {
+    if (!daily.lastDailyDate) return;
+    if (snapshotDate !== daily.lastDailyDate) {
+      setTodayWordSnapshot({ ...(daily.allLearnedWords ?? {}) });
+      setSnapshotDate(daily.lastDailyDate);
+    }
+  }, [daily.lastDailyDate, daily.allLearnedWords, snapshotDate]);
+
+  const words = useMemo(() => getDailyWords(todayWordSnapshot), [todayWordSnapshot]);
   const [phase, setPhase] = useState<Phase>('study');
   const { showAd: showDailyRetryAd, loaded: dailyRetryAdLoaded } = useRewardedAd(
     AD_UNIT_IDS.REWARDED_DAILY_RETRY,
@@ -239,10 +250,24 @@ export default function DailyScreen() {
   const [sm2Cards, setSm2Cards] = useState<Record<string, SM2Card>>({});
   const [dueWords, setDueWords] = useState<Word[]>([]);
 
-  useEffect(() => {
-    resetDailyIfNeeded();
-    if (username) {
-      loadSM2Cards(username).then(cards => {
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      (async () => {
+        await resetDailyIfNeeded();
+
+        if (!username) {
+          if (active) {
+            setSm2Cards({});
+            setDueWords([]);
+          }
+          return;
+        }
+
+        const cards = await loadSM2Cards(username);
+        if (!active) return;
+
         setSm2Cards(cards);
         const dueKeys = getDueWords(cards);
         const allWords = LESSONS.flatMap(l => l.words);
@@ -250,9 +275,13 @@ export default function DailyScreen() {
           .map(k => allWords.find(w => w.word === k))
           .filter(Boolean) as Word[];
         setDueWords(due.slice(0, 10));
-      });
-    }
-  }, [username]);
+      })();
+
+      return () => {
+        active = false;
+      };
+    }, [username, resetDailyIfNeeded])
+  );
 
   const learnedCount = Object.values(daily.learnedWords).filter(Boolean).length;
   const progressPct = Math.round((learnedCount / 30) * 100);
@@ -588,7 +617,7 @@ function StudyTabsView({
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
               <Text style={{ fontSize: 48, marginBottom: 16 }}>🔍</Text>
               <Text style={{ fontSize: 16, color: '#64748B', textAlign: 'center' }}>
-                No se encontró "{searchQuery}"
+                No se encontró &ldquo;{searchQuery}&rdquo;
               </Text>
             </View>
           ) : (
@@ -662,7 +691,7 @@ function SpacedReviewPhase({
             <View>
               <Text style={styles.spacedTranslation}>{word.translation}</Text>
               <View style={styles.exampleBox}>
-                <Text style={styles.exampleEn}>"{word.example}"</Text>
+                <Text style={styles.exampleEn}>&ldquo;{word.example}&rdquo;</Text>
                 <Text style={styles.exampleEs}>{word.exampleEs}</Text>
               </View>
               <Text style={styles.rateLabel}>¿Qué tan bien la sabías?</Text>

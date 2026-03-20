@@ -11,7 +11,7 @@ const env = {
   appSlug: "gemlish",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663032356208/HiZUwaORcoYwhUWL.png",
+  logoUrl: "",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
@@ -20,7 +20,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.55",
+  version: "1.0.49",
   // Play Store: versionCode debe incrementarse en cada release
   // Se gestiona automáticamente por EAS Build con autoIncrement: true en eas.json
   // NOTA Android 16: orientation portrait se ignora en tablets/plegables.
@@ -48,7 +48,7 @@ const config: ExpoConfig = {
     // edgeToEdgeEnabled: true, // Deprecado en Android 15 - edge-to-edge es obligatorio en SDK 54 + Android 16
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    permissions: ["POST_NOTIFICATIONS", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM"],
+    permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {
         action: "VIEW",
@@ -94,7 +94,7 @@ const config: ExpoConfig = {
       "expo-splash-screen",
       {
         image: "./assets/images/splash-icon.png",
-        imageWidth: 200,
+        imageWidth: 320,
         resizeMode: "contain",
         backgroundColor: "#ffffff",
         dark: {

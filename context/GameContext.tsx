@@ -8,7 +8,7 @@ import {
   canClaimDailyBonus, markDailyBonusClaimed,
 } from '@/lib/storage';
 import { getDailyChallenge, saveDailyChallenge } from '@/lib/daily-challenge';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGetJson, kvSetJson } from '@/lib/local-kv';
 
 // ─── Tipos del contexto ──────────────────────────────────────────────────────
 
@@ -46,6 +46,34 @@ interface GameContextValue {
 // ─── Contexto ────────────────────────────────────────────────────────────────
 
 const GameContext = createContext<GameContextValue | null>(null);
+const HEART_REFILL_MS = 30 * 60 * 1000;
+
+function applyHeartRefill(state: GameState): GameState {
+  if (state.hearts >= 5) {
+    if (state.lastHeartRefill !== '') {
+      return { ...state, lastHeartRefill: new Date().toISOString() };
+    }
+    return state;
+  }
+
+  const lastRefillMs = Date.parse(state.lastHeartRefill || '');
+  const baseline = Number.isFinite(lastRefillMs) ? lastRefillMs : Date.now();
+  const now = Date.now();
+  const elapsed = Math.max(0, now - baseline);
+  const recoveredHearts = Math.floor(elapsed / HEART_REFILL_MS);
+
+  if (recoveredHearts <= 0) return state;
+
+  const hearts = Math.min(5, state.hearts + recoveredHearts);
+  const consumedMs = recoveredHearts * HEART_REFILL_MS;
+  const nextRefillAnchor = hearts >= 5 ? now : baseline + consumedMs;
+
+  return {
+    ...state,
+    hearts,
+    lastHeartRefill: new Date(nextRefillAnchor).toISOString(),
+  };
+}
 
 export function useGame(): GameContextValue {
   const ctx = useContext(GameContext);
@@ -96,10 +124,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
           getDailyState(user),
           getMiniGameState(user),
         ]);
-        setGame(g);
+        const hydrated = applyHeartRefill(g);
+        if (hydrated.hearts !== g.hearts || hydrated.lastHeartRefill !== g.lastHeartRefill) {
+          await saveGameState(user, hydrated);
+        }
+        setGame(hydrated);
         setDaily(d);
         setMiniGame(mg);
-        gameRef.current = g;
+        gameRef.current = hydrated;
         dailyRef.current = d;
         miniGameRef.current = mg;
       }
@@ -113,12 +145,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const updateLeaderboard = async (key: string, g: GameState) => {
     try {
-      const raw = await AsyncStorage.getItem(LEADERBOARD_KEY);
-      const all: Array<{ username: string; xp: number; streak: number; levelsCompleted: number }> = raw ? JSON.parse(raw) : [];
+      const all = await kvGetJson<Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>>(LEADERBOARD_KEY, []);
       const levelsCompleted = Object.values(g.levelProgress).filter(p => p.completed).length;
       const updated = all.filter(u => u.username !== key);
       updated.push({ username: key, xp: g.xp, streak: g.streak, levelsCompleted });
-      await AsyncStorage.setItem(LEADERBOARD_KEY, JSON.stringify(updated));
+      await kvSetJson(LEADERBOARD_KEY, updated);
     } catch { /* silencioso */ }
   };
 
@@ -133,13 +164,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getDailyState(key),
         getMiniGameState(key),
       ]);
-      setGame(g);
+      const hydrated = applyHeartRefill(g);
+      if (hydrated.hearts !== g.hearts || hydrated.lastHeartRefill !== g.lastHeartRefill) {
+        await saveGameState(key, hydrated);
+      }
+      setGame(hydrated);
       setDaily(d);
       setMiniGame(mg);
-      gameRef.current = g;
+      gameRef.current = hydrated;
       dailyRef.current = d;
       miniGameRef.current = mg;
-      updateLeaderboard(key, g);
+      updateLeaderboard(key, hydrated);
     }
     return result;
   }, []);
@@ -156,7 +191,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getMiniGameState(key),
       ]);
       // Bono de bienvenida: 100 gemas al registrarse
-      const gWithBonus = { ...g, gems: g.gems + 100 };
+      const hydrated = applyHeartRefill(g);
+      const gWithBonus = { ...hydrated, gems: hydrated.gems + 100 };
       await saveGameState(key, gWithBonus);
       setGame(gWithBonus);
       setDaily(d);
@@ -168,6 +204,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     return result;
   }, []);
+
+  useEffect(() => {
+    if (!username) return;
+    const timer = setInterval(() => {
+      const current = gameRef.current;
+      const next = applyHeartRefill(current);
+      if (next.hearts === current.hearts && next.lastHeartRefill === current.lastHeartRefill) return;
+      const u = usernameRef.current;
+      if (!u) return;
+      setGame(next);
+      gameRef.current = next;
+      saveGameState(u, next).catch(() => {});
+    }, 60_000);
+
+    return () => clearInterval(timer);
+  }, [username]);
 
   const logout = useCallback(async () => {
     await logoutUser();
@@ -297,7 +349,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const u = usernameRef.current;
     if (!u) return;
     const current = gameRef.current;
-    const next = { ...current, hearts: Math.max(current.hearts - 1, 0) };
+    const nextHearts = Math.max(current.hearts - 1, 0);
+    const next = {
+      ...current,
+      hearts: nextHearts,
+      lastHeartRefill:
+        current.hearts >= 5 && nextHearts < 5 ? new Date().toISOString() : current.lastHeartRefill,
+    };
     setGame(next);
     gameRef.current = next;
     await saveGameState(u, next);

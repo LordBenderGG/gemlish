@@ -13,7 +13,6 @@ import { useSpeech } from '@/hooks/use-speech';
 import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 import { AdBanner } from '@/components/AdBanner';
 
@@ -115,7 +114,7 @@ function QuestionCard({
     // Pronunciar automáticamente
     const timer = setTimeout(() => speak(word.word), 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [fadeAnim, speak, word.word]);
 
   const handleSubmit = () => {
     if (!input.trim() || submitted) return;
@@ -188,14 +187,13 @@ function QuestionCard({
 export default function QuickReviewScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
   const { username, game } = useGame();
   const { checkAchievements } = useAchievements();
   const { playCorrect, playWrong } = useFeedbackSounds();
 
   const words = useMemo(
     () => selectMixedWords(game.levelErrors, game.maxUnlockedLevel),
-    [],
+    [game.levelErrors, game.maxUnlockedLevel],
   );
 
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -231,7 +229,7 @@ export default function QuickReviewScreen() {
       duration: 800,
       useNativeDriver: false,
     }).start();
-  }, [timeLeft]);
+  }, [timeLeft, timerAnim]);
 
   const handleAnswer = useCallback((isCorrect: boolean) => {
     if (isCorrect) {
@@ -248,7 +246,7 @@ export default function QuickReviewScreen() {
       Animated.timing(progressAnim, { toValue: next / words.length, duration: 400, useNativeDriver: false }).start();
       setCurrentIdx(next);
     }
-  }, [currentIdx, words.length, progressAnim]);
+  }, [currentIdx, words.length, progressAnim, playCorrect, playWrong]);
 
   const handleFinish = useCallback(async () => {
     if (username) {

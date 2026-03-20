@@ -5,7 +5,6 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   StatusBar, Alert, Switch, Modal, FlatList, Platform, Share, TextInput,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +17,7 @@ import {
   getPracticeHistory, formatDuration, formatSessionDate,
   type PracticeSession,
 } from '@/lib/practice-history';
+import { kvGetJson, kvGet, kvSet, kvSetJson } from '@/lib/local-kv';
 import { AdBanner } from '@/components/AdBanner';
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
@@ -385,22 +385,21 @@ function LeaderboardSection() {
   const [entries, setEntries] = React.useState<Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>>([]);
 
   React.useEffect(() => {
-    AsyncStorage.getItem(LEADERBOARD_KEY).then(raw => {
-      if (!raw) {
+    kvGetJson<Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>>(LEADERBOARD_KEY, []).then(all => {
+      if (!all.length) {
         // Si no hay datos, mostrar solo el usuario actual
         const levelsCompleted = Object.values(game.levelProgress).filter(p => p.completed).length;
         setEntries([{ username: username ?? 'Tú', xp: game.xp, streak: game.streak, levelsCompleted }]);
         return;
       }
       try {
-        const all = JSON.parse(raw) as Array<{ username: string; xp: number; streak: number; levelsCompleted: number }>;
         // Actualizar el usuario actual
         const levelsCompleted = Object.values(game.levelProgress).filter(p => p.completed).length;
         const updated = all.map(u => u.username === username ? { ...u, xp: game.xp, streak: game.streak, levelsCompleted } : u);
         if (!updated.find(u => u.username === username)) {
           updated.push({ username: username ?? 'Tú', xp: game.xp, streak: game.streak, levelsCompleted });
         }
-        AsyncStorage.setItem(LEADERBOARD_KEY, JSON.stringify(updated));
+        kvSetJson(LEADERBOARD_KEY, updated);
         setEntries(updated.sort((a, b) => b.xp - a.xp).slice(0, 10));
       } catch {
         const levelsCompleted = Object.values(game.levelProgress).filter(p => p.completed).length;
@@ -483,12 +482,12 @@ export default function ProfileScreen() {
   const [nameSaving, setNameSaving] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(AVATAR_KEY).then(v => { if (v) setAvatar(v); });
+    kvGet(AVATAR_KEY).then(v => { if (v) setAvatar(v); });
   }, []);
 
   const handleSelectAvatar = useCallback(async (emoji: string) => {
     setAvatar(emoji);
-    await AsyncStorage.setItem(AVATAR_KEY, emoji);
+    await kvSet(AVATAR_KEY, emoji);
     setShowAvatarPicker(false);
   }, []);
 

@@ -98,7 +98,7 @@ function FireAnimation({ streak }: { streak: number }) {
       cancelAnimation(rotate);
       cancelAnimation(opacity);
     };
-  }, [streak]);
+  }, [streak, scale, rotate, opacity]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [
@@ -173,7 +173,7 @@ function LevelPreviewModal({
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.modalCard, { borderColor: levelData.color }]}
-          onPress={() => {}}
+          onPress={(event) => event.stopPropagation()}
         >
           {/* Header del modal */}
           <View style={[styles.modalHeader, { borderBottomColor: levelData.color + '40' }]}>

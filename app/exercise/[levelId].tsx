@@ -215,11 +215,11 @@ function MatchPairsView({
 
   const leftItems = useMemo(() => {
     return [...pairs.map(p => p.left)].sort(() => Math.random() - 0.5);
-  }, []);
+  }, [pairs]);
 
   const rightItems = useMemo(() => {
     return [...pairs.map(p => p.right)].sort(() => Math.random() - 0.5);
-  }, []);
+  }, [pairs]);
 
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
   const [connectedPairs, setConnectedPairs] = useState<{ leftIdx: number; rightIdx: number }[]>([]);
@@ -366,7 +366,7 @@ function ListenWriteView({
       speak(exercise.wordToSpeak);
     }, 600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [exercise.wordToSpeak, speak]);
 
   const handleSubmit = () => {
     if (!input.trim() || submitted) return;
@@ -698,7 +698,7 @@ function PerfectScreen({
       ),
       -1, false,
     ));
-  }, []);
+  }, [buttonsOpacity, statsOpacity, statsTranslateY, titleOpacity, titleTranslateY, trophyPulse, trophyRotate, trophyScale]);
 
   const trophyStyle = useAnimatedStyle(() => ({
     transform: [
@@ -1033,7 +1033,7 @@ export default function ExerciseScreen() {
     } else {
       streakPulse.value = withTiming(1.0, { duration: 200 });
     }
-  }, [internalStreak >= 3]);
+  }, [internalStreak, streakPulse]);
 
   const streakBadgeAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: streakPulse.value }],
@@ -1200,7 +1200,7 @@ export default function ExerciseScreen() {
       setHintUsed(false);
       setExerciseKey(k => k + 1);
     }
-  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, internalStreak, completeLevel, saveLevelErrors, loseHeart, animateProgress, transitionToNext, playCorrect, playWrong, playLevelComplete, playStreak, checkAchievements, username]);
+  }, [currentIdx, hearts, wrongCount, errorWords, level, levelNum, internalStreak, completeLevel, saveLevelErrors, loseHeart, animateProgress, transitionToNext, playCorrect, playWrong, playLevelComplete, playStreak, checkAchievements, username, elapsedSeconds, game.challengeStreak, game.dailyChallengesCompleted, game.gems, game.levelBestTimes, game.levelProgress, game.streak, game.xp, showLevelCompleteAd, toastOpacity, toastTranslateY, xpOpacity, xpTranslateY]);
 
   const handleHint = useCallback(async () => {
     if (hintUsed) return;

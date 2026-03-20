@@ -37,7 +37,7 @@ export function AchievementToast({ achievement, onDismiss }: AchievementToastPro
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [achievement]);
+  }, [achievement, dismiss, opacity, translateY]);
 
   if (!achievement) return null;
 
@@ -87,7 +87,7 @@ function ProgressBar({ duration }: { duration: number }) {
       duration,
       useNativeDriver: false,
     }).start();
-  }, []);
+  }, [duration, widthAnim]);
 
   return (
     <View style={styles.progressBarBg}>

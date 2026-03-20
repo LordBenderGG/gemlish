@@ -3,9 +3,29 @@
  * Permite al usuario configurar un recordatorio diario a una hora específica
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
-import * as Notifications from 'expo-notifications';
 import { Platform, AppState, AppStateStatus } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGet, kvSet, kvRemove } from '@/lib/local-kv';
+
+const Notifications =
+  Platform.OS === 'web'
+    ? {
+        setNotificationHandler: () => {},
+        getPermissionsAsync: async () => ({ status: 'denied' as const }),
+        requestPermissionsAsync: async () => ({ status: 'denied' as const }),
+        setNotificationChannelAsync: async () => {},
+        cancelScheduledNotificationAsync: async () => {},
+        scheduleNotificationAsync: async () => '',
+        AndroidImportance: {
+          HIGH: 4,
+          DEFAULT: 3,
+        },
+        SchedulableTriggerInputTypes: {
+          DAILY: 'daily',
+          CALENDAR: 'calendar',
+        },
+      }
+    : // eslint-disable-next-line @typescript-eslint/no-require-imports
+      (require('expo-notifications') as typeof import('expo-notifications'));
 
 const NOTIFICATION_HOUR_KEY = '@gemlish_notification_hour';
 const NOTIFICATION_MINUTE_KEY = '@gemlish_notification_minute';
@@ -56,14 +76,14 @@ export function useNotifications() {
 
         if (isGranted) {
           // Si el permiso fue concedido, actualizar el estado habilitado
-          const savedEnabled = await AsyncStorage.getItem(NOTIFICATION_ENABLED_KEY);
+          const savedEnabled = await kvGet(NOTIFICATION_ENABLED_KEY);
           if (savedEnabled === 'true') {
             setSettings(prev => ({ ...prev, enabled: true }));
           }
         } else {
           // Si el permiso fue revocado, deshabilitar
           setSettings(prev => ({ ...prev, enabled: false }));
-          await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
+          await kvSet(NOTIFICATION_ENABLED_KEY, 'false');
         }
       }
       appState.current = nextState;
@@ -74,9 +94,9 @@ export function useNotifications() {
   const loadSettings = async () => {
     try {
       const [enabled, hour, minute] = await Promise.all([
-        AsyncStorage.getItem(NOTIFICATION_ENABLED_KEY),
-        AsyncStorage.getItem(NOTIFICATION_HOUR_KEY),
-        AsyncStorage.getItem(NOTIFICATION_MINUTE_KEY),
+        kvGet(NOTIFICATION_ENABLED_KEY),
+        kvGet(NOTIFICATION_HOUR_KEY),
+        kvGet(NOTIFICATION_MINUTE_KEY),
       ]);
 
       // Verificar permisos actuales del sistema (fuente de verdad)
@@ -90,7 +110,7 @@ export function useNotifications() {
 
       if (wasEnabled && !isGranted) {
         // El usuario revoció el permiso desde Configuración del sistema
-        await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
+        await kvSet(NOTIFICATION_ENABLED_KEY, 'false');
       }
 
       setSettings({
@@ -145,7 +165,7 @@ export function useNotifications() {
   const scheduleDaily = useCallback(async (hour: number, minute: number, nextLevelName?: string): Promise<boolean> => {
     try {
       // Cancelar notificación anterior
-      const prevId = await AsyncStorage.getItem(NOTIFICATION_ID_KEY);
+      const prevId = await kvGet(NOTIFICATION_ID_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
       }
@@ -183,10 +203,10 @@ export function useNotifications() {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour,
           minute,
-        } as Notifications.DailyTriggerInput,
+        } as any,
       });
 
-      await AsyncStorage.setItem(NOTIFICATION_ID_KEY, id);
+      await kvSet(NOTIFICATION_ID_KEY, id);
       return true;
     } catch (err) {
       console.warn('[useNotifications] Error scheduling:', err);
@@ -202,9 +222,9 @@ export function useNotifications() {
     if (!scheduled) return false;
 
     await Promise.all([
-      AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true'),
-      AsyncStorage.setItem(NOTIFICATION_HOUR_KEY, String(hour)),
-      AsyncStorage.setItem(NOTIFICATION_MINUTE_KEY, String(minute)),
+      kvSet(NOTIFICATION_ENABLED_KEY, 'true'),
+      kvSet(NOTIFICATION_HOUR_KEY, String(hour)),
+      kvSet(NOTIFICATION_MINUTE_KEY, String(minute)),
     ]);
 
     setSettings({ enabled: true, hour, minute });
@@ -213,12 +233,12 @@ export function useNotifications() {
 
   const disableNotifications = useCallback(async () => {
     try {
-      const prevId = await AsyncStorage.getItem(NOTIFICATION_ID_KEY);
+      const prevId = await kvGet(NOTIFICATION_ID_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
-        await AsyncStorage.removeItem(NOTIFICATION_ID_KEY);
+        await kvRemove(NOTIFICATION_ID_KEY);
       }
-      await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
+      await kvSet(NOTIFICATION_ENABLED_KEY, 'false');
       setSettings(prev => ({ ...prev, enabled: false }));
     } catch (err) {
       console.warn('[useNotifications] Error disabling:', err);
@@ -230,8 +250,8 @@ export function useNotifications() {
       await enableNotifications(hour, minute);
     } else {
       await Promise.all([
-        AsyncStorage.setItem(NOTIFICATION_HOUR_KEY, String(hour)),
-        AsyncStorage.setItem(NOTIFICATION_MINUTE_KEY, String(minute)),
+        kvSet(NOTIFICATION_HOUR_KEY, String(hour)),
+        kvSet(NOTIFICATION_MINUTE_KEY, String(minute)),
       ]);
       setSettings(prev => ({ ...prev, hour, minute }));
     }
@@ -276,14 +296,14 @@ export function useNotifications() {
       }
 
       // Verificar si ya se programó hoy
-      const prevDate = await AsyncStorage.getItem(CHALLENGE_NOTIF_DATE_KEY);
+      const prevDate = await kvGet(CHALLENGE_NOTIF_DATE_KEY);
       if (prevDate === today) return;
 
       // Cancelar notificación anterior si existe
-      const prevId = await AsyncStorage.getItem(CHALLENGE_NOTIF_KEY);
+      const prevId = await kvGet(CHALLENGE_NOTIF_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
-        await AsyncStorage.removeItem(CHALLENGE_NOTIF_KEY);
+        await kvRemove(CHALLENGE_NOTIF_KEY);
       }
 
       // Verificar que las 8:00 no hayan pasado ya
@@ -307,11 +327,11 @@ export function useNotifications() {
           hour: 8,
           minute: 0,
           repeats: false,
-        } as Notifications.CalendarTriggerInput,
+        } as any,
       });
 
-      await AsyncStorage.setItem(CHALLENGE_NOTIF_KEY, id);
-      await AsyncStorage.setItem(CHALLENGE_NOTIF_DATE_KEY, today);
+      await kvSet(CHALLENGE_NOTIF_KEY, id);
+      await kvSet(CHALLENGE_NOTIF_DATE_KEY, today);
     } catch (err) {
       console.warn('[useNotifications] Error scheduling daily challenge notification:', err);
     }
@@ -348,11 +368,11 @@ export function useNotifications() {
       }
 
       // Cancelar recordatorio anterior del día si existe
-      const prevId = await AsyncStorage.getItem(RISK_NOTIF_KEY);
-      const prevDate = await AsyncStorage.getItem(RISK_NOTIF_DATE_KEY);
+      const prevId = await kvGet(RISK_NOTIF_KEY);
+      const prevDate = await kvGet(RISK_NOTIF_DATE_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
-        await AsyncStorage.removeItem(RISK_NOTIF_KEY);
+        await kvRemove(RISK_NOTIF_KEY);
       }
 
       const { streak, completedTodayCount } = params;
@@ -389,11 +409,11 @@ export function useNotifications() {
           hour: 20,
           minute: 0,
           repeats: false, // Solo una vez, no repetir
-        } as Notifications.CalendarTriggerInput,
+        } as any,
       });
 
-      await AsyncStorage.setItem(RISK_NOTIF_KEY, id);
-      await AsyncStorage.setItem(RISK_NOTIF_DATE_KEY, today);
+      await kvSet(RISK_NOTIF_KEY, id);
+      await kvSet(RISK_NOTIF_DATE_KEY, today);
     } catch (err) {
       console.warn('[useNotifications] Error scheduling streak risk reminder:', err);
     }
@@ -417,7 +437,7 @@ export function useNotifications() {
       }
 
       // Cancelar resumen semanal anterior
-      const prevId = await AsyncStorage.getItem(WEEKLY_NOTIFICATION_ID_KEY);
+      const prevId = await kvGet(WEEKLY_NOTIFICATION_ID_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
       }
@@ -445,10 +465,10 @@ export function useNotifications() {
           hour: 9,
           minute: 0,
           repeats: true,
-        } as Notifications.CalendarTriggerInput,
+        } as any,
       });
 
-      await AsyncStorage.setItem(WEEKLY_NOTIFICATION_ID_KEY, id);
+      await kvSet(WEEKLY_NOTIFICATION_ID_KEY, id);
     } catch (err) {
       console.warn('[useNotifications] Error scheduling weekly summary:', err);
     }

@@ -110,7 +110,7 @@ function WelcomeBackScreen({ onContinue }: { onContinue: () => void }) {
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.spring(scaleAnim, { toValue: 1, friction: 8, tension: 60, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim]);
 
   return (
     <Animated.View style={[styles.welcomeBackContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
@@ -163,7 +163,7 @@ function SlideView({ slide, isActive }: { slide: Slide; isActive: boolean }) {
         Animated.timing(slideAnim, { toValue: 0, duration: 320, useNativeDriver: true }),
       ]).start();
     }
-  }, [isActive]);
+  }, [isActive, fadeAnim, slideAnim]);
 
   return (
     <View style={[styles.slide, { width: SCREEN_W }]}>

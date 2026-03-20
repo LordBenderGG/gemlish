@@ -1,6 +1,6 @@
 /**
  * Custom environment loader that prioritizes system environment variables
- * over .env file values. This ensures that Manus platform-injected variables
+ * over .env file values. This ensures that environment-injected variables
  * are not overridden by placeholder values in .env
  */
 import fs from "fs";
@@ -15,9 +15,14 @@ if (!process.env.NODE_ENV) {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const envPath = path.resolve(process.cwd(), ".env");
+const envFiles = [".env.local", ".env"];
 
-if (fs.existsSync(envPath)) {
+for (const envFile of envFiles) {
+  const envPath = path.resolve(process.cwd(), envFile);
+  if (!fs.existsSync(envPath)) {
+    continue;
+  }
+
   const envContent = fs.readFileSync(envPath, "utf8");
   const lines = envContent.split("\n");
 

@@ -9,13 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/context/GameContext';
 import { useAchievements } from '@/context/AchievementsContext';
 import { savePracticeSession } from '@/lib/practice-history';
-import { useSpeech } from '@/hooks/use-speech';
 import { useFeedbackSounds } from '@/hooks/use-feedback-sounds';
 import { LESSONS } from '@/data/lessons';
 import type { Word } from '@/data/lessons';
 import { AdBanner } from '@/components/AdBanner';
 import { useThemeStyles } from '@/hooks/use-theme-styles';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 // ─── Algoritmo de Repetición Espaciada ───────────────────────────────────────
 //
@@ -83,7 +81,6 @@ function QuestionCard({ pw, questionType, onAnswer, questionNumber, total }: Que
   const [input, setInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const { speaking, speak, toggle } = useSpeech();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -94,7 +91,7 @@ function QuestionCard({ pw, questionType, onAnswer, questionNumber, total }: Que
       Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, [pw.word.word, questionType]);
+  }, [pw.word.word, questionType, fadeAnim, slideAnim]);
 
   // speak no se usa en este modo
 
@@ -174,7 +171,7 @@ function QuestionCard({ pw, questionType, onAnswer, questionNumber, total }: Que
             {isCorrect ? '✅ ¡Correcto!' : `❌ Era: "${questionType === 'translate-to-es' ? pw.word.translation : pw.word.word}"`}
           </Text>
           {!isCorrect && pw.word.example && (
-            <Text style={styles.feedbackExample}>"{pw.word.example}" — {pw.word.exampleEs}</Text>
+            <Text style={styles.feedbackExample}>&ldquo;{pw.word.example}&rdquo; — {pw.word.exampleEs}</Text>
           )}
         </View>
       )}
@@ -259,7 +256,6 @@ function RoundResult({
 export default function HardWordsPracticeScreen() {
   const insets = useSafeAreaInsets();
   const t = useThemeStyles();
-  const scheme = useColorScheme();
   const { username, game } = useGame();
   const { checkAchievements } = useAchievements();
   const sessionStartRef = useRef(Date.now());

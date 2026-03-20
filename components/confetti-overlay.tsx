@@ -57,7 +57,7 @@ function ConfettiParticle({ particle }: { particle: Particle }) {
       particle.delay,
       withTiming(particle.rotation, { duration: particle.duration })
     );
-  }, []);
+  }, [opacity, particle.delay, particle.duration, particle.drift, particle.rotation, rotate, translateX, translateY]);
 
   const style = useAnimatedStyle(() => ({
     transform: [

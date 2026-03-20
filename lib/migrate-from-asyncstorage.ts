@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDb } from './database';
 import { Platform } from 'react-native';
 
-const MIGRATION_FLAG = 'gemlish_sqlite_migrated_v1';
+const MIGRATION_FLAG = 'gemlish_sqlite_migrated_v2';
 
 export async function migrateFromAsyncStorageIfNeeded(): Promise<void> {
   // En web no hay SQLite nativo, omitir
@@ -103,6 +103,80 @@ export async function migrateFromAsyncStorageIfNeeded(): Promise<void> {
               );
             }
           }
+
+          // Migrar desafío diario
+          const challengeKey = `gemlish_daily_challenge_${key}`;
+          const challengeRaw = await AsyncStorage.getItem(challengeKey);
+          if (challengeRaw) {
+            const challengeExists = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM db_meta WHERE key = ?`, [challengeKey]
+            );
+            if (!challengeExists) {
+              db.runSync(
+                `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+                [challengeKey, challengeRaw]
+              );
+            }
+          }
+
+          // Migrar SM2 (repaso espaciado)
+          const sm2Key = `gemlish_sm2_${key}`;
+          const sm2Raw = await AsyncStorage.getItem(sm2Key);
+          if (sm2Raw) {
+            const sm2Exists = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM db_meta WHERE key = ?`, [sm2Key]
+            );
+            if (!sm2Exists) {
+              db.runSync(
+                `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+                [sm2Key, sm2Raw]
+              );
+            }
+          }
+
+          // Migrar logros desbloqueados y fechas
+          const achievementsKey = `gemlish_achievements_${key}`;
+          const achievementsRaw = await AsyncStorage.getItem(achievementsKey);
+          if (achievementsRaw) {
+            const achievementsExists = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM db_meta WHERE key = ?`, [achievementsKey]
+            );
+            if (!achievementsExists) {
+              db.runSync(
+                `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+                [achievementsKey, achievementsRaw]
+              );
+            }
+          }
+
+          const achievementDatesKey = `gemlish_achievement_dates_${key}`;
+          const achievementDatesRaw = await AsyncStorage.getItem(achievementDatesKey);
+          if (achievementDatesRaw) {
+            const datesExists = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM db_meta WHERE key = ?`, [achievementDatesKey]
+            );
+            if (!datesExists) {
+              db.runSync(
+                `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+                [achievementDatesKey, achievementDatesRaw]
+              );
+            }
+          }
+
+          // Migrar historial de práctica
+          const practiceHistoryKey = `gemlish_practice_history_${key}`;
+          const practiceHistoryRaw = await AsyncStorage.getItem(practiceHistoryKey);
+          if (practiceHistoryRaw) {
+            const practiceHistoryExists = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM db_meta WHERE key = ?`, [practiceHistoryKey]
+            );
+            if (!practiceHistoryExists) {
+              db.runSync(
+                `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+                [practiceHistoryKey, practiceHistoryRaw]
+              );
+            }
+          }
         }
       } catch {
         // Si falla el parse, continuar — mejor empezar limpio que crashear
@@ -120,6 +194,23 @@ export async function migrateFromAsyncStorageIfNeeded(): Promise<void> {
         db.runSync(
           `INSERT OR REPLACE INTO session (id, username, username_bk) VALUES (1, ?, ?)`,
           [activeUser, activeUser]
+        );
+      }
+    }
+
+    // ── Migrar llaves globales usadas por la app ──────────────────────────────
+    const globalKeys = ['@gemlish_all_users', '@gemlish_avatar'];
+    for (const key of globalKeys) {
+      const raw = await AsyncStorage.getItem(key);
+      if (!raw) continue;
+      const exists = db.getFirstSync<{ value: string }>(
+        `SELECT value FROM db_meta WHERE key = ?`,
+        [key],
+      );
+      if (!exists) {
+        db.runSync(
+          `INSERT OR REPLACE INTO db_meta (key, value) VALUES (?, ?)`,
+          [key, raw],
         );
       }
     }

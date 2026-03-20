@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { kvGetJson, kvSetJson } from './local-kv';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -77,24 +77,21 @@ const KEY = (username: string) => `gemlish_achievements_${username}`;
 const DATES_KEY = (username: string) => `gemlish_achievement_dates_${username}`;
 
 export async function getUnlockedAchievements(username: string): Promise<Set<string>> {
-  const raw = await AsyncStorage.getItem(KEY(username));
-  if (!raw) return new Set();
-  return new Set(JSON.parse(raw) as string[]);
+  const ids = await kvGetJson<string[]>(KEY(username), []);
+  return new Set(ids);
 }
 
 export async function saveUnlockedAchievements(username: string, ids: Set<string>): Promise<void> {
-  await AsyncStorage.setItem(KEY(username), JSON.stringify([...ids]));
+  await kvSetJson(KEY(username), [...ids]);
 }
 
 /** Devuelve un mapa id -> fecha ISO de cuando se desbloquó el logro */
 export async function getAchievementDates(username: string): Promise<Record<string, string>> {
-  const raw = await AsyncStorage.getItem(DATES_KEY(username));
-  if (!raw) return {};
-  return JSON.parse(raw) as Record<string, string>;
+  return kvGetJson<Record<string, string>>(DATES_KEY(username), {});
 }
 
 async function saveAchievementDates(username: string, dates: Record<string, string>): Promise<void> {
-  await AsyncStorage.setItem(DATES_KEY(username), JSON.stringify(dates));
+  await kvSetJson(DATES_KEY(username), dates);
 }
 
 /**

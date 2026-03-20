@@ -78,7 +78,7 @@ function MemCard({ card, isFlipped, isMatched, onPress, cardWidth, cardHeight }:
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [isFlipped, isMatched]);
+  }, [isFlipped, isMatched, anim]);
 
   const frontRot = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const backRot = anim.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
@@ -160,7 +160,7 @@ function GameBoard({ categoryKey, onWin, onTimeUp, remainingMs }: GameBoardProps
       if (timerRef.current) clearInterval(timerRef.current);
       onTimeUp();
     }
-  }, [remainingMs]);
+  }, [remainingMs, onTimeUp]);
 
   const handleCardPress = useCallback((cardId: string) => {
     if (isProcessing.current) return;
