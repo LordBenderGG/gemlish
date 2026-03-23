@@ -165,8 +165,7 @@ export function useNotifications() {
       return granted;
     } catch (err) {
       console.warn('[useNotifications] Error requesting permission:', err);
-      // En caso de error, intentar continuar de todas formas en Android
-      return Platform.OS === 'android';
+      return false;
     }
   }, []);
 
