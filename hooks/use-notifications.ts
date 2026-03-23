@@ -136,22 +136,24 @@ export function useNotifications() {
           lightColor: '#8E5AF5',
           sound: 'default',
         });
-        // Verificar si el permiso ya está concedido
+        // Verificar si el permiso ya está concedido (evitar prompt innecesario)
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         if (existingStatus === 'granted') {
           setPermissionGranted(true);
           return true;
         }
+        // Si no estamos seguros o está denegado, solicitar permiso
+        const { status } = await Notifications.requestPermissionsAsync();
         // En Android 12 y anteriores los permisos siempre son granted
         // En Android 13+ se necesita POST_NOTIFICATIONS (ya en AndroidManifest)
-        const { status } = await Notifications.requestPermissionsAsync();
+        // Tratamos tanto 'granted' como 'undetermined' como éxito
         const granted = status === 'granted' || status === 'undetermined';
         setPermissionGranted(granted);
         return granted;
       }
 
       // iOS: solicitar permiso explícito
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } = await Notifications.getNotificationsAsync();
       if (existingStatus === 'granted') {
         setPermissionGranted(true);
         return true;
@@ -170,10 +172,38 @@ export function useNotifications() {
 
   const scheduleDaily = useCallback(async (hour: number, minute: number, nextLevelName?: string): Promise<boolean> => {
     try {
+      // Validar rango de hora y minuto
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+        console.warn('[useNotifications] Invalid time for scheduling:', { hour, minute });
+        return false;
+      }
+
       // Cancelar notificación anterior
       const prevId = await kvGet(NOTIFICATION_ID_KEY);
       if (prevId) {
         await Notifications.cancelScheduledNotificationAsync(prevId).catch(() => {});
+      }
+
+      // Asegurarnos de que el canal de notificaciones exista y esté configurado correctamente
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('gemlish-daily', {
+          name: 'Recordatorio Diario',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#8E5AF5',
+          sound: 'default',
+        });
+      }
+
+      // Verificar que la hora de programación no haya pasado ya
+      const now = new Date();
+      const targetToday = new Date();
+      targetToday.setHours(hour, minute, 0, 0);
+      if (now >= targetToday) {
+        // Ya pasó la hora de hoy, no programar (se programará para mañana automáticamente por la lógica de expo-notifications)
+        // Pero para evitar confusiones, dejamos que expo-notifications maneje la programación para el próximo día
+        // Sin embargo, registramos esto para depuración
+        console.log('[useNotifications] Attempting to schedule for past time, will schedule for next day:', { hour, minute });
       }
 
       // Programar nueva notificación diaria personalizada
@@ -215,7 +245,7 @@ export function useNotifications() {
       await kvSet(NOTIFICATION_ID_KEY, id);
       return true;
     } catch (err) {
-      console.warn('[useNotifications] Error scheduling:', err);
+      console.warn('[useNotifications] Error scheduling notification:', err);
       return false;
     }
   }, []);
