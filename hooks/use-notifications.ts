@@ -138,7 +138,7 @@ export function useNotifications() {
         });
         // Verificar si el permiso ya está concedido (evitar prompt innecesario)
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        if (existingStatus === 'granted') {
+        if (existingStatus?.trim().toLowerCase() === 'granted') {
           setPermissionGranted(true);
           return true;
         }
